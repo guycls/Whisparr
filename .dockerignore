@@ -1,0 +1,16 @@
+.git
+.github
+.vscode
+.idea
+node_modules
+_output
+_temp
+_tests
+_artifacts
+bin
+obj
+docker-compose.yml
+Dockerfile
+.dockerignore
+*.tar
+*.tar.gz
