@@ -181,8 +181,20 @@ namespace NzbDrone.Core.Download
                 trackedDownload.RemoteEpisode.Series,
                 trackedDownload.ImportItem);
 
-            if (VerifyImport(trackedDownload, importResults))
+            try
             {
+                if (VerifyImport(trackedDownload, importResults))
+                {
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warn(ex, "Failed to verify import for '{0}'", trackedDownload.DownloadItem.Title);
+                trackedDownload.State = TrackedDownloadState.ImportPending;
+                trackedDownload.Warn("Import verification failed for {0}, manual import may be required.", trackedDownload.DownloadItem.Title);
+                SendManualInteractionRequiredNotification(trackedDownload);
+
                 return;
             }
 
@@ -268,11 +280,12 @@ namespace NzbDrone.Core.Download
 
             var atLeastOneEpisodeImported = importResults.Any(c => c.Result == ImportResultType.Imported);
             var allEpisodesImportedInHistory = _trackedDownloadAlreadyImported.IsImported(trackedDownload, historyItems);
-            var episodes = _episodeService.GetEpisodes(trackedDownload.RemoteEpisode.Episodes.Select(e => e.Id));
-            var files = _mediaFileService.GetFiles(episodes.Select(e => e.EpisodeFileId).Distinct());
 
             if (allEpisodesImportedInHistory)
             {
+                var episodes = _episodeService.GetEpisodes(trackedDownload.RemoteEpisode.Episodes.Select(e => e.Id));
+                var files = _mediaFileService.GetFiles(episodes.Select(e => e.EpisodeFileId).Where(id => id > 0).Distinct());
+
                 // Log different error messages depending on the circumstances, but treat both as fully imported, because that's the reality.
                 // The second message shouldn't be logged in most cases, but continued reporting would indicate an ongoing issue.
 
