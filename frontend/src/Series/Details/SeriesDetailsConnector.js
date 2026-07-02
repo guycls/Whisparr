@@ -9,6 +9,7 @@ import { clearEpisodes, fetchEpisodes } from 'Store/Actions/episodeActions';
 import { clearEpisodeFiles, fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { toggleSeriesMonitored } from 'Store/Actions/seriesActions';
+import { setSeriesDetailsView } from 'Store/Actions/seriesDetailsActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
 import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
@@ -68,7 +69,8 @@ function createMapStateToProps() {
     createAllSeriesSelector(),
     createCommandsSelector(),
     (state) => state.settings.safeForWorkMode,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode) => {
+    (state) => state.seriesDetails.view,
+    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view) => {
       const sortedSeries = _.orderBy(allSeries, 'sortTitle');
       const seriesIndex = _.findIndex(sortedSeries, { titleSlug });
       const series = sortedSeries[seriesIndex];
@@ -131,7 +133,8 @@ function createMapStateToProps() {
         hasEpisodeFiles,
         previousSeries,
         nextSeries,
-        safeForWorkMode
+        safeForWorkMode,
+        view
       };
     }
   );
@@ -145,7 +148,8 @@ const mapDispatchToProps = {
   toggleSeriesMonitored,
   fetchQueueDetails,
   clearQueueDetails,
-  executeCommand
+  executeCommand,
+  setSeriesDetailsView
 };
 
 class SeriesDetailsConnector extends Component {
@@ -196,7 +200,7 @@ class SeriesDetailsConnector extends Component {
   populate = () => {
     const seriesId = this.props.id;
 
-    this.props.fetchEpisodes({ seriesId });
+    this.props.fetchEpisodes({ seriesId, includeImages: true });
     this.props.fetchEpisodeFiles({ seriesId });
     this.props.fetchQueueDetails({ seriesId });
   };
@@ -231,6 +235,10 @@ class SeriesDetailsConnector extends Component {
     });
   };
 
+  onViewSelect = (view) => {
+    this.props.setSeriesDetailsView({ view });
+  };
+
   //
   // Render
 
@@ -241,6 +249,7 @@ class SeriesDetailsConnector extends Component {
         onMonitorTogglePress={this.onMonitorTogglePress}
         onRefreshPress={this.onRefreshPress}
         onSearchPress={this.onSearchPress}
+        onViewSelect={this.onViewSelect}
       />
     );
   }
@@ -261,7 +270,8 @@ SeriesDetailsConnector.propTypes = {
   toggleSeriesMonitored: PropTypes.func.isRequired,
   fetchQueueDetails: PropTypes.func.isRequired,
   clearQueueDetails: PropTypes.func.isRequired,
-  executeCommand: PropTypes.func.isRequired
+  executeCommand: PropTypes.func.isRequired,
+  setSeriesDetailsView: PropTypes.func.isRequired
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(SeriesDetailsConnector);

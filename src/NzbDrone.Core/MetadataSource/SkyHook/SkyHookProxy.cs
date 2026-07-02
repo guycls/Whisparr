@@ -79,10 +79,10 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                 }
             }
 
-            var episodes = httpResponse.Resource.Episodes.Select(MapEpisode);
+            var episodes = httpResponse.Resource.Episodes.Select(MapEpisode).ToList();
             var series = MapSeries(httpResponse.Resource);
 
-            return new Tuple<Series, List<Episode>>(series, episodes.ToList());
+            return new Tuple<Series, List<Episode>>(series, episodes);
         }
 
         public List<Series> SearchForNewSeries(string title)
@@ -260,13 +260,34 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
 
             episode.Ratings = new Ratings();
 
-            // Don't include series fanart images as episode screenshot
-            if (oracleEpisode.Image != null)
-            {
-                episode.Images.Add(new MediaCover.MediaCover(MediaCoverTypes.Screenshot, oracleEpisode.Image));
-            }
+            MapEpisodeScreenshot(episode, oracleEpisode);
 
             return episode;
+        }
+
+        private static void MapEpisodeScreenshot(Episode episode, EpisodeResource oracleEpisode)
+        {
+            if (oracleEpisode.Image.IsNotNullOrWhiteSpace())
+            {
+                episode.Images.Add(new MediaCover.MediaCover(MediaCoverTypes.Screenshot, oracleEpisode.Image));
+                return;
+            }
+
+            if (oracleEpisode.Images == null || !oracleEpisode.Images.Any())
+            {
+                return;
+            }
+
+            var screenshot = oracleEpisode.Images.FirstOrDefault(i =>
+                                 i.CoverType != null &&
+                                 i.CoverType.Equals("screenshot", StringComparison.OrdinalIgnoreCase) &&
+                                 i.Url.IsNotNullOrWhiteSpace()) ??
+                             oracleEpisode.Images.FirstOrDefault(i => i.Url.IsNotNullOrWhiteSpace());
+
+            if (screenshot != null)
+            {
+                episode.Images.Add(new MediaCover.MediaCover(MediaCoverTypes.Screenshot, screenshot.Url));
+            }
         }
 
         private static Season MapSeason(int seasonResource)
@@ -326,6 +347,8 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
                     return MediaCoverTypes.Fanart;
                 case "clearlogo":
                     return MediaCoverTypes.Clearlogo;
+                case "screenshot":
+                    return MediaCoverTypes.Screenshot;
                 default:
                     return MediaCoverTypes.Unknown;
             }

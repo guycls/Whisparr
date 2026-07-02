@@ -377,6 +377,12 @@ namespace NzbDrone.Core.Configuration
 
         public string ApplicationUrl => GetValue("ApplicationUrl", string.Empty);
 
+        public string TpdbApiKey
+        {
+            get { return GetValue("TpdbApiKey", string.Empty); }
+            set { SetValue("TpdbApiKey", value); }
+        }
+
         private string GetValue(string key)
         {
             return GetValue(key, string.Empty);

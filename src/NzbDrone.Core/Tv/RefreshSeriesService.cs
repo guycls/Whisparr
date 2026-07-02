@@ -21,6 +21,7 @@ namespace NzbDrone.Core.Tv
     public class RefreshSeriesService : IExecute<RefreshSeriesCommand>
     {
         private readonly IProvideSeriesInfo _seriesInfo;
+        private readonly IEpisodeImageEnrichmentService _episodeImageEnrichment;
         private readonly ISeriesService _seriesService;
         private readonly IRefreshEpisodeService _refreshEpisodeService;
         private readonly IEventAggregator _eventAggregator;
@@ -31,6 +32,7 @@ namespace NzbDrone.Core.Tv
         private readonly Logger _logger;
 
         public RefreshSeriesService(IProvideSeriesInfo seriesInfo,
+                                    IEpisodeImageEnrichmentService episodeImageEnrichment,
                                     ISeriesService seriesService,
                                     IRefreshEpisodeService refreshEpisodeService,
                                     IEventAggregator eventAggregator,
@@ -41,6 +43,7 @@ namespace NzbDrone.Core.Tv
                                     Logger logger)
         {
             _seriesInfo = seriesInfo;
+            _episodeImageEnrichment = episodeImageEnrichment;
             _seriesService = seriesService;
             _refreshEpisodeService = refreshEpisodeService;
             _eventAggregator = eventAggregator;
@@ -67,6 +70,7 @@ namespace NzbDrone.Core.Tv
                 var tuple = _seriesInfo.GetSeriesInfo(series.TvdbId);
                 seriesInfo = tuple.Item1;
                 episodes = tuple.Item2;
+                _episodeImageEnrichment.Enrich(episodes);
             }
             catch (SeriesNotFoundException)
             {

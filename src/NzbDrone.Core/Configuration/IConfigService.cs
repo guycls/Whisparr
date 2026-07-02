@@ -90,5 +90,7 @@ namespace NzbDrone.Core.Configuration
 
         CertificateValidationType CertificateValidation { get; }
         string ApplicationUrl { get; }
+
+        string TpdbApiKey { get; set; }
     }
 }

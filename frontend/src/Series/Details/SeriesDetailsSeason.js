@@ -27,6 +27,7 @@ import getToggledRange from 'Utilities/Table/getToggledRange';
 import EpisodeRowConnector from './EpisodeRowConnector';
 import SeasonInfo from './SeasonInfo';
 import SeasonProgressLabel from './SeasonProgressLabel';
+import SeriesDetailsEpisodeGrid from './SeriesDetailsEpisodeGrid';
 import styles from './SeriesDetailsSeason.css';
 
 function getSeasonStatistics(episodes) {
@@ -187,6 +188,62 @@ class SeriesDetailsSeason extends Component {
     this.props.onMonitorEpisodePress(_.uniq(episodeIds), monitored);
   };
 
+  renderEpisodes() {
+    const {
+      items,
+      columns,
+      sortKey,
+      sortDirection,
+      isSmallScreen,
+      view,
+      onSortPress,
+      onTableOptionChange
+    } = this.props;
+
+    if (!items.length) {
+      return (
+        <div className={styles.noEpisodes}>
+          {translate('NoEpisodesInThisYear')}
+        </div>
+      );
+    }
+
+    if (view === 'grid') {
+      return (
+        <SeriesDetailsEpisodeGrid
+          items={items}
+          isSmallScreen={isSmallScreen}
+          onMonitorEpisodePress={this.onMonitorEpisodePress}
+        />
+      );
+    }
+
+    return (
+      <Table
+        columns={columns}
+        sortKey={sortKey}
+        sortDirection={sortDirection}
+        onSortPress={onSortPress}
+        onTableOptionChange={onTableOptionChange}
+      >
+        <TableBody>
+          {
+            items.map((item) => {
+              return (
+                <EpisodeRowConnector
+                  key={item.id}
+                  columns={columns}
+                  {...item}
+                  onMonitorEpisodePress={this.onMonitorEpisodePress}
+                />
+              );
+            })
+          }
+        </TableBody>
+      </Table>
+    );
+  }
+
   //
   // Render
 
@@ -197,17 +254,12 @@ class SeriesDetailsSeason extends Component {
       monitored,
       seasonNumber,
       items,
-      columns,
-      sortKey,
-      sortDirection,
       statistics,
       isSaving,
       isExpanded,
       isSearching,
       seriesMonitored,
       isSmallScreen,
-      onSortPress,
-      onTableOptionChange,
       onMonitorSeasonPress,
       onSearchPress
     } = this.props;
@@ -435,35 +487,7 @@ class SeriesDetailsSeason extends Component {
           {
             isExpanded &&
               <div className={styles.episodes}>
-                {
-                  items.length ?
-                    <Table
-                      columns={columns}
-                      sortKey={sortKey}
-                      sortDirection={sortDirection}
-                      onSortPress={onSortPress}
-                      onTableOptionChange={onTableOptionChange}
-                    >
-                      <TableBody>
-                        {
-                          items.map((item) => {
-                            return (
-                              <EpisodeRowConnector
-                                key={item.id}
-                                columns={columns}
-                                {...item}
-                                onMonitorEpisodePress={this.onMonitorEpisodePress}
-                              />
-                            );
-                          })
-                        }
-                      </TableBody>
-                    </Table> :
-
-                    <div className={styles.noEpisodes}>
-                      {translate('NoEpisodesInThisYear')}
-                    </div>
-                }
+                {this.renderEpisodes()}
                 <div className={styles.collapseButtonContainer}>
                   <IconButton
                     iconClassName={styles.collapseButtonIcon}
@@ -533,6 +557,7 @@ SeriesDetailsSeason.propTypes = {
   isSearching: PropTypes.bool.isRequired,
   seriesMonitored: PropTypes.bool.isRequired,
   isSmallScreen: PropTypes.bool.isRequired,
+  view: PropTypes.string.isRequired,
   onTableOptionChange: PropTypes.func.isRequired,
   onSortPress: PropTypes.func.isRequired,
   onMonitorSeasonPress: PropTypes.func.isRequired,

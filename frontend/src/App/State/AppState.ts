@@ -75,6 +75,9 @@ interface AppState {
   rootFolders: RootFolderAppState;
   javSeriesIndex: SeriesIndexAppState;
   series: SeriesAppState;
+  seriesDetails: {
+    view: 'list' | 'grid';
+  };
   seriesIndex: SeriesIndexAppState;
   settings: SettingsAppState;
   system: SystemAppState;

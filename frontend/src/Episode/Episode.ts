@@ -1,5 +1,5 @@
 import ModelBase from 'App/ModelBase';
-import Series from 'Series/Series';
+import Series, { Image } from 'Series/Series';
 
 export interface Actor {
   tpdbId: number;
@@ -35,6 +35,7 @@ interface Episode extends ModelBase {
   grabDate?: string;
   seriesTitle?: string;
   series?: Series;
+  images?: Image[];
 }
 
 export default Episode;

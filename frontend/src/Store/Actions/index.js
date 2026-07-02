@@ -22,6 +22,7 @@ import * as queue from './queueActions';
 import * as releases from './releaseActions';
 import * as rootFolders from './rootFolderActions';
 import * as series from './seriesActions';
+import * as seriesDetails from './seriesDetailsActions';
 import * as seriesHistory from './seriesHistoryActions';
 import * as seriesIndex from './seriesIndexActions';
 import * as settings from './settingsActions';
@@ -54,6 +55,7 @@ export default [
   releases,
   rootFolders,
   series,
+  seriesDetails,
   seriesHistory,
   seriesIndex,
   settings,

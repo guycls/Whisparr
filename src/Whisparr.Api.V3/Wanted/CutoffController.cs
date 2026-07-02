@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.DecisionEngine.Specifications;
+using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Tv;
 using NzbDrone.SignalR;
 using Whisparr.Api.V3.Episodes;
@@ -22,8 +23,9 @@ namespace Whisparr.Api.V3.Wanted
                             ISeriesService seriesService,
                             IUpgradableSpecification upgradableSpecification,
                             ICustomFormatCalculationService formatCalculator,
+                            IMediaCoverProxy mediaCoverProxy,
                             IBroadcastSignalRMessage signalRBroadcaster)
-            : base(episodeService, seriesService, upgradableSpecification, formatCalculator, signalRBroadcaster)
+            : base(episodeService, seriesService, upgradableSpecification, formatCalculator, mediaCoverProxy, signalRBroadcaster)
         {
             _episodeCutoffService = episodeCutoffService;
         }

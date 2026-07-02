@@ -4,6 +4,12 @@ namespace NzbDrone.Core.MetadataSource.SkyHook.Resource
 {
     public class EpisodeResource
     {
+        public EpisodeResource()
+        {
+            Credits = new List<ActorResource>();
+            Images = new List<ImageResource>();
+        }
+
         public int ForeignId { get; set; }
         public string ExternalId { get; set; }
         public int Year { get; set; }
@@ -19,5 +25,6 @@ namespace NzbDrone.Core.MetadataSource.SkyHook.Resource
         public int? Duration { get; set; }
         public string Type { get; set; }
         public List<ActorResource> Credits { get; set; }
+        public List<ImageResource> Images { get; set; }
     }
 }

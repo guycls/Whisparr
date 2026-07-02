@@ -58,6 +58,17 @@ namespace NzbDrone.Core.Test.TvTests
         }
 
         [Test]
+        public void should_enrich_episode_images_during_refresh()
+        {
+            GivenNewSeriesInfo(_series);
+
+            Subject.Execute(new RefreshSeriesCommand(new List<int> { _series.Id }));
+
+            Mocker.GetMock<IEpisodeImageEnrichmentService>()
+                .Verify(e => e.Enrich(It.IsAny<IEnumerable<Episode>>()), Times.Once());
+        }
+
+        [Test]
         public void should_monitor_new_seasons_automatically_if_monitor_new_items_is_all()
         {
             _series.MonitorNewItems = NewItemMonitorTypes.All;

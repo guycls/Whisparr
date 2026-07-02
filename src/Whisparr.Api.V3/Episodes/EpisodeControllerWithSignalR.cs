@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Download;
+using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv;
@@ -23,11 +26,13 @@ namespace Whisparr.Api.V3.Episodes
         protected readonly ISeriesService _seriesService;
         protected readonly IUpgradableSpecification _upgradableSpecification;
         protected readonly ICustomFormatCalculationService _formatCalculator;
+        protected readonly IMediaCoverProxy _mediaCoverProxy;
 
         protected EpisodeControllerWithSignalR(IEpisodeService episodeService,
                                            ISeriesService seriesService,
                                            IUpgradableSpecification upgradableSpecification,
                                            ICustomFormatCalculationService formatCalculator,
+                                           IMediaCoverProxy mediaCoverProxy,
                                            IBroadcastSignalRMessage signalRBroadcaster)
             : base(signalRBroadcaster)
         {
@@ -35,12 +40,14 @@ namespace Whisparr.Api.V3.Episodes
             _seriesService = seriesService;
             _upgradableSpecification = upgradableSpecification;
             _formatCalculator = formatCalculator;
+            _mediaCoverProxy = mediaCoverProxy;
         }
 
         protected EpisodeControllerWithSignalR(IEpisodeService episodeService,
                                            ISeriesService seriesService,
                                            IUpgradableSpecification upgradableSpecification,
                                            ICustomFormatCalculationService formatCalculator,
+                                           IMediaCoverProxy mediaCoverProxy,
                                            IBroadcastSignalRMessage signalRBroadcaster,
                                            string resource)
             : base(signalRBroadcaster)
@@ -49,6 +56,7 @@ namespace Whisparr.Api.V3.Episodes
             _seriesService = seriesService;
             _upgradableSpecification = upgradableSpecification;
             _formatCalculator = formatCalculator;
+            _mediaCoverProxy = mediaCoverProxy;
         }
 
         protected override EpisodeResource GetResourceById(int id)
@@ -78,7 +86,7 @@ namespace Whisparr.Api.V3.Episodes
 
                 if (includeImages)
                 {
-                    resource.Images = episode.Images;
+                    resource.Images = MapImages(episode.Images);
                 }
             }
 
@@ -112,12 +120,29 @@ namespace Whisparr.Api.V3.Episodes
 
                     if (includeImages)
                     {
-                        resource.Images = episode.Images;
+                        resource.Images = MapImages(episode.Images);
                     }
                 }
             }
 
             return result;
+        }
+
+        private List<MediaCover> MapImages(List<MediaCover> images)
+        {
+            if (images == null || images.Count == 0)
+            {
+                return images;
+            }
+
+            return images.Select(image => new MediaCover
+            {
+                CoverType = image.CoverType,
+                RemoteUrl = image.RemoteUrl,
+                Url = image.RemoteUrl.IsNotNullOrWhiteSpace()
+                    ? _mediaCoverProxy.RegisterUrl(image.RemoteUrl)
+                    : image.Url
+            }).ToList();
         }
 
         [NonAction]

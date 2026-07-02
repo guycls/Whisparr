@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.DecisionEngine.Specifications;
+using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Tags;
 using NzbDrone.Core.Tv;
 using NzbDrone.SignalR;
@@ -23,8 +24,9 @@ namespace Whisparr.Api.V3.Calendar
                             ISeriesService seriesService,
                             IUpgradableSpecification qualityUpgradableSpecification,
                             ITagService tagService,
-                            ICustomFormatCalculationService formatCalculator)
-            : base(episodeService, seriesService, qualityUpgradableSpecification, formatCalculator, signalR)
+                            ICustomFormatCalculationService formatCalculator,
+                            IMediaCoverProxy mediaCoverProxy)
+            : base(episodeService, seriesService, qualityUpgradableSpecification, formatCalculator, mediaCoverProxy, signalR)
         {
             _tagService = tagService;
         }
