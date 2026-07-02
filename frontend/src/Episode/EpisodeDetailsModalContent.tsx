@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+import classNames from 'classnames';
+import AppState from 'App/State/AppState';
 import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
@@ -10,6 +12,9 @@ import MonitorToggleButton from 'Components/MonitorToggleButton';
 import Episode from 'Episode/Episode';
 import EpisodeDetailsTab from 'Episode/EpisodeDetailsTab';
 import episodeEntities from 'Episode/episodeEntities';
+import EpisodeScreenshot, {
+  hasEpisodeScreenshot,
+} from 'Episode/EpisodeScreenshot';
 import useEpisode, { EpisodeEntities } from 'Episode/useEpisode';
 import Series from 'Series/Series';
 import useSeries from 'Series/useSeries';
@@ -56,6 +61,10 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
 
   const dispatch = useDispatch();
 
+  const safeForWorkMode = useSelector(
+    (state: AppState) => state.settings.safeForWorkMode
+  );
+
   const [currentlySelectedTab, setCurrentlySelectedTab] = useState(selectedTab);
 
   const {
@@ -72,6 +81,7 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
     absoluteEpisodeNumber,
     releaseDate,
     monitored,
+    images,
   } = useEpisode(episodeId, episodeEntity) as Episode;
 
   const handleTabSelect = useCallback(
@@ -106,6 +116,7 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
   }, [dispatch]);
 
   const seriesLink = `/site/${titleSlug}`;
+  const showScreenshot = hasEpisodeScreenshot(images);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -135,54 +146,71 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
         {episodeTitle}
       </ModalHeader>
 
-      <ModalBody>
-        <Tabs
-          className={styles.tabs}
-          selectedIndex={TABS.indexOf(currentlySelectedTab)}
-          onSelect={handleTabSelect}
-        >
-          <TabList className={styles.tabList}>
-            <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
-              {translate('Details')}
-            </Tab>
-
-            <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
-              {translate('History')}
-            </Tab>
-
-            <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
-              {translate('Search')}
-            </Tab>
-          </TabList>
-
-          <TabPanel>
-            <div className={styles.tabContent}>
-              <EpisodeSummary
-                episodeId={episodeId}
-                episodeEntity={episodeEntity}
-                episodeFileId={episodeFileId}
-                seriesId={seriesId}
-              />
-            </div>
-          </TabPanel>
-
-          <TabPanel>
-            <div className={styles.tabContent}>
-              <EpisodeHistoryConnector episodeId={episodeId} />
-            </div>
-          </TabPanel>
-
-          <TabPanel>
-            {/* Don't wrap in tabContent so we not have a top margin */}
-            <EpisodeSearchConnector
-              episodeId={episodeId}
-              seriesId={seriesId}
-              startInteractiveSearch={startInteractiveSearch}
-              onModalClose={onModalClose}
+      <div
+        className={classNames(styles.bodyLayout, showScreenshot && styles.hasImage)}
+      >
+        {showScreenshot ? (
+          <div className={styles.episodeImage}>
+            <EpisodeScreenshot
+              className={styles.screenshot}
+              images={images}
+              blur={safeForWorkMode}
             />
-          </TabPanel>
-        </Tabs>
-      </ModalBody>
+          </div>
+        ) : null}
+
+        <ModalBody
+          className={styles.tabsColumn}
+          innerClassName={styles.tabsColumnInner}
+        >
+          <Tabs
+            className={styles.tabs}
+            selectedIndex={TABS.indexOf(currentlySelectedTab)}
+            onSelect={handleTabSelect}
+          >
+            <TabList className={styles.tabList}>
+              <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
+                {translate('Details')}
+              </Tab>
+
+              <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
+                {translate('History')}
+              </Tab>
+
+              <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
+                {translate('Search')}
+              </Tab>
+            </TabList>
+
+            <TabPanel>
+              <div className={styles.tabContent}>
+                <EpisodeSummary
+                  episodeId={episodeId}
+                  episodeEntity={episodeEntity}
+                  episodeFileId={episodeFileId}
+                  seriesId={seriesId}
+                />
+              </div>
+            </TabPanel>
+
+            <TabPanel>
+              <div className={styles.tabContent}>
+                <EpisodeHistoryConnector episodeId={episodeId} />
+              </div>
+            </TabPanel>
+
+            <TabPanel>
+              {/* Don't wrap in tabContent so we not have a top margin */}
+              <EpisodeSearchConnector
+                episodeId={episodeId}
+                seriesId={seriesId}
+                startInteractiveSearch={startInteractiveSearch}
+                onModalClose={onModalClose}
+              />
+            </TabPanel>
+          </Tabs>
+        </ModalBody>
+      </div>
 
       <ModalFooter>
         {showOpenSeriesButton && (

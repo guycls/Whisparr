@@ -10,6 +10,7 @@ interface CssExports {
   'large': string;
   'medium': string;
   'outline': string;
+  'pink': string;
   'primary': string;
   'purple': string;
   'small': string;

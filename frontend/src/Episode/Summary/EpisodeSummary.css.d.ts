@@ -9,10 +9,14 @@ interface CssExports {
   'files': string;
   'filesHeader': string;
   'infoTitle': string;
-  'overview': string;
+  'overviewPanel': string;
+  'overviewText': string;
   'path': string;
+  'performers': string;
   'quality': string;
   'size': string;
+  'tpdbLink': string;
+  'tpdbLinks': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

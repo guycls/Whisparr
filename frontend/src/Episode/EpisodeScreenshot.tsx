@@ -10,6 +10,16 @@ function findScreenshot(images?: Image[]) {
   return images?.find((image) => image.coverType === 'screenshot');
 }
 
+export function getEpisodeScreenshotUrl(images?: Image[]) {
+  const screenshot = findScreenshot(images);
+
+  return screenshot?.remoteUrl || screenshot?.url || null;
+}
+
+export function hasEpisodeScreenshot(images?: Image[]) {
+  return !!getEpisodeScreenshotUrl(images);
+}
+
 interface EpisodeScreenshotProps {
   className?: string;
   images?: Image[];
@@ -23,10 +33,7 @@ function EpisodeScreenshot(props: EpisodeScreenshotProps) {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    const screenshot = findScreenshot(images);
-    const imageUrl = screenshot?.remoteUrl || screenshot?.url || null;
-
-    setUrl(imageUrl);
+    setUrl(getEpisodeScreenshotUrl(images));
     setHasError(false);
   }, [images]);
 

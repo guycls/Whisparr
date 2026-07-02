@@ -14,6 +14,19 @@
   background-color: #374151;
 }
 
+.imageLink {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
 .image {
   display: block;
   width: 100%;
@@ -21,33 +34,11 @@
   object-fit: cover;
 }
 
-.monitorToggle {
+.statusOverlay {
   position: absolute;
   top: 6px;
   left: 6px;
   z-index: 2;
-}
-
-.footerOverlay {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 6px;
-  background: linear-gradient(transparent, rgb(0 0 0 / 70%));
-}
-
-.status {
-  display: flex;
-  align-items: center;
-}
-
-.actions {
-  flex-shrink: 0;
 }
 
 .info {
@@ -61,25 +52,29 @@
 .title {
   @add-mixin truncate;
 
-  font-size: $smallFontSize;
+  font-size: $defaultFontSize;
 }
 
 .meta {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
 
+  padding-top: 4px;
+  border-top: 1px solid var(--borderColor);
+
   color: #888;
-  font-size: $extraSmallFontSize;
+  font-size: $smallFontSize;
 }
 
 .metaDate {
-  composes: cell from '~Components/Table/Cells/RelativeDateCell.css';
-
+  min-width: 0;
   padding: 0;
 }
 
 .runtime {
+  flex-shrink: 0;
   white-space: nowrap;
 }
 
@@ -87,7 +82,19 @@
   @add-mixin truncate;
 
   color: #888;
-  font-size: $extraSmallFontSize;
+  font-size: $smallFontSize;
+}
+
+.actionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-top: 1px solid var(--borderColor);
+}
+
+.actions {
+  flex-shrink: 0;
 }
 
 @media only screen and (max-width: $breakpointSmall) {

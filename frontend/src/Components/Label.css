@@ -97,6 +97,15 @@
   }
 }
 
+.pink {
+  border-color: var(--pink);
+  background-color: var(--pink);
+
+  &.outline {
+    color: var(--pink);
+  }
+}
+
 /** Sizes **/
 
 .small {

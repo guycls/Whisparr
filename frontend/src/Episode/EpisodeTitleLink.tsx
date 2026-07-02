@@ -12,17 +12,30 @@ interface EpisodeTitleLinkProps {
   episodeTitle: string;
   finaleType?: string;
   showOpenSeriesButton: boolean;
+  onModalOpen?(): void;
+  renderModal?: boolean;
 }
 
 function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
-  const { episodeTitle, finaleType, ...otherProps } = props;
+  const {
+    episodeTitle,
+    finaleType,
+    onModalOpen,
+    renderModal = true,
+    ...otherProps
+  } = props;
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const handleLinkPress = useCallback(() => {
+    if (onModalOpen) {
+      onModalOpen();
+      return;
+    }
+
     setIsDetailsModalOpen(true);
-  }, [setIsDetailsModalOpen]);
+  }, [onModalOpen]);
   const handleModalClose = useCallback(() => {
     setIsDetailsModalOpen(false);
-  }, [setIsDetailsModalOpen]);
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -32,12 +45,14 @@ function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
 
       {finaleType ? <FinaleType finaleType={finaleType} /> : null}
 
-      <EpisodeDetailsModal
-        isOpen={isDetailsModalOpen}
-        episodeTitle={episodeTitle}
-        {...otherProps}
-        onModalClose={handleModalClose}
-      />
+      {renderModal ? (
+        <EpisodeDetailsModal
+          isOpen={isDetailsModalOpen}
+          episodeTitle={episodeTitle}
+          {...otherProps}
+          onModalClose={handleModalClose}
+        />
+      ) : null}
     </div>
   );
 }

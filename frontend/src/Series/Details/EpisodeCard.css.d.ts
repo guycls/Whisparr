@@ -2,17 +2,17 @@
 // Please do not change this file!
 interface CssExports {
   'actions': string;
+  'actionsRow': string;
   'actors': string;
   'card': string;
-  'footerOverlay': string;
   'image': string;
   'imageContainer': string;
+  'imageLink': string;
   'info': string;
   'meta': string;
   'metaDate': string;
-  'monitorToggle': string;
   'runtime': string;
-  'status': string;
+  'statusOverlay': string;
   'title': string;
 }
 export const cssExports: CssExports;

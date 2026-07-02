@@ -2,6 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
+import Link from 'Components/Link/Link';
 import Column from 'Components/Table/Column';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
@@ -16,6 +17,7 @@ import {
   deleteEpisodeFile,
   fetchEpisodeFile,
 } from 'Store/Actions/episodeFileActions';
+import formatRuntime from 'Utilities/Number/formatRuntime';
 import translate from 'Utilities/String/translate';
 import EpisodeAiring from './EpisodeAiring';
 import EpisodeFileRow from './EpisodeFileRow';
@@ -76,17 +78,24 @@ interface EpisodeSummaryProps {
   episodeFileId?: number;
 }
 
+function formatPerformers(actors: Episode['actors']) {
+  return actors
+    .map((actor) => actor.character || actor.name)
+    .filter(Boolean)
+    .join(', ');
+}
+
 function EpisodeSummary(props: EpisodeSummaryProps) {
   const { seriesId, episodeId, episodeEntity, episodeFileId } = props;
 
   const dispatch = useDispatch();
 
-  const { qualityProfileId, network } = useSeries(seriesId) as Series;
+  const { qualityProfileId, network, tvdbId: seriesTvdbId } = useSeries(
+    seriesId
+  ) as Series;
 
-  const { releaseDate, overview } = useEpisode(
-    episodeId,
-    episodeEntity
-  ) as Episode;
+  const { releaseDate, overview, tvdbId: episodeTvdbId, actors, runtime } =
+    useEpisode(episodeId, episodeEntity) as Episode;
 
   const {
     path,
@@ -114,7 +123,10 @@ function EpisodeSummary(props: EpisodeSummaryProps) {
     }
   }, [episodeFileId, path, dispatch]);
 
+  const performers = formatPerformers(actors);
+  const hasPerformers = !!performers;
   const hasOverview = !!overview;
+  const showTpdbLinks = !!seriesTvdbId || !!episodeTvdbId;
 
   return (
     <div>
@@ -132,8 +144,52 @@ function EpisodeSummary(props: EpisodeSummaryProps) {
         </Label>
       </div>
 
-      <div className={styles.overview}>
-        {hasOverview ? overview : translate('NoEpisodeOverview')}
+      {!!runtime && (
+        <div>
+          <span className={styles.infoTitle}>{translate('Runtime')}</span>
+
+          {formatRuntime(runtime)}
+        </div>
+      )}
+
+      {showTpdbLinks ? (
+        <div className={styles.tpdbLinks}>
+          {!!seriesTvdbId && (
+            <Link
+              className={styles.tpdbLink}
+              to={`https://theporndb.net/sites/${seriesTvdbId}`}
+            >
+              <Label kind={kinds.PRIMARY} size={sizes.MEDIUM}>
+                {translate('TpdbStudio')}
+              </Label>
+            </Link>
+          )}
+
+          {!!episodeTvdbId && (
+            <Link
+              className={styles.tpdbLink}
+              to={`https://theporndb.net/scenes/${episodeTvdbId}`}
+            >
+              <Label kind={kinds.PINK} size={sizes.MEDIUM}>
+                {translate('TpdbScene')}
+              </Label>
+            </Link>
+          )}
+        </div>
+      ) : null}
+
+      <div className={styles.overviewPanel}>
+        {hasPerformers ? (
+          <div className={styles.performers}>{performers}</div>
+        ) : null}
+
+        {hasOverview ? (
+          <div className={styles.overviewText}>{overview}</div>
+        ) : !hasPerformers ? (
+          <div className={styles.overviewText}>
+            {translate('NoEpisodeOverview')}
+          </div>
+        ) : null}
       </div>
 
       {path &&

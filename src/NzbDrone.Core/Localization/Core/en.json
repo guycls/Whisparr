@@ -1707,6 +1707,8 @@
   "TotalSpace": "Total Space",
   "TpdbId": "TPDB ID",
   "TpdbIdExcludeHelpText": "The TPDB ID of the site to exclude",
+  "TpdbScene": "TPDB Scene",
+  "TpdbStudio": "TPDB Studio",
   "Trace": "Trace",
   "True": "True",
   "Twitter": "Twitter",

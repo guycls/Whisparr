@@ -1,14 +1,17 @@
 import React, { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
+import Link from 'Components/Link/Link';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { Actor } from 'Episode/Episode';
+import EpisodeDetailsModal from 'Episode/EpisodeDetailsModal';
 import EpisodeScreenshot from 'Episode/EpisodeScreenshot';
 import EpisodeSearchActions from 'Episode/EpisodeSearchActions';
 import EpisodeStatus from 'Episode/EpisodeStatus';
 import EpisodeTitleLink from 'Episode/EpisodeTitleLink';
+import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { Image } from 'Series/Series';
 import formatRuntime from 'Utilities/Number/formatRuntime';
 import styles from './EpisodeCard.css';
@@ -54,6 +57,9 @@ function EpisodeCard(props: EpisodeCardProps) {
     (state: AppState) => state.settings.safeForWorkMode
   );
 
+  const [isDetailsModalOpen, openDetailsModal, closeDetailsModal] =
+    useModalOpenState(false);
+
   const joinedPerformers = actors
     .map((a) => a.character)
     .slice(0, 4)
@@ -69,35 +75,16 @@ function EpisodeCard(props: EpisodeCardProps) {
   return (
     <div className={styles.card}>
       <div className={styles.imageContainer}>
-        <EpisodeScreenshot
-          className={styles.image}
-          images={images}
-          blur={safeForWorkMode}
-        />
-
-        <div className={styles.monitorToggle}>
-          <MonitorToggleButton
-            monitored={monitored}
-            isDisabled={!seriesMonitored}
-            isSaving={isSaving}
-            size={20}
-            onPress={handleMonitorPress}
+        <Link className={styles.imageLink} onPress={openDetailsModal}>
+          <EpisodeScreenshot
+            className={styles.image}
+            images={images}
+            blur={safeForWorkMode}
           />
-        </div>
+        </Link>
 
-        <div className={styles.footerOverlay}>
-          <div className={styles.status}>
-            <EpisodeStatus episodeId={id} episodeFileId={episodeFileId || 0} />
-          </div>
-
-          <EpisodeSearchActions
-            className={styles.actions}
-            episodeId={id}
-            episodeEntity="episodes"
-            seriesId={seriesId}
-            episodeTitle={title}
-            isSmallScreen={isSmallScreen}
-          />
+        <div className={styles.statusOverlay}>
+          <EpisodeStatus episodeId={id} episodeFileId={episodeFileId || 0} />
         </div>
       </div>
 
@@ -109,6 +96,8 @@ function EpisodeCard(props: EpisodeCardProps) {
             episodeTitle={title}
             episodeEntity="episodes"
             showOpenSeriesButton={false}
+            renderModal={false}
+            onModalOpen={openDetailsModal}
           />
         </div>
 
@@ -131,6 +120,34 @@ function EpisodeCard(props: EpisodeCardProps) {
           />
         )}
       </div>
+
+      <div className={styles.actionsRow}>
+        <MonitorToggleButton
+          monitored={monitored}
+          isDisabled={!seriesMonitored}
+          isSaving={isSaving}
+          size={20}
+          onPress={handleMonitorPress}
+        />
+
+        <EpisodeSearchActions
+          className={styles.actions}
+          episodeId={id}
+          episodeEntity="episodes"
+          seriesId={seriesId}
+          episodeTitle={title}
+          isSmallScreen={isSmallScreen}
+        />
+      </div>
+
+      <EpisodeDetailsModal
+        isOpen={isDetailsModalOpen}
+        episodeId={id}
+        episodeEntity="episodes"
+        seriesId={seriesId}
+        episodeTitle={title}
+        onModalClose={closeDetailsModal}
+      />
     </div>
   );
 }
