@@ -91,6 +91,7 @@ function EpisodeCard(props: EpisodeCardProps) {
       <div className={styles.info}>
         <div className={styles.title}>
           <EpisodeTitleLink
+            className={styles.titleLink}
             episodeId={id}
             seriesId={seriesId}
             episodeTitle={title}

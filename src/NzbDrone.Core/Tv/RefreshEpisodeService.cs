@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Configuration;
+using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv.Events;
 
@@ -16,12 +18,14 @@ namespace NzbDrone.Core.Tv
     public class RefreshEpisodeService : IRefreshEpisodeService
     {
         private readonly IEpisodeService _episodeService;
+        private readonly IConfigService _configService;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
 
-        public RefreshEpisodeService(IEpisodeService episodeService, IEventAggregator eventAggregator, Logger logger)
+        public RefreshEpisodeService(IEpisodeService episodeService, IConfigService configService, IEventAggregator eventAggregator, Logger logger)
         {
             _episodeService = episodeService;
+            _configService = configService;
             _eventAggregator = eventAggregator;
             _logger = logger;
         }
@@ -70,7 +74,15 @@ namespace NzbDrone.Core.Tv
                     episodeToUpdate.AirDate = episode.AirDate;
                     episodeToUpdate.AirDateUtc = episode.AirDateUtc;
                     episodeToUpdate.Ratings = episode.Ratings;
-                    episodeToUpdate.Images = episode.Images;
+
+                    if (ShouldPreserveExistingImages(episodeToUpdate, episode))
+                    {
+                        // Keep existing DB screenshots when refetch is disabled
+                    }
+                    else
+                    {
+                        episodeToUpdate.Images = episode.Images;
+                    }
 
                     successCount++;
                 }
@@ -160,6 +172,21 @@ namespace NzbDrone.Core.Tv
         private Episode GetEpisodeToUpdate(Series series, Episode episode, List<Episode> existingEpisodes)
         {
             return existingEpisodes.FirstOrDefault(e => e.SeasonNumber == episode.SeasonNumber && e.AirDate == episode.AirDate);
+        }
+
+        private bool ShouldPreserveExistingImages(Episode existingEpisode, Episode remoteEpisode)
+        {
+            if (_configService.TpdbRefetchThumbnails)
+            {
+                return false;
+            }
+
+            return HasScreenshot(existingEpisode) && !HasScreenshot(remoteEpisode);
+        }
+
+        private static bool HasScreenshot(Episode episode)
+        {
+            return episode.Images?.Any(i => i.CoverType == MediaCoverTypes.Screenshot && i.RemoteUrl.IsNotNullOrWhiteSpace()) == true;
         }
 
         private IEnumerable<Episode> OrderEpisodes(Series series, List<Episode> episodes)

@@ -23,15 +23,18 @@ namespace NzbDrone.Core.MetadataSource
             _logger = logger;
         }
 
-        public void Enrich(IEnumerable<Episode> episodes)
+        public void Enrich(IEnumerable<Episode> episodes, IEnumerable<Episode> existingEpisodes = null)
         {
             if (_configService.TpdbApiKey.IsNullOrWhiteSpace())
             {
                 return;
             }
 
+            var existingByTpdbId = BuildExistingLookup(existingEpisodes);
+            var refetch = _configService.TpdbRefetchThumbnails;
+
             var toEnrich = episodes
-                .Where(e => e.TvdbId > 0 && !HasScreenshot(e))
+                .Where(e => ShouldEnrich(e, existingByTpdbId, refetch))
                 .ToList();
 
             if (!toEnrich.Any())
@@ -49,10 +52,16 @@ namespace NzbDrone.Core.MetadataSource
                 {
                     _logger.Trace("TPDB image enrichment {0}/{1}: scene {2}", i + 1, toEnrich.Count, episode.TvdbId);
 
+                    if (refetch)
+                    {
+                        RemoveScreenshot(episode);
+                    }
+
                     var url = _tpdbSceneClient.GetScreenshotUrl(episode.TvdbId);
 
                     if (url.IsNotNullOrWhiteSpace())
                     {
+                        episode.Images ??= new List<MediaCover.MediaCover>();
                         episode.Images.Add(new MediaCover.MediaCover(MediaCoverTypes.Screenshot, url));
                     }
                 }
@@ -63,9 +72,65 @@ namespace NzbDrone.Core.MetadataSource
             }
         }
 
+        private static bool ShouldEnrich(Episode episode, Dictionary<int, Episode> existingByTpdbId, bool refetch)
+        {
+            if (episode.TvdbId <= 0)
+            {
+                return false;
+            }
+
+            if (refetch)
+            {
+                return true;
+            }
+
+            if (existingByTpdbId.TryGetValue(episode.TvdbId, out var existing) && HasScreenshot(existing))
+            {
+                return false;
+            }
+
+            return !HasScreenshot(episode);
+        }
+
+        private static Dictionary<int, Episode> BuildExistingLookup(IEnumerable<Episode> existingEpisodes)
+        {
+            var lookup = new Dictionary<int, Episode>();
+
+            if (existingEpisodes == null)
+            {
+                return lookup;
+            }
+
+            foreach (var episode in existingEpisodes.Where(e => e.TvdbId > 0))
+            {
+                if (!lookup.TryGetValue(episode.TvdbId, out var current))
+                {
+                    lookup[episode.TvdbId] = episode;
+                    continue;
+                }
+
+                if (HasScreenshot(episode) && !HasScreenshot(current))
+                {
+                    lookup[episode.TvdbId] = episode;
+                }
+            }
+
+            return lookup;
+        }
+
         private static bool HasScreenshot(Episode episode)
         {
             return episode.Images?.Any(i => i.CoverType == MediaCoverTypes.Screenshot && i.RemoteUrl.IsNotNullOrWhiteSpace()) == true;
+        }
+
+        private static void RemoveScreenshot(Episode episode)
+        {
+            if (episode.Images == null)
+            {
+                return;
+            }
+
+            episode.Images.RemoveAll(i => i.CoverType == MediaCoverTypes.Screenshot);
         }
     }
 }

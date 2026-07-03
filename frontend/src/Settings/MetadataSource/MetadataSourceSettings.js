@@ -22,6 +22,7 @@ class MetadataSourceSettings extends Component {
       settings,
       hasSettings,
       onInputChange,
+      onClearTpdbApiKeyPress,
       onSavePress,
       ...otherProps
     } = this.props;
@@ -58,6 +59,7 @@ class MetadataSourceSettings extends Component {
                 <Tpdb
                   settings={settings}
                   onInputChange={onInputChange}
+                  onClearTpdbApiKeyPress={onClearTpdbApiKeyPress}
                 />
               </Form> :
               <Tpdb />
@@ -74,6 +76,7 @@ MetadataSourceSettings.propTypes = {
   settings: PropTypes.object.isRequired,
   hasSettings: PropTypes.bool.isRequired,
   onInputChange: PropTypes.func.isRequired,
+  onClearTpdbApiKeyPress: PropTypes.func.isRequired,
   onSavePress: PropTypes.func.isRequired
 };
 

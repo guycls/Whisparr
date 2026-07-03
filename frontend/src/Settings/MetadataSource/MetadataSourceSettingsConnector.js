@@ -51,6 +51,11 @@ class MetadataSourceSettingsConnector extends Component {
     this.props.dispatchSetMetadataSourceSettingsValue({ name, value });
   };
 
+  onClearTpdbApiKeyPress = () => {
+    this.props.dispatchSetMetadataSourceSettingsValue({ name: 'clearTpdbApiKey', value: true });
+    this.props.dispatchSetMetadataSourceSettingsValue({ name: 'tpdbApiKey', value: '' });
+  };
+
   onSavePress = () => {
     this.props.dispatchSaveMetadataSourceSettings();
   };
@@ -62,6 +67,7 @@ class MetadataSourceSettingsConnector extends Component {
     return (
       <MetadataSourceSettings
         onInputChange={this.onInputChange}
+        onClearTpdbApiKeyPress={this.onClearTpdbApiKeyPress}
         onSavePress={this.onSavePress}
         {...this.props}
       />

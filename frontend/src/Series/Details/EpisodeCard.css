@@ -50,9 +50,18 @@
 }
 
 .title {
-  @add-mixin truncate;
+  overflow-wrap: break-word;
+  word-break: break-word;
 
   font-size: $defaultFontSize;
+}
+
+.titleLink {
+  display: block;
+  max-width: none;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
 }
 
 .meta {

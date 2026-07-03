@@ -14,6 +14,7 @@ interface CssExports {
   'runtime': string;
   'statusOverlay': string;
   'title': string;
+  'titleLink': string;
 }
 export const cssExports: CssExports;
 export default cssExports;

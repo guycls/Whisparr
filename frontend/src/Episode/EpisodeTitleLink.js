@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Link from 'Components/Link/Link';
@@ -33,6 +34,7 @@ class EpisodeTitleLink extends Component {
 
   render() {
     const {
+      className,
       episodeTitle,
       ...otherProps
     } = this.props;
@@ -40,7 +42,7 @@ class EpisodeTitleLink extends Component {
     return (
       <div>
         <Link
-          className={styles.link}
+          className={classNames(styles.link, className)}
           title={episodeTitle}
           onPress={this.onLinkPress}
         >
@@ -59,6 +61,7 @@ class EpisodeTitleLink extends Component {
 }
 
 EpisodeTitleLink.propTypes = {
+  className: PropTypes.string,
   episodeTitle: PropTypes.string.isRequired
 };
 

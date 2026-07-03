@@ -92,5 +92,6 @@ namespace NzbDrone.Core.Configuration
         string ApplicationUrl { get; }
 
         string TpdbApiKey { get; set; }
+        bool TpdbRefetchThumbnails { get; set; }
     }
 }

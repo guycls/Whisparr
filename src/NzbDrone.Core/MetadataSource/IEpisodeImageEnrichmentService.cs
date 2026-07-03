@@ -5,6 +5,6 @@ namespace NzbDrone.Core.MetadataSource
 {
     public interface IEpisodeImageEnrichmentService
     {
-        void Enrich(IEnumerable<Episode> episodes);
+        void Enrich(IEnumerable<Episode> episodes, IEnumerable<Episode> existingEpisodes = null);
     }
 }

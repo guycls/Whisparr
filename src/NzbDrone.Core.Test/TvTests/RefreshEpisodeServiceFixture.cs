@@ -6,6 +6,8 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Configuration;
+using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource.SkyHook;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
@@ -60,6 +62,10 @@ namespace NzbDrone.Core.Test.TvTests
 
             Mocker.GetMock<IEpisodeService>().Setup(c => c.DeleteMany(It.IsAny<List<Episode>>()))
                 .Callback<List<Episode>>(e => _deletedEpisodes = e);
+
+            Mocker.GetMock<IConfigService>()
+                .SetupGet(c => c.TpdbRefetchThumbnails)
+                .Returns(false);
         }
 
         [Test]
@@ -281,6 +287,29 @@ namespace NzbDrone.Core.Test.TvTests
             Subject.RefreshEpisodeInfo(series, episodes);
 
             _insertedEpisodes.Should().OnlyContain(e => e.AirDateUtc.Value.ToString("s") == episodes.First().AirDateUtc.Value.ToString("s"));
+        }
+
+        [Test]
+        public void should_preserve_existing_screenshot_when_refetch_disabled()
+        {
+            var existingEpisodes = GetEpisodes().Take(1).ToList();
+            existingEpisodes[0].Images = new List<MediaCover.MediaCover>
+            {
+                new MediaCover.MediaCover(MediaCoverTypes.Screenshot, "https://example.com/existing.jpg")
+            };
+
+            var remoteEpisodes = GetEpisodes().Take(1).ToList();
+            remoteEpisodes[0].Images = new List<MediaCover.MediaCover>();
+
+            Mocker.GetMock<IEpisodeService>().Setup(c => c.GetEpisodeBySeries(It.IsAny<int>()))
+                .Returns(existingEpisodes);
+
+            Subject.RefreshEpisodeInfo(GetSeries(), remoteEpisodes);
+
+            _updatedEpisodes.Should().ContainSingle();
+            _updatedEpisodes[0].Images.Should().ContainSingle(i =>
+                i.CoverType == MediaCoverTypes.Screenshot &&
+                i.RemoteUrl == "https://example.com/existing.jpg");
         }
     }
 }

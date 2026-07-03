@@ -17,12 +17,21 @@ namespace Whisparr.Api.V3.Config
         [RestPutById]
         public override ActionResult<MetadataSourceConfigResource> SaveConfig([FromBody] MetadataSourceConfigResource resource)
         {
-            if (resource.TpdbApiKey.IsNotNullOrWhiteSpace())
+            if (resource.ClearTpdbApiKey)
+            {
+                _configService.TpdbApiKey = string.Empty;
+            }
+            else if (resource.TpdbApiKey.IsNotNullOrWhiteSpace())
             {
                 _configService.TpdbApiKey = resource.TpdbApiKey;
             }
 
-            return Accepted(resource.Id);
+            _configService.TpdbRefetchThumbnails = resource.TpdbRefetchThumbnails;
+
+            var saved = ToResource(_configService);
+            saved.Id = resource.Id;
+
+            return Accepted(saved);
         }
 
         protected override MetadataSourceConfigResource ToResource(IConfigService model)

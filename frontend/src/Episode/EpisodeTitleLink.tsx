@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React, { useCallback, useState } from 'react';
 import Link from 'Components/Link/Link';
 import EpisodeDetailsModal from 'Episode/EpisodeDetailsModal';
@@ -6,6 +7,7 @@ import FinaleType from './FinaleType';
 import styles from './EpisodeTitleLink.css';
 
 interface EpisodeTitleLinkProps {
+  className?: string;
   episodeId: number;
   seriesId: number;
   episodeEntity: EpisodeEntities;
@@ -18,6 +20,7 @@ interface EpisodeTitleLinkProps {
 
 function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
   const {
+    className,
     episodeTitle,
     finaleType,
     onModalOpen,
@@ -39,7 +42,7 @@ function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
 
   return (
     <div className={styles.container}>
-      <Link className={styles.link} onPress={handleLinkPress}>
+      <Link className={classNames(styles.link, className)} onPress={handleLinkPress}>
         {episodeTitle}
       </Link>
 

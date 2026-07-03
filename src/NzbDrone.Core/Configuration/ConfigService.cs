@@ -383,6 +383,12 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("TpdbApiKey", value); }
         }
 
+        public bool TpdbRefetchThumbnails
+        {
+            get { return GetValueBoolean("TpdbRefetchThumbnails", false); }
+            set { SetValue("TpdbRefetchThumbnails", value); }
+        }
+
         private string GetValue(string key)
         {
             return GetValue(key, string.Empty);

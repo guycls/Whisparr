@@ -8,6 +8,8 @@ namespace Whisparr.Api.V3.Config
     {
         public string TpdbApiKey { get; set; }
         public bool HasTpdbApiKey { get; set; }
+        public bool TpdbRefetchThumbnails { get; set; }
+        public bool ClearTpdbApiKey { get; set; }
     }
 
     public static class MetadataSourceConfigResourceMapper
@@ -19,7 +21,8 @@ namespace Whisparr.Api.V3.Config
             return new MetadataSourceConfigResource
             {
                 TpdbApiKey = string.Empty,
-                HasTpdbApiKey = hasKey
+                HasTpdbApiKey = hasKey,
+                TpdbRefetchThumbnails = model.TpdbRefetchThumbnails
             };
         }
     }
