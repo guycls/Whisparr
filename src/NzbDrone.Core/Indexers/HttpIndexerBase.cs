@@ -30,6 +30,8 @@ namespace NzbDrone.Core.Indexers
 
         public virtual int PageSize => 0;
         public virtual TimeSpan RateLimit => TimeSpan.FromSeconds(2);
+        protected virtual int Max429Retries => 3;
+        protected virtual TimeSpan Default429RetryAfter => TimeSpan.FromSeconds(60);
 
         public abstract IIndexerRequestGenerator GetRequestGenerator();
         public abstract IParseIndexerResponse GetParser();
@@ -306,9 +308,32 @@ namespace NzbDrone.Core.Indexers
 
             request.HttpRequest.RateLimitKey = Definition.Id.ToString();
 
-            var response = await _httpClient.ExecuteAsync(request.HttpRequest);
+            for (var attempt = 0; attempt <= Max429Retries; attempt++)
+            {
+                try
+                {
+                    var response = await _httpClient.ExecuteAsync(request.HttpRequest);
+                    return new IndexerResponse(request, response);
+                }
+                catch (TooManyRequestsException ex)
+                {
+                    if (attempt >= Max429Retries)
+                    {
+                        throw;
+                    }
 
-            return new IndexerResponse(request, response);
+                    var retryAfter = ex.RetryAfter != TimeSpan.Zero ? ex.RetryAfter : Default429RetryAfter;
+                    _logger.Warn("API Request Limit reached for {0}. Waiting {1} before retry {2}/{3}", this, retryAfter, attempt + 1, Max429Retries);
+                    await WaitFor429RetryAsync(retryAfter);
+                }
+            }
+
+            throw new InvalidOperationException("Unreachable");
+        }
+
+        protected virtual Task WaitFor429RetryAsync(TimeSpan retryAfter)
+        {
+            return Task.Delay(retryAfter);
         }
 
         protected override async Task Test(List<ValidationFailure> failures)

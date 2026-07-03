@@ -168,7 +168,9 @@ namespace NzbDrone.Core.Messaging.Commands
                                               if (startedCommands.Any(x => x.Body.RequiresDiskAccess))
                                               {
                                                   return c.Status == CommandStatus.Queued &&
-                                                         !c.Body.RequiresDiskAccess;
+                                                         !c.Body.RequiresDiskAccess &&
+                                                         (c.Body.AllowConcurrentInstances ||
+                                                          !startedCommands.Any(s => s.Name == c.Name));
                                               }
 
                                               // If an executing command is long running then skip any exclusive commands until
@@ -179,10 +181,14 @@ namespace NzbDrone.Core.Messaging.Commands
                                               if (startedCommands.Any(x => x.Body.IsLongRunning))
                                               {
                                                   return c.Status == CommandStatus.Queued &&
-                                                         !c.Body.IsExclusive;
+                                                         !c.Body.IsExclusive &&
+                                                         (c.Body.AllowConcurrentInstances ||
+                                                          !startedCommands.Any(s => s.Name == c.Name));
                                               }
 
-                                              return c.Status == CommandStatus.Queued;
+                                              return c.Status == CommandStatus.Queued &&
+                                                     (c.Body.AllowConcurrentInstances ||
+                                                      !startedCommands.Any(s => s.Name == c.Name));
                                           })
                                           .OrderByDescending(c => c.Priority)
                                           .ThenBy(c => c.QueuedAt)
