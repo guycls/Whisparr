@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Localization;
 using NzbDrone.Core.ThingiProvider.Events;
@@ -14,16 +15,23 @@ namespace NzbDrone.Core.HealthCheck.Checks
     {
         private readonly IIndexerFactory _providerFactory;
         private readonly IIndexerStatusService _providerStatusService;
+        private readonly IConfigService _configService;
 
-        public IndexerLongTermStatusCheck(IIndexerFactory providerFactory, IIndexerStatusService providerStatusService, ILocalizationService localizationService)
+        public IndexerLongTermStatusCheck(IIndexerFactory providerFactory, IIndexerStatusService providerStatusService, IConfigService configService, ILocalizationService localizationService)
             : base(localizationService)
         {
             _providerFactory = providerFactory;
             _providerStatusService = providerStatusService;
+            _configService = configService;
         }
 
         public override HealthCheck Check()
         {
+            if (_configService.DisableIndexerBlocking)
+            {
+                return new HealthCheck(GetType());
+            }
+
             var enabledProviders = _providerFactory.GetAvailableProviders();
             var backOffProviders = enabledProviders.Join(_providerStatusService.GetBlockedProviders(),
                     i => i.Definition.Id,

@@ -79,6 +79,18 @@ function IndexerOptions(props) {
               />
             </FormGroup>
 
+            <FormGroup>
+              <FormLabel>{translate('DisableIndexerBlocking')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="disableIndexerBlocking"
+                helpText={translate('DisableIndexerBlockingHelpText')}
+                onChange={onInputChange}
+                {...settings.disableIndexerBlocking}
+              />
+            </FormGroup>
+
             <FormGroup
               advancedSettings={advancedSettings}
               isAdvanced={true}

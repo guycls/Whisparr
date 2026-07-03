@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Moq;
 using NUnit.Framework;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.HealthCheck.Checks;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Localization;
@@ -29,6 +30,10 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             Mocker.GetMock<ILocalizationService>()
                   .Setup(s => s.GetLocalizedString(It.IsAny<string>()))
                   .Returns("Some Warning Message");
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(v => v.DisableIndexerBlocking)
+                  .Returns(false);
         }
 
         private Mock<IIndexer> GivenIndexer(int id, double backoffHours, double failureHours)
@@ -85,6 +90,18 @@ namespace NzbDrone.Core.Test.HealthCheck.Checks
             GivenIndexer(3, 0.0, 0.0);
 
             Subject.Check().ShouldBeWarning();
+        }
+
+        [Test]
+        public void should_return_ok_when_disable_indexer_blocking_is_true()
+        {
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(v => v.DisableIndexerBlocking)
+                  .Returns(true);
+
+            GivenIndexer(1, 2.0, 4.0);
+
+            Subject.Check().ShouldBeOk();
         }
     }
 }

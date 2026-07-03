@@ -123,6 +123,12 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("MinimumAge", value); }
         }
 
+        public bool DisableIndexerBlocking
+        {
+            get { return GetValueBoolean("DisableIndexerBlocking", false); }
+            set { SetValue("DisableIndexerBlocking", value); }
+        }
+
         public ProperDownloadTypes DownloadPropersAndRepacks
         {
             get { return GetValueEnum("DownloadPropersAndRepacks", ProperDownloadTypes.PreferAndUpgrade); }

@@ -365,6 +365,8 @@
   "Details": "Details",
   "Disabled": "Disabled",
   "DisabledForLocalAddresses": "Disabled for Local Addresses",
+  "DisableIndexerBlocking": "Disable Indexer Blocking",
+  "DisableIndexerBlockingHelpText": "When enabled, indexers will continue to be queried and releases grabbed even after failures. Failure state is still tracked and will take effect again if this is turned off.",
   "Discord": "Discord",
   "DiskSpace": "Disk Space",
   "DoNotBlocklist": "Do not Blocklist",

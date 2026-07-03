@@ -4,6 +4,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Test.Framework;
 
@@ -21,6 +22,10 @@ namespace NzbDrone.Core.Test.IndexerTests
             Mocker.GetMock<IRuntimeInfo>()
                 .SetupGet(v => v.StartTime)
                 .Returns(_epoch - TimeSpan.FromHours(1));
+
+            Mocker.GetMock<IConfigService>()
+                .SetupGet(v => v.DisableIndexerBlocking)
+                .Returns(false);
         }
 
         private void WithStatus(IndexerStatus status)
@@ -78,6 +83,50 @@ namespace NzbDrone.Core.Test.IndexerTests
                 .Verify(v => v.FindByProviderId(1), Times.Never);
 
             VerifyNoUpdate();
+        }
+
+        [Test]
+        public void should_return_blocked_providers_when_disable_indexer_blocking_is_false()
+        {
+            WithStatus(new IndexerStatus
+            {
+                ProviderId = 1,
+                EscalationLevel = 2,
+                DisabledTill = _epoch.AddHours(1)
+            });
+
+            Subject.GetBlockedProviders().Should().HaveCount(1);
+        }
+
+        [Test]
+        public void should_return_no_blocked_providers_when_disable_indexer_blocking_is_true()
+        {
+            Mocker.GetMock<IConfigService>()
+                .SetupGet(v => v.DisableIndexerBlocking)
+                .Returns(true);
+
+            WithStatus(new IndexerStatus
+            {
+                ProviderId = 1,
+                EscalationLevel = 2,
+                DisabledTill = _epoch.AddHours(1)
+            });
+
+            Subject.GetBlockedProviders().Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_still_record_failure_when_disable_indexer_blocking_is_true()
+        {
+            Mocker.GetMock<IConfigService>()
+                .SetupGet(v => v.DisableIndexerBlocking)
+                .Returns(true);
+
+            WithStatus(new IndexerStatus { ProviderId = 1, EscalationLevel = 0 });
+
+            Subject.RecordFailure(1);
+
+            VerifyUpdate();
         }
     }
 }

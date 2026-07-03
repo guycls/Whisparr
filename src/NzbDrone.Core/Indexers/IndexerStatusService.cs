@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using NLog;
 using NzbDrone.Common.EnvironmentInfo;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.ThingiProvider.Status;
@@ -15,9 +17,22 @@ namespace NzbDrone.Core.Indexers
 
     public class IndexerStatusService : ProviderStatusServiceBase<IIndexer, IndexerStatus>, IIndexerStatusService
     {
-        public IndexerStatusService(IIndexerStatusRepository providerStatusRepository, IEventAggregator eventAggregator, IRuntimeInfo runtimeInfo, Logger logger)
+        private readonly IConfigService _configService;
+
+        public IndexerStatusService(IIndexerStatusRepository providerStatusRepository, IEventAggregator eventAggregator, IRuntimeInfo runtimeInfo, IConfigService configService, Logger logger)
             : base(providerStatusRepository, eventAggregator, runtimeInfo, logger)
         {
+            _configService = configService;
+        }
+
+        public override List<IndexerStatus> GetBlockedProviders()
+        {
+            if (_configService.DisableIndexerBlocking)
+            {
+                return new List<IndexerStatus>();
+            }
+
+            return base.GetBlockedProviders();
         }
 
         public ReleaseInfo GetLastRssSyncReleaseInfo(int indexerId)
