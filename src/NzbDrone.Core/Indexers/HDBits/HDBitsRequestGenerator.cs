@@ -46,8 +46,6 @@ namespace NzbDrone.Core.Indexers.HDBits
         {
             var pageableRequests = new IndexerPageableRequestChain();
 
-            var releaseDate = searchCriteria.ReleaseDate?.ToString("yy.MM.dd") ?? string.Empty;
-
             var queryBase = new TorrentQuery();
             if (TryAddSearchParameters(queryBase, searchCriteria))
             {
@@ -55,7 +53,18 @@ namespace NzbDrone.Core.Indexers.HDBits
                 {
                     var query = queryBase.Clone();
 
-                    query.Search = $"{query.Search} {releaseDate}";
+                    if (searchCriteria.IgnoreSceneDate)
+                    {
+                        if (searchCriteria.EpisodeTitle.IsNotNullOrWhiteSpace())
+                        {
+                            query.Search = $"{query.Search} {searchCriteria.EpisodeTitle}";
+                        }
+                    }
+                    else
+                    {
+                        var releaseDate = searchCriteria.ReleaseDate?.ToString("yy.MM.dd") ?? string.Empty;
+                        query.Search = $"{query.Search} {releaseDate}";
+                    }
 
                     pageableRequests.Add(GetRequest(query));
                 }

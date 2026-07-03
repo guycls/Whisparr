@@ -8,6 +8,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.DecisionEngine;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.IndexerSearch;
 using NzbDrone.Core.IndexerSearch.Definitions;
@@ -51,6 +52,10 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             Mocker.GetMock<IEpisodeService>()
                 .Setup(v => v.GetEpisodesBySeason(_xemSeries.Id, It.IsAny<int>()))
                 .Returns<int, int>((i, j) => _xemEpisodes.Where(d => d.SeasonNumber == j).ToList());
+
+            Mocker.GetMock<IConfigService>()
+                .Setup(v => v.IgnoreSceneDate)
+                .Returns(false);
         }
 
         private void WithEpisode(int seasonNumber, int episodeNumber, int? sceneSeasonNumber, int? sceneEpisodeNumber, string airDate = null)
@@ -274,6 +279,25 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
 
             criteria.Count.Should().Be(1);
             criteria[0].Year.Should().Be(7);
+        }
+
+        [Test]
+        public async Task should_propagate_ignore_scene_date_from_config()
+        {
+            Mocker.GetMock<IConfigService>()
+                .Setup(v => v.IgnoreSceneDate)
+                .Returns(true);
+
+            WithEpisodes();
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.EpisodeSearch(_xemEpisodes.First(), true, false);
+
+            var criteria = allCriteria.OfType<SingleEpisodeSearchCriteria>().ToList();
+
+            criteria.Count.Should().Be(1);
+            criteria[0].IgnoreSceneDate.Should().BeTrue();
         }
     }
 }

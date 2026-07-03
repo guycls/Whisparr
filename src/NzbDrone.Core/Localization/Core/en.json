@@ -367,6 +367,8 @@
   "DisabledForLocalAddresses": "Disabled for Local Addresses",
   "DisableIndexerBlocking": "Disable Indexer Blocking",
   "DisableIndexerBlockingHelpText": "When enabled, indexers will continue to be queried and releases grabbed even after failures. Failure state is still tracked and will take effect again if this is turned off.",
+  "IgnoreSceneDate": "Ignore Scene Date",
+  "IgnoreSceneDateHelpText": "Do not use scene release date from metadata when searching or matching results. Use scene title or external ID instead when metadata dates are incorrect.",
   "Discord": "Discord",
   "DiskSpace": "Disk Space",
   "DoNotBlocklist": "Do not Blocklist",

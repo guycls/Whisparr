@@ -95,6 +95,21 @@ function IndexerOptions(props) {
               advancedSettings={advancedSettings}
               isAdvanced={true}
             >
+              <FormLabel>{translate('IgnoreSceneDate')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="ignoreSceneDate"
+                helpText={translate('IgnoreSceneDateHelpText')}
+                onChange={onInputChange}
+                {...settings.ignoreSceneDate}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={advancedSettings}
+              isAdvanced={true}
+            >
               <FormLabel>{translate('RssSyncInterval')}</FormLabel>
 
               <FormInputGroup

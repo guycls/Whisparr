@@ -255,6 +255,20 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
         }
 
         [Test]
+        public void should_search_site_and_title_when_ignore_scene_date_enabled()
+        {
+            _capabilities.SupportedSearchParameters = new[] { "q" };
+            _singleEpisodeSearchCriteria.IgnoreSceneDate = true;
+
+            var results = Subject.GetSearchRequests(_singleEpisodeSearchCriteria);
+            var requests = results.GetAllTiers().SelectMany(x => x).ToList();
+
+            requests.Should().HaveCountGreaterThan(0);
+            requests.Should().Contain(x => x.Url.Query.Contains("Monkey") && x.Url.Query.Contains("Pilot"));
+            requests.Should().NotContain(x => x.Url.Query.Contains("21.03.15") || x.Url.Query.Contains("15.03.21"));
+        }
+
+        [Test]
         public void should_search_season_with_title_only_when_enabled()
         {
             _capabilities.SupportedSearchParameters = new[] { "q" };

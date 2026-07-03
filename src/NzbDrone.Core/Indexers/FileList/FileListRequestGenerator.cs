@@ -23,11 +23,20 @@ namespace NzbDrone.Core.Indexers.FileList
         {
             var pageableRequests = new IndexerPageableRequestChain();
 
-            var releaseDate = searchCriteria.ReleaseDate?.ToString("yy.MM.dd") ?? string.Empty;
-
             foreach (var sceneTitle in searchCriteria.SceneTitles)
             {
-                pageableRequests.Add(GetRequest("search-torrents", Settings.Categories, string.Format("&type=name&query={0}{1}", Uri.EscapeDataString($"{sceneTitle.Trim()} {releaseDate}"))));
+                string query;
+                if (searchCriteria.IgnoreSceneDate)
+                {
+                    query = $"{sceneTitle.Trim()} {searchCriteria.EpisodeTitle}".Trim();
+                }
+                else
+                {
+                    var releaseDate = searchCriteria.ReleaseDate?.ToString("yy.MM.dd") ?? string.Empty;
+                    query = $"{sceneTitle.Trim()} {releaseDate}";
+                }
+
+                pageableRequests.Add(GetRequest("search-torrents", Settings.Categories, string.Format("&type=name&query={0}", Uri.EscapeDataString(query))));
             }
 
             return pageableRequests;

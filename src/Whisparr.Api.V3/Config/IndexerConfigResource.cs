@@ -10,6 +10,7 @@ namespace Whisparr.Api.V3.Config
         public int MaximumSize { get; set; }
         public int RssSyncInterval { get; set; }
         public bool DisableIndexerBlocking { get; set; }
+        public bool IgnoreSceneDate { get; set; }
     }
 
     public static class IndexerConfigResourceMapper
@@ -22,7 +23,8 @@ namespace Whisparr.Api.V3.Config
                 Retention = model.Retention,
                 MaximumSize = model.MaximumSize,
                 RssSyncInterval = model.RssSyncInterval,
-                DisableIndexerBlocking = model.DisableIndexerBlocking
+                DisableIndexerBlocking = model.DisableIndexerBlocking,
+                IgnoreSceneDate = model.IgnoreSceneDate
             };
         }
     }

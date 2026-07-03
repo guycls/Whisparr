@@ -175,6 +175,36 @@ namespace NzbDrone.Core.Parser
 
         private List<Episode> GetEpisodes(ParsedEpisodeInfo parsedEpisodeInfo, Series series, SearchCriteriaBase searchCriteria)
         {
+            if (searchCriteria?.IgnoreSceneDate == true)
+            {
+                if (!parsedEpisodeInfo.ExternalId.IsNullOrWhiteSpace())
+                {
+                    var episode = _episodeService.FindByExternalId(parsedEpisodeInfo.ExternalId);
+
+                    if (episode != null && episode.SeriesId == series.Id)
+                    {
+                        _logger.Debug("Found episode by external ID {0}", parsedEpisodeInfo.ExternalId);
+                        return new List<Episode> { episode };
+                    }
+                }
+
+                var releaseTokens = parsedEpisodeInfo.ReleaseTokens;
+                if (releaseTokens.IsNullOrWhiteSpace())
+                {
+                    releaseTokens = parsedEpisodeInfo.ReleaseTitle;
+                }
+
+                var matchedEpisode = _episodeService.MatchEpisodeByReleaseTokens(searchCriteria.Episodes, releaseTokens);
+
+                if (matchedEpisode != null && matchedEpisode.SeriesId == series.Id)
+                {
+                    _logger.Debug("Found episode by scene title matching: {0}", matchedEpisode);
+                    return new List<Episode> { matchedEpisode };
+                }
+
+                return new List<Episode>();
+            }
+
             var episodeInfo = GetDailyEpisode(series, parsedEpisodeInfo.AirDate, parsedEpisodeInfo.ReleaseTokens, searchCriteria);
 
             if (episodeInfo != null)

@@ -18,6 +18,7 @@ namespace NzbDrone.Core.Tv
         List<Episode> GetEpisodes(IEnumerable<int> ids);
         Episode FindEpisode(int seriesId, int absoluteEpisodeNumber);
         Episode FindEpisodeByTitle(int seriesId, int seasonNumber, string releaseTitle);
+        Episode MatchEpisodeByReleaseTokens(IEnumerable<Episode> candidates, string releaseTokens);
         Episode FindEpisode(int seriesId, string date, string part);
         Episode FindByExternalId(string externalId);
         List<Episode> GetEpisodeBySeries(int seriesId);
@@ -121,6 +122,33 @@ namespace NzbDrone.Core.Tv
             if (matches.Any())
             {
                 return matches.First().Episode;
+            }
+
+            return null;
+        }
+
+        public Episode MatchEpisodeByReleaseTokens(IEnumerable<Episode> candidates, string releaseTokens)
+        {
+            var candidateList = candidates?.ToList() ?? new List<Episode>();
+
+            if (candidateList.Empty() || releaseTokens.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            var parsedEpisodeTitle = Parser.Parser.NormalizeEpisodeTitle(releaseTokens);
+            var matches = MatchEpisodes(parsedEpisodeTitle, candidateList);
+
+            if (matches.Count == 1)
+            {
+                return matches.First();
+            }
+
+            if (matches.Count > 1)
+            {
+                _logger.Debug("Scene title matching returned multiple episodes. Release: {0}. Matches: {1}. Rejecting to prevent incorrect download.",
+                    releaseTokens,
+                    matches.Count);
             }
 
             return null;

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.IndexerSearch.Definitions;
@@ -44,6 +45,19 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.Search
             {
                 _logger.Debug("Release matched by external ID: {0}", singleEpisodeSpec.ExternalId);
                 return Decision.Accept();
+            }
+
+            if (singleEpisodeSpec.IgnoreSceneDate)
+            {
+                var criteriaEpisodeIds = singleEpisodeSpec.Episodes.Select(e => e.Id).ToHashSet();
+                if (remoteEpisode.Episodes.Any(e => criteriaEpisodeIds.Contains(e.Id)))
+                {
+                    _logger.Debug("Release matched by scene title with ignore scene date enabled");
+                    return Decision.Accept();
+                }
+
+                _logger.Debug("Release did not match any searched episode when ignore scene date is enabled");
+                return Decision.Reject("Wrong Episode");
             }
 
             if (!singleEpisodeSpec.ReleaseDate.HasValue)

@@ -129,6 +129,12 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("DisableIndexerBlocking", value); }
         }
 
+        public bool IgnoreSceneDate
+        {
+            get { return GetValueBoolean("IgnoreSceneDate", false); }
+            set { SetValue("IgnoreSceneDate", value); }
+        }
+
         public ProperDownloadTypes DownloadPropersAndRepacks
         {
             get { return GetValueEnum("DownloadPropersAndRepacks", ProperDownloadTypes.PreferAndUpgrade); }

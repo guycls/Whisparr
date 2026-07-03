@@ -91,14 +91,33 @@ namespace NzbDrone.Core.Indexers.Newznab
                 {
                     var normalizedQueryTitle = NewsnabifyTitle(queryTitle);
 
-                    // ALWAYS do default search with site + date
-                    foreach (var dateFormat in dateFormats)
+                    if (searchCriteria.IgnoreSceneDate)
                     {
-                        var searchQuery = $"&q={normalizedQueryTitle}+{dateFormat}";
-                        pageableRequests.Add(GetPagedRequests(MaxPages,
-                            Settings.Categories,
-                            "search",
-                            searchQuery));
+                        var siteTitle = NewsnabifyTitle(searchCriteria.Series.Title);
+                        var episodeTitleQuery = NewsnabifyTitle(searchCriteria.EpisodeTitle);
+                        var sitePlusTitleQuery = $"&q={siteTitle}+{episodeTitleQuery}";
+                        pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", sitePlusTitleQuery));
+
+                        AddNetworkSearchIfNeeded(pageableRequests, searchCriteria.Series, episodeTitleQuery, "Episode");
+
+                        if (!string.IsNullOrWhiteSpace(searchCriteria.ExternalId))
+                        {
+                            var externalId = NewsnabifyTitle(searchCriteria.ExternalId);
+                            var externalIdQuery = $"&q={externalId}";
+                            pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", externalIdQuery));
+                        }
+                    }
+                    else
+                    {
+                        // ALWAYS do default search with site + date
+                        foreach (var dateFormat in dateFormats)
+                        {
+                            var searchQuery = $"&q={normalizedQueryTitle}+{dateFormat}";
+                            pageableRequests.Add(GetPagedRequests(MaxPages,
+                                Settings.Categories,
+                                "search",
+                                searchQuery));
+                        }
                     }
 
                     // Add Site + Title search if selected
