@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image } from 'Series/Series';
 import styles from './EpisodeScreenshot.css';
 
@@ -29,41 +29,41 @@ interface EpisodeScreenshotProps {
 function EpisodeScreenshot(props: EpisodeScreenshotProps) {
   const { className, images, blur = false } = props;
 
-  const [url, setUrl] = useState<string | null>(null);
+  const screenshot = useMemo(() => findScreenshot(images), [images]);
+  const remoteUrl = screenshot?.remoteUrl;
+  const proxyUrl = screenshot?.url;
+  const preferredUrl = remoteUrl || proxyUrl || null;
+
+  const [useProxy, setUseProxy] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    setUrl(getEpisodeScreenshotUrl(images));
+    setUseProxy(false);
     setHasError(false);
-  }, [images]);
+  }, [preferredUrl]);
+
+  const url = useProxy && proxyUrl ? proxyUrl : preferredUrl;
 
   const handleError = useCallback(() => {
-    const screenshot = findScreenshot(images);
-
-    if (screenshot?.remoteUrl && screenshot?.url && url === screenshot.remoteUrl) {
-      setUrl(screenshot.url);
+    if (remoteUrl && proxyUrl && !useProxy && url === remoteUrl) {
+      setUseProxy(true);
       return;
     }
 
     setHasError(true);
-  }, [images, url]);
+  }, [remoteUrl, proxyUrl, useProxy, url]);
 
-  if (hasError || !url) {
-    return (
-      <img
-        className={classNames(className, styles.placeholder)}
-        src={placeholder}
-        alt=""
-      />
-    );
-  }
+  const showPlaceholder = hasError || !url;
 
   return (
     <img
-      className={classNames(className, blur && styles.blur)}
-      src={url}
+      className={classNames(
+        className,
+        showPlaceholder && styles.placeholder,
+        blur && !showPlaceholder && styles.blur
+      )}
+      src={showPlaceholder ? placeholder : url}
       alt=""
-      loading="lazy"
       referrerPolicy="no-referrer"
       onError={handleError}
     />
