@@ -116,6 +116,8 @@ interface InteractiveSearchRowProps {
   };
   onGrabPress(...args: unknown[]): void;
   onForceDownloadPress?(...args: unknown[]): void;
+  stackedTitleLayout?: boolean;
+  stackedColumnCount?: number;
 }
 
 function InteractiveSearchRow(props: InteractiveSearchRowProps) {
@@ -159,6 +161,8 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     searchPayload,
     onGrabPress,
     onForceDownloadPress,
+    stackedTitleLayout = false,
+    stackedColumnCount = 0,
   } = props;
 
   const [isConfirmGrabModalOpen, setIsConfirmGrabModalOpen] = useState(false);
@@ -249,8 +253,30 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     languages,
   ]);
 
-  return (
-    <TableRow>
+  const titleContent = (
+    <div
+      className={
+        stackedTitleLayout ? styles.stackedTitleContent : styles.titleContent
+      }
+    >
+      <Link to={infoUrl}>{title}</Link>
+      <ReleaseSceneIndicator
+        className={styles.sceneMapping}
+        seasonNumber={mappedSeasonNumber}
+        episodeNumbers={mappedEpisodeNumbers}
+        absoluteEpisodeNumbers={mappedAbsoluteEpisodeNumbers}
+        sceneSeasonNumber={seasonNumber}
+        sceneEpisodeNumbers={episodeNumbers}
+        sceneAbsoluteEpisodeNumbers={absoluteEpisodeNumbers}
+        sceneMapping={sceneMapping}
+        episodeRequested={episodeRequested}
+        isDaily={isDaily}
+      />
+    </div>
+  );
+
+  const leadingCells = (
+    <>
       <TableRowCell className={styles.protocol}>
         <ProtocolLabel protocol={protocol} />
       </TableRowCell>
@@ -263,25 +289,11 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
       >
         {formatAge(age, ageHours, ageMinutes)}
       </TableRowCell>
+    </>
+  );
 
-      <TableRowCell>
-        <div className={styles.titleContent}>
-          <Link to={infoUrl}>{title}</Link>
-          <ReleaseSceneIndicator
-            className={styles.sceneMapping}
-            seasonNumber={mappedSeasonNumber}
-            episodeNumbers={mappedEpisodeNumbers}
-            absoluteEpisodeNumbers={mappedAbsoluteEpisodeNumbers}
-            sceneSeasonNumber={seasonNumber}
-            sceneEpisodeNumbers={episodeNumbers}
-            sceneAbsoluteEpisodeNumbers={absoluteEpisodeNumbers}
-            sceneMapping={sceneMapping}
-            episodeRequested={episodeRequested}
-            isDaily={isDaily}
-          />
-        </div>
-      </TableRowCell>
-
+  const trailingCells = (
+    <>
       <TableRowCell className={styles.indexer}>{indexer}</TableRowCell>
 
       <TableRowCell className={styles.size}>{formatBytes(size)}</TableRowCell>
@@ -390,7 +402,11 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
           </div>
         </Link>
       </TableRowCell>
+    </>
+  );
 
+  const modals = (
+    <>
       <ConfirmModal
         isOpen={isConfirmGrabModalOpen}
         kind={kinds.WARNING}
@@ -416,7 +432,43 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         grabError={grabError}
         onModalClose={onOverrideModalClose}
       />
-    </TableRow>
+    </>
+  );
+
+  if (stackedTitleLayout) {
+    return (
+      <>
+        <TableRow className={styles.stackedTitleRow}>
+          <TableRowCell
+            colSpan={stackedColumnCount}
+            className={styles.stackedTitleCell}
+          >
+            {titleContent}
+          </TableRowCell>
+        </TableRow>
+
+        <TableRow className={styles.stackedDetailsRow}>
+          {leadingCells}
+          {trailingCells}
+        </TableRow>
+
+        {modals}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <TableRow>
+        {leadingCells}
+
+        <TableRowCell>{titleContent}</TableRowCell>
+
+        {trailingCells}
+      </TableRow>
+
+      {modals}
+    </>
   );
 }
 

@@ -45,6 +45,7 @@ namespace NzbDrone.Core.Download
             try
             {
                 var request = indexer?.GetDownloadRequest(url) ?? new HttpRequest(url);
+                request.AllowAutoRedirect = true;
                 request.RateLimitKey = remoteEpisode?.Release?.IndexerId.ToString();
 
                 var response = await RetryStrategy

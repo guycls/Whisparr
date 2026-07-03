@@ -89,7 +89,8 @@ class SeriesDetailsSeason extends Component {
   componentDidUpdate(prevProps) {
     const {
       seriesId,
-      items
+      items,
+      allItems
     } = this.props;
 
     if (prevProps.seriesId !== seriesId) {
@@ -98,8 +99,8 @@ class SeriesDetailsSeason extends Component {
     }
 
     if (
-      getSeasonStatistics(prevProps.items).episodeFileCount > 0 &&
-      getSeasonStatistics(items).episodeFileCount === 0
+      getSeasonStatistics(prevProps.allItems).episodeFileCount > 0 &&
+      getSeasonStatistics(allItems).episodeFileCount === 0
     ) {
       this.setState({
         isOrganizeModalOpen: false,
@@ -115,10 +116,10 @@ class SeriesDetailsSeason extends Component {
     const {
       seasonNumber,
       onExpandPress,
-      items
+      allItems
     } = this.props;
 
-    const expand = _.some(items, (item) => {
+    const expand = _.some(allItems, (item) => {
       return isAfter(item.releaseDate) ||
              isAfter(item.releaseDate, { days: -30 });
     });
@@ -254,6 +255,7 @@ class SeriesDetailsSeason extends Component {
       monitored,
       seasonNumber,
       items,
+      allItems,
       statistics,
       isSaving,
       isExpanded,
@@ -274,7 +276,7 @@ class SeriesDetailsSeason extends Component {
       totalEpisodeCount,
       monitoredEpisodeCount,
       hasMonitoredEpisodes
-    } = getSeasonStatistics(items);
+    } = getSeasonStatistics(allItems);
 
     const {
       isOrganizeModalOpen,
@@ -313,6 +315,7 @@ class SeriesDetailsSeason extends Component {
                   monitored={monitored}
                   episodeCount={episodeCount}
                   episodeFileCount={episodeFileCount}
+                  totalEpisodeCount={totalEpisodeCount}
                 />
               }
               title={translate('SeasonInformation')}
@@ -548,6 +551,7 @@ SeriesDetailsSeason.propTypes = {
   monitored: PropTypes.bool.isRequired,
   seasonNumber: PropTypes.number.isRequired,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
+  allItems: PropTypes.arrayOf(PropTypes.object).isRequired,
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   sortKey: PropTypes.string.isRequired,
   sortDirection: PropTypes.oneOf(sortDirections.all),

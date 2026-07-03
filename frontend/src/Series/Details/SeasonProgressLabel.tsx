@@ -33,6 +33,7 @@ interface SeasonProgressLabelProps {
   monitored: boolean;
   episodeCount: number;
   episodeFileCount: number;
+  totalEpisodeCount: number;
 }
 
 function SeasonProgressLabel({
@@ -41,6 +42,7 @@ function SeasonProgressLabel({
   monitored,
   episodeCount,
   episodeFileCount,
+  totalEpisodeCount,
 }: SeasonProgressLabelProps) {
   const queueDetails: SeriesQueueDetails = useSelector(
     createSeriesQueueItemsDetailsSelector(seriesId, seasonNumber)
@@ -48,8 +50,8 @@ function SeasonProgressLabel({
 
   const newDownloads = queueDetails.count - queueDetails.episodesWithFiles;
   const text = newDownloads
-    ? `${episodeFileCount} + ${newDownloads} / ${episodeCount}`
-    : `${episodeFileCount} / ${episodeCount}`;
+    ? `${episodeFileCount} + ${newDownloads} / ${episodeCount} / ${totalEpisodeCount}`
+    : `${episodeFileCount} / ${episodeCount} / ${totalEpisodeCount}`;
 
   return (
     <Label

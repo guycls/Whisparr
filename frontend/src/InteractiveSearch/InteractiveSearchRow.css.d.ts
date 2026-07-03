@@ -18,6 +18,10 @@ interface CssExports {
   'rejected': string;
   'sceneMapping': string;
   'size': string;
+  'stackedDetailsRow': string;
+  'stackedTitleCell': string;
+  'stackedTitleContent': string;
+  'stackedTitleRow': string;
   'titleContent': string;
 }
 export const cssExports: CssExports;

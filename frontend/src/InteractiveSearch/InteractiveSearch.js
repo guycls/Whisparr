@@ -116,6 +116,7 @@ function InteractiveSearch(props) {
     type,
     longDateFormat,
     timeFormat,
+    stackedTitleLayout = false,
     onSortPress,
     onFilterSelect,
     onGrabPress,
@@ -123,6 +124,11 @@ function InteractiveSearch(props) {
   } = props;
 
   const errorMessage = getErrorMessage(error);
+  const visibleColumns = columns.filter((column) => column.isVisible);
+  const tableColumns = stackedTitleLayout ?
+    visibleColumns.filter((column) => column.name !== 'title') :
+    visibleColumns;
+  const stackedColumnCount = tableColumns.length;
 
   return (
     <div>
@@ -176,7 +182,7 @@ function InteractiveSearch(props) {
       {
         isPopulated && !!items.length ?
           <Table
-            columns={columns}
+            columns={tableColumns}
             sortKey={sortKey}
             sortDirection={sortDirection}
             onSortPress={onSortPress}
@@ -191,6 +197,8 @@ function InteractiveSearch(props) {
                       searchPayload={searchPayload}
                       longDateFormat={longDateFormat}
                       timeFormat={timeFormat}
+                      stackedTitleLayout={stackedTitleLayout}
+                      stackedColumnCount={stackedColumnCount}
                       onGrabPress={onGrabPress}
                       onForceDownloadPress={onForceDownloadPress}
                     />
@@ -228,6 +236,7 @@ InteractiveSearch.propTypes = {
   type: PropTypes.string.isRequired,
   longDateFormat: PropTypes.string.isRequired,
   timeFormat: PropTypes.string.isRequired,
+  stackedTitleLayout: PropTypes.bool,
   onSortPress: PropTypes.func.isRequired,
   onFilterSelect: PropTypes.func.isRequired,
   onGrabPress: PropTypes.func.isRequired,

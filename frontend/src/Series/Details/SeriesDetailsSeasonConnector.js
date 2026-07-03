@@ -13,24 +13,43 @@ import createSeriesSelector from 'Store/Selectors/createSeriesSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
 import SeriesDetailsSeason from './SeriesDetailsSeason';
 
+function filterByMonitorStatus(episodes, monitorStatusFilter) {
+  if (monitorStatusFilter === 'monitored') {
+    return episodes.filter((e) => e.monitored);
+  }
+
+  if (monitorStatusFilter === 'unmonitored') {
+    return episodes.filter((e) => !e.monitored);
+  }
+
+  if (monitorStatusFilter === 'missing') {
+    return episodes.filter((e) => e.monitored && !e.hasFile);
+  }
+
+  return episodes;
+}
+
 function createMapStateToProps() {
   return createSelector(
     (state, { seasonNumber }) => seasonNumber,
+    (state, { monitorStatusFilter }) => monitorStatusFilter,
     createClientSideCollectionSelector('episodes'),
     createSeriesSelector(),
     createCommandsSelector(),
     createDimensionsSelector(),
-    (seasonNumber, episodes, series, commands, dimensions) => {
+    (seasonNumber, monitorStatusFilter, episodes, series, commands, dimensions) => {
       const isSearching = isCommandExecuting(findCommand(commands, {
         name: commandNames.SEASON_SEARCH,
         seriesId: series.id,
         seasonNumber
       }));
 
-      const episodesInSeason = episodes.items.filter((episode) => episode.seasonNumber === seasonNumber);
+      const allItems = episodes.items.filter((episode) => episode.seasonNumber === seasonNumber);
+      const items = filterByMonitorStatus(allItems, monitorStatusFilter);
 
       return {
-        items: episodesInSeason,
+        allItems,
+        items,
         columns: episodes.columns,
         sortKey: episodes.sortKey,
         sortDirection: episodes.sortDirection,
@@ -104,6 +123,15 @@ class SeriesDetailsSeasonConnector extends Component {
   // Render
 
   render() {
+    const {
+      monitorStatusFilter,
+      items
+    } = this.props;
+
+    if (monitorStatusFilter !== 'all' && !items.length) {
+      return null;
+    }
+
     return (
       <SeriesDetailsSeason
         {...this.props}
@@ -120,6 +148,7 @@ class SeriesDetailsSeasonConnector extends Component {
 SeriesDetailsSeasonConnector.propTypes = {
   seriesId: PropTypes.number.isRequired,
   seasonNumber: PropTypes.number.isRequired,
+  monitorStatusFilter: PropTypes.string.isRequired,
   toggleSeasonMonitored: PropTypes.func.isRequired,
   toggleEpisodesMonitored: PropTypes.func.isRequired,
   setEpisodesTableOption: PropTypes.func.isRequired,

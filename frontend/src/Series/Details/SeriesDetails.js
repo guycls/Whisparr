@@ -34,6 +34,7 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
+import SeriesDetailsStatusMenu from './Menus/SeriesDetailsStatusMenu';
 import SeriesDetailsViewMenu from './Menus/SeriesDetailsViewMenu';
 import SeriesAlternateTitles from './SeriesAlternateTitles';
 import SeriesDetailsLinks from './SeriesDetailsLinks';
@@ -207,7 +208,9 @@ class SeriesDetails extends Component {
       onSearchPress,
       safeForWorkMode,
       view,
-      onViewSelect
+      monitorStatusFilter,
+      onViewSelect,
+      onStatusSelect
     } = this.props;
 
     const {
@@ -322,6 +325,13 @@ class SeriesDetails extends Component {
           </PageToolbarSection>
 
           <PageToolbarSection alignContent={align.RIGHT}>
+            <SeriesDetailsStatusMenu
+              monitorStatusFilter={monitorStatusFilter}
+              onStatusSelect={onStatusSelect}
+            />
+
+            <PageToolbarSeparator />
+
             <SeriesDetailsViewMenu
               view={view}
               onViewSelect={onViewSelect}
@@ -672,6 +682,7 @@ class SeriesDetails extends Component {
                           key={season.seasonNumber}
                           seriesId={id}
                           view={view}
+                          monitorStatusFilter={monitorStatusFilter}
                           {...season}
                           isExpanded={expandedState[season.seasonNumber]}
                           onExpandPress={this.onExpandPress}
@@ -780,7 +791,9 @@ SeriesDetails.propTypes = {
   onRefreshPress: PropTypes.func.isRequired,
   onSearchPress: PropTypes.func.isRequired,
   onViewSelect: PropTypes.func.isRequired,
+  onStatusSelect: PropTypes.func.isRequired,
   view: PropTypes.string.isRequired,
+  monitorStatusFilter: PropTypes.string.isRequired,
   safeForWorkMode: PropTypes.bool
 };
 

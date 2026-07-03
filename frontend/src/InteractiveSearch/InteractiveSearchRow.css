@@ -11,6 +11,35 @@
   word-break: break-all;
 }
 
+.stackedTitleContent {
+  composes: titleContent;
+
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+.stackedTitleRow {
+  composes: row from '~Components/Table/TableRow.css';
+}
+
+.stackedTitleCell {
+  composes: cell from '~Components/Table/Cells/TableRowCell.css';
+
+  padding-bottom: 4px;
+  white-space: normal;
+}
+
+.stackedDetailsRow {
+  composes: row from '~Components/Table/TableRow.css';
+}
+
+.stackedTitleRow:hover,
+.stackedTitleRow:hover + .stackedDetailsRow,
+.stackedDetailsRow:hover,
+.stackedTitleRow:has(+ .stackedDetailsRow:hover) {
+  background-color: var(--tableRowHoverBackgroundColor);
+}
+
 .sceneMapping {
   flex-shrink: 0;
 }

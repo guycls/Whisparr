@@ -9,7 +9,7 @@ import { clearEpisodes, fetchEpisodes } from 'Store/Actions/episodeActions';
 import { clearEpisodeFiles, fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { toggleSeriesMonitored } from 'Store/Actions/seriesActions';
-import { setSeriesDetailsView } from 'Store/Actions/seriesDetailsActions';
+import { setSeriesDetailsView, setSeriesDetailsMonitorStatusFilter } from 'Store/Actions/seriesDetailsActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
 import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
@@ -70,7 +70,8 @@ function createMapStateToProps() {
     createCommandsSelector(),
     (state) => state.settings.safeForWorkMode,
     (state) => state.seriesDetails.view,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view) => {
+    (state) => state.seriesDetails.monitorStatusFilter,
+    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter) => {
       const sortedSeries = _.orderBy(allSeries, 'sortTitle');
       const seriesIndex = _.findIndex(sortedSeries, { titleSlug });
       const series = sortedSeries[seriesIndex];
@@ -134,7 +135,8 @@ function createMapStateToProps() {
         previousSeries,
         nextSeries,
         safeForWorkMode,
-        view
+        view,
+        monitorStatusFilter
       };
     }
   );
@@ -149,7 +151,8 @@ const mapDispatchToProps = {
   fetchQueueDetails,
   clearQueueDetails,
   executeCommand,
-  setSeriesDetailsView
+  setSeriesDetailsView,
+  setSeriesDetailsMonitorStatusFilter
 };
 
 class SeriesDetailsConnector extends Component {
@@ -239,6 +242,10 @@ class SeriesDetailsConnector extends Component {
     this.props.setSeriesDetailsView({ view });
   };
 
+  onStatusSelect = (monitorStatusFilter) => {
+    this.props.setSeriesDetailsMonitorStatusFilter({ monitorStatusFilter });
+  };
+
   //
   // Render
 
@@ -250,6 +257,7 @@ class SeriesDetailsConnector extends Component {
         onRefreshPress={this.onRefreshPress}
         onSearchPress={this.onSearchPress}
         onViewSelect={this.onViewSelect}
+        onStatusSelect={this.onStatusSelect}
       />
     );
   }
@@ -271,7 +279,8 @@ SeriesDetailsConnector.propTypes = {
   fetchQueueDetails: PropTypes.func.isRequired,
   clearQueueDetails: PropTypes.func.isRequired,
   executeCommand: PropTypes.func.isRequired,
-  setSeriesDetailsView: PropTypes.func.isRequired
+  setSeriesDetailsView: PropTypes.func.isRequired,
+  setSeriesDetailsMonitorStatusFilter: PropTypes.func.isRequired
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(SeriesDetailsConnector);

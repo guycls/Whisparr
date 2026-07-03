@@ -77,13 +77,14 @@ class InteractiveSearchConnector extends Component {
   render() {
     const {
       dispatchFetchReleases,
+      type,
       ...otherProps
     } = this.props;
 
     return (
-
       <InteractiveSearch
         {...otherProps}
+        stackedTitleLayout={type === 'episode'}
       />
     );
   }
