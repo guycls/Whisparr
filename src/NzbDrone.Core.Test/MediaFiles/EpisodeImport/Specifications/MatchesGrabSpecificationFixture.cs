@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.History;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Specifications;
@@ -27,6 +30,8 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Specifications
         {
             _episode1 = Builder<Episode>.CreateNew()
                 .With(e => e.Id = 1)
+                .With(e => e.Title = "Tricked By a Fake Gay")
+                .With(e => e.Actors = new List<Actor>())
                 .Build();
 
             _episode2 = Builder<Episode>.CreateNew()
@@ -44,6 +49,17 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Specifications
                                                  .Build();
 
             _downloadClientItem = Builder<DownloadClientItem>.CreateNew().Build();
+
+            Mocker.GetMock<IConfigService>()
+                  .Setup(s => s.PartialTitleMatch)
+                  .Returns(false);
+        }
+
+        private void GivenPartialTitleMatchEnabled()
+        {
+            Mocker.GetMock<IConfigService>()
+                  .Setup(s => s.PartialTitleMatch)
+                  .Returns(true);
         }
 
         private void GivenHistoryForEpisodes(params Episode[] episodes)
@@ -116,6 +132,44 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Specifications
         public void should_be_rejected_if_file_episode_is_not_in_multi_episode_grabbed_release_info()
         {
             GivenHistoryForEpisodes(_episode2, _episode3);
+
+            Subject.IsSatisfiedBy(_localEpisode, _downloadClientItem).Accepted.Should().BeFalse();
+        }
+
+        [Test]
+        public void should_accept_when_partial_title_match_enabled_and_file_episode_matches_release_title()
+        {
+            const string releaseTitle = "SexMex.22.01.24.Jessica.Jans.Tricked.By.A.Fake.Gay.XXX.2160p.MP4-WRB";
+
+            GivenPartialTitleMatchEnabled();
+            GivenHistoryForEpisodes(_episode2);
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.MatchEpisodeByReleaseTokens(
+                      It.Is<IEnumerable<Episode>>(e => e.Single().Id == _episode1.Id),
+                      releaseTitle))
+                  .Returns(_episode1);
+
+            _localEpisode.Release.Title = releaseTitle;
+
+            Subject.IsSatisfiedBy(_localEpisode, _downloadClientItem).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_reject_when_partial_title_match_enabled_but_file_episode_does_not_match_release_title()
+        {
+            const string releaseTitle = "SexMex.22.01.24.Jessica.Jans.Tricked.By.A.Fake.Gay.XXX.2160p.MP4-WRB";
+
+            GivenPartialTitleMatchEnabled();
+            GivenHistoryForEpisodes(_episode2);
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.MatchEpisodeByReleaseTokens(
+                      It.Is<IEnumerable<Episode>>(e => e.Single().Id == _episode1.Id),
+                      releaseTitle))
+                  .Returns((Episode)null);
+
+            _localEpisode.Release.Title = releaseTitle;
 
             Subject.IsSatisfiedBy(_localEpisode, _downloadClientItem).Accepted.Should().BeFalse();
         }

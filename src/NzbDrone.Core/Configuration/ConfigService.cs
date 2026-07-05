@@ -135,6 +135,12 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("IgnoreSceneDate", value); }
         }
 
+        public bool PartialTitleMatch
+        {
+            get { return GetValueBoolean("PartialTitleMatch", false); }
+            set { SetValue("PartialTitleMatch", value); }
+        }
+
         public ProperDownloadTypes DownloadPropersAndRepacks
         {
             get { return GetValueEnum("DownloadPropersAndRepacks", ProperDownloadTypes.PreferAndUpgrade); }

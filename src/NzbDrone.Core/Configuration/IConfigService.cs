@@ -53,6 +53,7 @@ namespace NzbDrone.Core.Configuration
         int MinimumAge { get; set; }
         bool DisableIndexerBlocking { get; set; }
         bool IgnoreSceneDate { get; set; }
+        bool PartialTitleMatch { get; set; }
 
         // UI
         int FirstDayOfWeek { get; set; }

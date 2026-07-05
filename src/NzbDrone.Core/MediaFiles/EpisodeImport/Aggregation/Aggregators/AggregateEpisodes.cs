@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.History;
@@ -19,14 +20,21 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation.Aggregators
         private readonly IEpisodeService _episodeService;
         private readonly ITrackedDownloadService _trackedDownloadService;
         private readonly IHistoryService _historyService;
+        private readonly IConfigService _configService;
         private readonly Logger _logger;
 
-        public AggregateEpisodes(IParsingService parsingService, IEpisodeService episodeService, ITrackedDownloadService trackedDownloadService, IHistoryService historyService, Logger logger)
+        public AggregateEpisodes(IParsingService parsingService,
+                                 IEpisodeService episodeService,
+                                 ITrackedDownloadService trackedDownloadService,
+                                 IHistoryService historyService,
+                                 IConfigService configService,
+                                 Logger logger)
         {
             _parsingService = parsingService;
             _episodeService = episodeService;
             _trackedDownloadService = trackedDownloadService;
             _historyService = historyService;
+            _configService = configService;
             _logger = logger;
         }
 
@@ -95,7 +103,6 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation.Aggregators
             }
 
             var bestEpisodeInfoForEpisodes = GetBestEpisodeInfo(localEpisode);
-            var isMediaFile = MediaFileExtensions.Extensions.Contains(Path.GetExtension(localEpisode.Path));
 
             // If normal parsing fails, try to match by external ID from the filename
             if (bestEpisodeInfoForEpisodes == null)
@@ -117,7 +124,75 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation.Aggregators
 
             var parsedEpisodes = _parsingService.GetEpisodes(bestEpisodeInfoForEpisodes, localEpisode.Series, localEpisode.SceneSource);
 
+            if (parsedEpisodes.Empty() && _configService.IgnoreSceneDate)
+            {
+                var grabbedEpisodes = TryMatchByGrabHistory(localEpisode);
+                if (grabbedEpisodes != null && grabbedEpisodes.Any())
+                {
+                    return grabbedEpisodes;
+                }
+
+                var releaseTokens = GetReleaseTokens(localEpisode, bestEpisodeInfoForEpisodes);
+                if (releaseTokens.IsNotNullOrWhiteSpace() && localEpisode.Series != null)
+                {
+                    var seriesEpisodes = _episodeService.GetEpisodeBySeries(localEpisode.Series.Id);
+                    var matchedEpisode = _episodeService.MatchEpisodeByReleaseTokens(seriesEpisodes, releaseTokens);
+
+                    if (matchedEpisode != null)
+                    {
+                        _logger.Debug("Matched file to episode via scene title with ignore scene date enabled: {0}", matchedEpisode);
+                        return new List<Episode> { matchedEpisode };
+                    }
+                }
+            }
+
             return parsedEpisodes;
+        }
+
+        private string GetReleaseTokens(LocalEpisode localEpisode, ParsedEpisodeInfo parsedEpisodeInfo)
+        {
+            if (parsedEpisodeInfo?.ReleaseTokens.IsNotNullOrWhiteSpace() == true)
+            {
+                return parsedEpisodeInfo.ReleaseTokens;
+            }
+
+            if (parsedEpisodeInfo?.ReleaseTitle.IsNotNullOrWhiteSpace() == true)
+            {
+                return parsedEpisodeInfo.ReleaseTitle;
+            }
+
+            if (localEpisode.FolderEpisodeInfo != null)
+            {
+                if (!localEpisode.FolderEpisodeInfo.ReleaseTokens.IsNullOrWhiteSpace())
+                {
+                    return localEpisode.FolderEpisodeInfo.ReleaseTokens;
+                }
+
+                if (!localEpisode.FolderEpisodeInfo.ReleaseTitle.IsNullOrWhiteSpace())
+                {
+                    return localEpisode.FolderEpisodeInfo.ReleaseTitle;
+                }
+            }
+
+            if (localEpisode.DownloadClientEpisodeInfo != null)
+            {
+                if (!localEpisode.DownloadClientEpisodeInfo.ReleaseTokens.IsNullOrWhiteSpace())
+                {
+                    return localEpisode.DownloadClientEpisodeInfo.ReleaseTokens;
+                }
+
+                if (!localEpisode.DownloadClientEpisodeInfo.ReleaseTitle.IsNullOrWhiteSpace())
+                {
+                    return localEpisode.DownloadClientEpisodeInfo.ReleaseTitle;
+                }
+            }
+
+            if (localEpisode.DownloadItem != null)
+            {
+                return localEpisode.DownloadItem.Title;
+            }
+
+            return Path.GetFileNameWithoutExtension(localEpisode.Path);
         }
 
         private List<Episode> TryMatchByExternalId(LocalEpisode localEpisode)

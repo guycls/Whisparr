@@ -11,6 +11,7 @@ namespace Whisparr.Api.V3.Config
         public int RssSyncInterval { get; set; }
         public bool DisableIndexerBlocking { get; set; }
         public bool IgnoreSceneDate { get; set; }
+        public bool PartialTitleMatch { get; set; }
     }
 
     public static class IndexerConfigResourceMapper
@@ -24,7 +25,8 @@ namespace Whisparr.Api.V3.Config
                 MaximumSize = model.MaximumSize,
                 RssSyncInterval = model.RssSyncInterval,
                 DisableIndexerBlocking = model.DisableIndexerBlocking,
-                IgnoreSceneDate = model.IgnoreSceneDate
+                IgnoreSceneDate = model.IgnoreSceneDate,
+                PartialTitleMatch = model.PartialTitleMatch
             };
         }
     }

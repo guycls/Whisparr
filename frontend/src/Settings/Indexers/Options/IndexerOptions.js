@@ -110,6 +110,21 @@ function IndexerOptions(props) {
               advancedSettings={advancedSettings}
               isAdvanced={true}
             >
+              <FormLabel>{translate('PartialTitleMatch')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="partialTitleMatch"
+                helpText={translate('PartialTitleMatchHelpText')}
+                onChange={onInputChange}
+                {...settings.partialTitleMatch}
+              />
+            </FormGroup>
+
+            <FormGroup
+              advancedSettings={advancedSettings}
+              isAdvanced={true}
+            >
               <FormLabel>{translate('RssSyncInterval')}</FormLabel>
 
               <FormInputGroup

@@ -5,6 +5,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Extensions;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.History;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation.Aggregators;
@@ -36,6 +37,10 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Aggregation.Aggregators
                   .Returns(Builder<Episode>.CreateListOfSize(1).BuildList());
 
             Mocker.SetConstant(augmenters.Select(c => c.Object));
+
+            Mocker.GetMock<IConfigService>()
+                  .Setup(s => s.IgnoreSceneDate)
+                  .Returns(false);
         }
 
         [Test]
@@ -261,6 +266,133 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Aggregation.Aggregators
             localEpisode.Episodes.Should().BeEquivalentTo(parsedEpisodes);
             Mocker.GetMock<IHistoryService>()
                 .Verify(v => v.FindByDownloadId(It.IsAny<string>()), Times.Never());
+        }
+
+        [Test]
+        public void should_use_date_matched_episode_when_ignore_scene_date_enabled()
+        {
+            var fileEpisodeInfo = Parser.Parser.ParseTitle("Series.Title.23.01.15");
+            var parsedEpisodes = Builder<Episode>.CreateListOfSize(1).BuildList();
+
+            Mocker.GetMock<IConfigService>()
+                  .Setup(s => s.IgnoreSceneDate)
+                  .Returns(true);
+
+            Mocker.GetMock<IParsingService>()
+                .Setup(s => s.GetEpisodes(fileEpisodeInfo, _series, It.IsAny<bool>(), null))
+                .Returns(parsedEpisodes);
+
+            var localEpisode = new LocalEpisode
+            {
+                FileEpisodeInfo = fileEpisodeInfo,
+                Path = @"C:\Test\Unsorted TV\Series.Title.23.01.15\Series.Title.23.01.15.mkv".AsOsAgnostic(),
+                Series = _series
+            };
+
+            Subject.Aggregate(localEpisode, null);
+
+            localEpisode.Episodes.Should().BeEquivalentTo(parsedEpisodes);
+            Mocker.GetMock<IHistoryService>()
+                .Verify(v => v.FindByDownloadId(It.IsAny<string>()), Times.Never());
+        }
+
+        [Test]
+        public void should_fallback_to_grab_history_when_date_returns_empty_and_ignore_scene_date_enabled()
+        {
+            const int episodeId = 8388;
+            var episode = Builder<Episode>.CreateNew()
+                .With(e => e.Id = episodeId)
+                .With(e => e.SeriesId = _series.Id)
+                .Build();
+
+            var fileEpisodeInfo = Parser.Parser.ParseTitle("Freeze.25.05.20.Alice.Ross.A.Perfect.Copy.XXX.2160p.MP4-FETiSH");
+            var downloadItem = Builder<DownloadClientItem>.CreateNew()
+                .With(d => d.DownloadId = "download-id-123")
+                .With(d => d.Title = "Freeze.25.05.20.Alice.Ross.A.Perfect.Copy.XXX.2160p.MP4-FETiSH")
+                .Build();
+
+            Mocker.GetMock<IConfigService>()
+                  .Setup(s => s.IgnoreSceneDate)
+                  .Returns(true);
+
+            Mocker.GetMock<IParsingService>()
+                .Setup(s => s.GetEpisodes(fileEpisodeInfo, _series, It.IsAny<bool>(), null))
+                .Returns(new List<Episode>());
+
+            Mocker.GetMock<IHistoryService>()
+                .Setup(s => s.FindByDownloadId(downloadItem.DownloadId))
+                .Returns(new List<EpisodeHistory>
+                {
+                    new EpisodeHistory
+                    {
+                        EpisodeId = episodeId,
+                        SeriesId = _series.Id,
+                        EventType = EpisodeHistoryEventType.Grabbed,
+                        SourceTitle = downloadItem.Title
+                    }
+                });
+
+            Mocker.GetMock<IEpisodeService>()
+                .Setup(s => s.GetEpisodes(It.Is<IEnumerable<int>>(ids => ids.Contains(episodeId))))
+                .Returns(new List<Episode> { episode });
+
+            var localEpisode = new LocalEpisode
+            {
+                FileEpisodeInfo = fileEpisodeInfo,
+                FolderEpisodeInfo = fileEpisodeInfo,
+                Path = @"C:\Test\Downloads\Freeze.25.05.20.Alice.Ross.A.Perfect.Copy.XXX.2160p.MP4-FETiSH\Freeze.25.05.20.Alice.Ross.A.Perfect.Copy.XXX.2160p.MP4-FETiSH.mp4".AsOsAgnostic(),
+                Series = _series,
+                DownloadItem = downloadItem,
+                SceneSource = true
+            };
+
+            Subject.Aggregate(localEpisode, downloadItem);
+
+            localEpisode.Episodes.Should().HaveCount(1);
+            localEpisode.Episodes.First().Id.Should().Be(episodeId);
+        }
+
+        [Test]
+        public void should_fallback_to_series_title_match_when_date_returns_empty_and_grab_history_empty()
+        {
+            var episode = Builder<Episode>.CreateNew()
+                .With(e => e.Id = 100)
+                .With(e => e.SeriesId = _series.Id)
+                .With(e => e.Title = "A Perfect Copy")
+                .With(e => e.Actors = new List<Actor>())
+                .Build();
+
+            var fileEpisodeInfo = Parser.Parser.ParseTitle("Freeze.25.05.20.Alice.Ross.A.Perfect.Copy.XXX.2160p.MP4-FETiSH");
+
+            Mocker.GetMock<IConfigService>()
+                  .Setup(s => s.IgnoreSceneDate)
+                  .Returns(true);
+
+            Mocker.GetMock<IParsingService>()
+                .Setup(s => s.GetEpisodes(It.IsAny<ParsedEpisodeInfo>(), _series, It.IsAny<bool>(), null))
+                .Returns(new List<Episode>());
+
+            Mocker.GetMock<IEpisodeService>()
+                .Setup(s => s.GetEpisodeBySeries(_series.Id))
+                .Returns(new List<Episode> { episode });
+
+            Mocker.GetMock<IEpisodeService>()
+                .Setup(s => s.MatchEpisodeByReleaseTokens(It.IsAny<IEnumerable<Episode>>(), It.IsAny<string>()))
+                .Returns(episode);
+
+            var localEpisode = new LocalEpisode
+            {
+                FileEpisodeInfo = fileEpisodeInfo,
+                FolderEpisodeInfo = fileEpisodeInfo,
+                Path = @"C:\Test\Downloads\Freeze.25.05.20.Alice.Ross.A.Perfect.Copy.XXX.2160p.MP4-FETiSH\Freeze.25.05.20.Alice.Ross.A.Perfect.Copy.XXX.2160p.MP4-FETiSH.mp4".AsOsAgnostic(),
+                Series = _series,
+                SceneSource = true
+            };
+
+            Subject.Aggregate(localEpisode, null);
+
+            localEpisode.Episodes.Should().HaveCount(1);
+            localEpisode.Episodes.First().Id.Should().Be(episode.Id);
         }
     }
 }
