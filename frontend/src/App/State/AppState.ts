@@ -77,7 +77,7 @@ interface AppState {
   series: SeriesAppState;
   seriesDetails: {
     view: 'list' | 'grid';
-    monitorStatusFilter: 'all' | 'monitored' | 'unmonitored' | 'missing';
+    monitorStatusFilter: 'all' | 'monitored' | 'unmonitored' | 'downloaded' | 'missing';
   };
   seriesIndex: SeriesIndexAppState;
   settings: SettingsAppState;

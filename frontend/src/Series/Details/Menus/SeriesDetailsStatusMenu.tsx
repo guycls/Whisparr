@@ -31,6 +31,10 @@ function SeriesDetailsStatusMenu(props: SeriesDetailsStatusMenuProps) {
           {translate('Unmonitored')}
         </ViewMenuItem>
 
+        <ViewMenuItem name="downloaded" selectedView={monitorStatusFilter} onPress={onStatusSelect}>
+          {translate('Downloaded')}
+        </ViewMenuItem>
+
         <ViewMenuItem name="missing" selectedView={monitorStatusFilter} onPress={onStatusSelect}>
           {translate('Missing')}
         </ViewMenuItem>

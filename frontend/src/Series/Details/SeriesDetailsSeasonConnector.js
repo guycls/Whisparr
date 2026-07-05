@@ -22,6 +22,10 @@ function filterByMonitorStatus(episodes, monitorStatusFilter) {
     return episodes.filter((e) => !e.monitored);
   }
 
+  if (monitorStatusFilter === 'downloaded') {
+    return episodes.filter((e) => e.hasFile);
+  }
+
   if (monitorStatusFilter === 'missing') {
     return episodes.filter((e) => e.monitored && !e.hasFile);
   }
