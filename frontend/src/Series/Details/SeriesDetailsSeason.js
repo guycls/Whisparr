@@ -65,6 +65,33 @@ function getSeasonStatistics(episodes) {
   };
 }
 
+function scrollElementToTop(element, isSmallScreen) {
+  if (!element) {
+    return;
+  }
+
+  if (isSmallScreen) {
+    window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top);
+    return;
+  }
+
+  let scroller = element.parentElement;
+
+  while (scroller) {
+    const { overflowY } = window.getComputedStyle(scroller);
+
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      const elementRect = element.getBoundingClientRect();
+      const scrollerRect = scroller.getBoundingClientRect();
+
+      scroller.scrollTop += elementRect.top - scrollerRect.top;
+      return;
+    }
+
+    scroller = scroller.parentElement;
+  }
+}
+
 class SeriesDetailsSeason extends Component {
 
   //
@@ -72,6 +99,9 @@ class SeriesDetailsSeason extends Component {
 
   constructor(props, context) {
     super(props, context);
+
+    this._headerRef = React.createRef();
+    this._scrollOnToggle = false;
 
     this.state = {
       isOrganizeModalOpen: false,
@@ -106,6 +136,14 @@ class SeriesDetailsSeason extends Component {
         isOrganizeModalOpen: false,
         isManageEpisodesOpen: false
       });
+    }
+
+    if (
+      this._scrollOnToggle &&
+      prevProps.isExpanded !== this.props.isExpanded
+    ) {
+      scrollElementToTop(this._headerRef.current, this.props.isSmallScreen);
+      this._scrollOnToggle = false;
     }
   }
 
@@ -168,6 +206,7 @@ class SeriesDetailsSeason extends Component {
       isExpanded
     } = this.props;
 
+    this._scrollOnToggle = true;
     this.props.onExpandPress(seasonNumber, !isExpanded);
   };
 
@@ -291,7 +330,10 @@ class SeriesDetailsSeason extends Component {
       <div
         className={styles.season}
       >
-        <div className={styles.header}>
+        <div
+          className={styles.header}
+          ref={this._headerRef}
+        >
           <div className={styles.left}>
             <MonitorToggleButton
               monitored={monitored}
