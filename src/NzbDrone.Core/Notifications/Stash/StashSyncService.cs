@@ -13,7 +13,6 @@ using NzbDrone.Core.MediaFiles.EpisodeImport;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Manual;
 using NzbDrone.Core.MetadataSource.ThePornDb;
 using NzbDrone.Core.Messaging.Commands;
-using NzbDrone.Core.Notifications;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Tv;
 

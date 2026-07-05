@@ -4,14 +4,12 @@ using FluentValidation.Results;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
-using NzbDrone.Core.Tv;
-
 namespace NzbDrone.Core.Notifications.Stash
 {
     public interface IStashService
     {
         void GetStatus(StashSettings settings);
-        void Update(StashSettings settings, Series series);
+        void Update(StashSettings settings, string whisparrPath);
         ValidationFailure Test(StashSettings settings);
     }
 
@@ -26,9 +24,15 @@ namespace NzbDrone.Core.Notifications.Stash
             _logger = logger;
         }
 
-        public void Update(StashSettings settings, Series series)
+        public void Update(StashSettings settings, string whisparrPath)
         {
-            var mappedPath = StashPathMapper.MapToStashPath(settings, series.Path, _logger);
+            if (whisparrPath.IsNullOrWhiteSpace())
+            {
+                _logger.Debug("Skipping Stash update for empty path");
+                return;
+            }
+
+            var mappedPath = StashPathMapper.MapToStashPath(settings, whisparrPath, _logger);
 
             _proxy.Update(settings, mappedPath);
         }

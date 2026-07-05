@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using FluentValidation.Results;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.MediaFiles;
@@ -20,22 +21,25 @@ namespace NzbDrone.Core.Notifications.Stash
 
         public override void OnDownload(DownloadMessage message)
         {
-            _stashService.Update(Settings, message.Series);
+            UpdatePath(GetEpisodeFilePath(message));
         }
 
         public override void OnRename(Series series, List<RenamedEpisodeFile> renamedFiles)
         {
-            _stashService.Update(Settings, series);
+            foreach (var renamedFile in renamedFiles)
+            {
+                UpdatePath(renamedFile.EpisodeFile?.Path);
+            }
         }
 
         public override void OnEpisodeFileDelete(EpisodeDeleteMessage deleteMessage)
         {
-            _stashService.Update(Settings, deleteMessage.Series);
+            UpdatePath(deleteMessage.EpisodeFile?.Path);
         }
 
         public override void OnSeriesDelete(SeriesDeleteMessage deleteMessage)
         {
-            _stashService.Update(Settings, deleteMessage.Series);
+            UpdatePath(deleteMessage.Series?.Path);
         }
 
         public override ValidationResult Test()
@@ -45,6 +49,32 @@ namespace NzbDrone.Core.Notifications.Stash
             failures.AddIfNotNull(_stashService.Test(Settings));
 
             return new ValidationResult(failures);
+        }
+
+        private void UpdatePath(string whisparrPath)
+        {
+            _stashService.Update(Settings, whisparrPath);
+        }
+
+        private static string GetEpisodeFilePath(DownloadMessage message)
+        {
+            if (message.EpisodeFile?.Path.IsNotNullOrWhiteSpace() == true)
+            {
+                return message.EpisodeFile.Path;
+            }
+
+            if (message.SourcePath.IsNotNullOrWhiteSpace())
+            {
+                return message.SourcePath;
+            }
+
+            if (message.EpisodeFile?.RelativePath.IsNotNullOrWhiteSpace() == true &&
+                message.Series?.Path.IsNotNullOrWhiteSpace() == true)
+            {
+                return Path.Combine(message.Series.Path, message.EpisodeFile.RelativePath);
+            }
+
+            return null;
         }
     }
 }
