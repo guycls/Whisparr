@@ -150,7 +150,28 @@ namespace NzbDrone.Core.Test.MetadataSource.ThePornDb
             callCount.Should().Be(2);
         }
 
-        private static string BuildGraphQlJson(List<TpdbImage> images)
+        [Test]
+        public void should_return_scene_uuid()
+        {
+            var json = BuildGraphQlJson(new List<TpdbImage>(), "220b91d9-887d-4251-a252-cee7004733e7");
+
+            SetupHttpResponse(json);
+
+            Subject.GetSceneUuid(3188328).Should().Be("220b91d9-887d-4251-a252-cee7004733e7");
+        }
+
+        [Test]
+        public void should_return_null_uuid_when_scene_not_found()
+        {
+            SetupHttpResponse(Json.ToJson(new TpdbGraphQlResponse
+            {
+                Data = new TpdbGraphQlData { FindScene = null }
+            }));
+
+            Subject.GetSceneUuid(3188328).Should().BeNull();
+        }
+
+        private static string BuildGraphQlJson(List<TpdbImage> images, string id = "3188328")
         {
             return Json.ToJson(new TpdbGraphQlResponse
             {
@@ -158,7 +179,7 @@ namespace NzbDrone.Core.Test.MetadataSource.ThePornDb
                 {
                     FindScene = new TpdbScene
                     {
-                        Id = "3188328",
+                        Id = id,
                         Images = images
                     }
                 }

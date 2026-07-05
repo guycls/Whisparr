@@ -1,6 +1,8 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Notifications;
+using NzbDrone.Core.Notifications.Stash;
 using Whisparr.Http;
 
 namespace Whisparr.Api.V3.Notifications
@@ -11,9 +13,21 @@ namespace Whisparr.Api.V3.Notifications
         public static readonly NotificationResourceMapper ResourceMapper = new ();
         public static readonly NotificationBulkResourceMapper BulkResourceMapper = new ();
 
-        public NotificationController(NotificationFactory notificationFactory)
+        private readonly IManageCommandQueue _commandQueueManager;
+
+        public NotificationController(NotificationFactory notificationFactory,
+                                      IManageCommandQueue commandQueueManager)
             : base(notificationFactory, "notification", ResourceMapper, BulkResourceMapper)
         {
+            _commandQueueManager = commandQueueManager;
+        }
+
+        [HttpPost("stash/sync")]
+        public ActionResult<StashSyncResponse> SyncFromStash()
+        {
+            var command = _commandQueueManager.Push(new StashSyncCommand(), CommandPriority.Normal, CommandTrigger.Manual);
+
+            return Ok(new StashSyncResponse { CommandId = command.Id });
         }
 
         [NonAction]

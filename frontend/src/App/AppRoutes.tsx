@@ -19,7 +19,7 @@ import IndexerSettingsConnector from 'Settings/Indexers/IndexerSettingsConnector
 import MediaManagementConnector from 'Settings/MediaManagement/MediaManagementConnector';
 import MetadataSettings from 'Settings/Metadata/MetadataSettings';
 import MetadataSourceSettingsConnector from 'Settings/MetadataSource/MetadataSourceSettingsConnector';
-import NotificationSettings from 'Settings/Notifications/NotificationSettings';
+import NotificationSettings from 'Settings/Notifications/NotificationSettingsConnector';
 import Profiles from 'Settings/Profiles/Profiles';
 import QualityConnector from 'Settings/Quality/QualityConnector';
 import Settings from 'Settings/Settings';

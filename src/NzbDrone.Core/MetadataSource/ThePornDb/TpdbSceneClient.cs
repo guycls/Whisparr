@@ -38,6 +38,25 @@ namespace NzbDrone.Core.MetadataSource.ThePornDb
 
         public string GetScreenshotUrl(int sceneId)
         {
+            var scene = FindScene(sceneId);
+
+            if (scene == null)
+            {
+                return null;
+            }
+
+            return ParseScreenshotUrl(scene);
+        }
+
+        public string GetSceneUuid(int sceneId)
+        {
+            var scene = FindScene(sceneId);
+
+            return scene?.Id;
+        }
+
+        private TpdbScene FindScene(int sceneId)
+        {
             var apiKey = _configService.TpdbApiKey;
 
             if (apiKey.IsNullOrWhiteSpace() || sceneId <= 0)
@@ -101,7 +120,7 @@ namespace NzbDrone.Core.MetadataSource.ThePornDb
                         return null;
                     }
 
-                    return ParseScreenshotUrl(scene);
+                    return scene;
                 }
 
                 return null;

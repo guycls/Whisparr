@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using FluentValidation.Results;
 using NLog;
-using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Tv;
@@ -29,17 +28,9 @@ namespace NzbDrone.Core.Notifications.Stash
 
         public void Update(StashSettings settings, Series series)
         {
-            var seriesLocation = new OsPath(series.Path);
-            var mappedPath = seriesLocation;
+            var mappedPath = StashPathMapper.MapToStashPath(settings, series.Path, _logger);
 
-            if (settings.MapTo.IsNotNullOrWhiteSpace())
-            {
-                mappedPath = new OsPath(settings.MapTo) + (seriesLocation - new OsPath(settings.MapFrom));
-
-                _logger.Trace("Mapping Path from {0} to {1} for partial scan", seriesLocation, mappedPath);
-            }
-
-            _proxy.Update(settings, mappedPath.FullPath);
+            _proxy.Update(settings, mappedPath);
         }
 
         public void GetStatus(StashSettings settings)

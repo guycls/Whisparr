@@ -1,3 +1,4 @@
+using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -7,6 +8,44 @@ namespace NzbDrone.Core.Notifications.Stash
 {
     public class StashProxy
     {
+        public const string TpdbEndpoint = "https://theporndb.net/graphql";
+
+        private const string FindSceneByStashIdQuery = @"query FindSceneByStashId($stashId: String!) {
+  findScenes(
+    scene_filter: {
+      stash_id_endpoint: {
+        stash_id: $stashId
+        endpoint: """ + TpdbEndpoint + @"""
+        modifier: EQUALS
+      }
+    }
+    filter: { per_page: 1 }
+  ) {
+    count
+    scenes {
+      id
+      title
+      files { path basename }
+      stash_ids { endpoint stash_id }
+    }
+  }
+}";
+
+        private const string FindSceneByPathQuery = @"query FindSceneByPath($path: String!) {
+  findScenes(
+    scene_filter: {
+      path: { value: $path, modifier: EQUALS }
+    }
+    filter: { per_page: 1 }
+  ) {
+    count
+    scenes {
+      id
+      files { path }
+    }
+  }
+}";
+
         private readonly IHttpClient _httpClient;
         private readonly Logger _logger;
 
@@ -74,6 +113,37 @@ namespace NzbDrone.Core.Notifications.Stash
             }.ToJson());
 
             ProcessRequest(request, settings);
+        }
+
+        public StashScene FindSceneByStashId(StashSettings settings, string stashId)
+        {
+            var response = ExecuteQuery<StashGraphQlResponse>(settings, FindSceneByStashIdQuery, new { stashId });
+
+            return response?.Data?.FindScenes?.Scenes?.FirstOrDefault();
+        }
+
+        public bool IsPathTracked(StashSettings settings, string path)
+        {
+            var response = ExecuteQuery<StashGraphQlResponse>(settings, FindSceneByPathQuery, new { path });
+
+            return response?.Data?.FindScenes?.Count > 0;
+        }
+
+        private T ExecuteQuery<T>(StashSettings settings, string query, object variables)
+            where T : new()
+        {
+            var request = BuildRequest(settings);
+            request.Headers.ContentType = "application/json";
+
+            request.SetContent(new
+            {
+                Query = query,
+                Variables = variables
+            }.ToJson());
+
+            var content = ProcessRequest(request, settings);
+
+            return Json.Deserialize<T>(content);
         }
 
         private string ProcessRequest(HttpRequest request, StashSettings settings)
