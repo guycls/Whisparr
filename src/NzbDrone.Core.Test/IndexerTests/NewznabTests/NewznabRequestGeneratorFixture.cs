@@ -269,6 +269,64 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
         }
 
         [Test]
+        public void should_not_search_external_id_when_ignore_scene_date_enabled()
+        {
+            _capabilities.SupportedSearchParameters = new[] { "q" };
+            _singleEpisodeSearchCriteria.IgnoreSceneDate = true;
+            _singleEpisodeSearchCriteria.ExternalId = "1737";
+
+            var results = Subject.GetSearchRequests(_singleEpisodeSearchCriteria);
+            var requests = results.GetAllTiers().SelectMany(x => x).ToList();
+
+            requests.Should().Contain(x => x.Url.Query.Contains("Monkey") && x.Url.Query.Contains("Pilot"));
+            requests.Should().NotContain(x => x.Url.Query.Contains("q=1737"));
+        }
+
+        [Test]
+        public void should_not_search_external_id_only_when_ignore_scene_date_enabled()
+        {
+            _capabilities.SupportedSearchParameters = new[] { "q" };
+            Subject.Settings.SearchExternalIdOnly = true;
+            _singleEpisodeSearchCriteria.IgnoreSceneDate = true;
+            _singleEpisodeSearchCriteria.ExternalId = "1737";
+
+            var results = Subject.GetSearchRequests(_singleEpisodeSearchCriteria);
+            var requests = results.GetAllTiers().SelectMany(x => x).ToList();
+
+            requests.Should().NotContain(x => x.Url.Query.Contains("q=1737"));
+        }
+
+        [Test]
+        public void should_not_duplicate_site_and_title_when_ignore_scene_date_enabled_with_multiple_scene_titles()
+        {
+            _capabilities.SupportedSearchParameters = new[] { "q" };
+            _singleEpisodeSearchCriteria.IgnoreSceneDate = true;
+            _singleEpisodeSearchCriteria.SceneTitles = new List<string> { "Monkey Island", "monkey-island-slug" };
+
+            var results = Subject.GetSearchRequests(_singleEpisodeSearchCriteria);
+            var requests = results.GetAllTiers().SelectMany(x => x).ToList();
+
+            var sitePlusTitleRequests = requests
+                .Where(x => x.Url.Query.Contains("Monkey") && x.Url.Query.Contains("Pilot"))
+                .ToList();
+
+            sitePlusTitleRequests.Should().HaveCount(Subject.MaxPages);
+        }
+
+        [Test]
+        public void should_search_external_id_only_when_enabled_and_ignore_scene_date_disabled()
+        {
+            _capabilities.SupportedSearchParameters = new[] { "q" };
+            Subject.Settings.SearchExternalIdOnly = true;
+            _singleEpisodeSearchCriteria.ExternalId = "1737";
+
+            var results = Subject.GetSearchRequests(_singleEpisodeSearchCriteria);
+            var requests = results.GetAllTiers().SelectMany(x => x).ToList();
+
+            requests.Should().Contain(x => x.Url.Query.Contains("q=1737"));
+        }
+
+        [Test]
         public void should_search_season_with_title_only_when_enabled()
         {
             _capabilities.SupportedSearchParameters = new[] { "q" };

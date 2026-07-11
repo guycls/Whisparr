@@ -87,28 +87,21 @@ namespace NzbDrone.Core.Indexers.Newznab
                 var episodeTitle = Settings.SearchTitleOnly ? NewsnabifyTitle(searchCriteria.EpisodeTitle) : null;
                 var sitePlusEpisodeTitle = Settings.SearchSiteTitleOnly ? NewsnabifyTitle(searchCriteria.EpisodeTitle) : null;
 
-                foreach (var queryTitle in queryTitles)
+                if (searchCriteria.IgnoreSceneDate)
                 {
-                    var normalizedQueryTitle = NewsnabifyTitle(queryTitle);
+                    var siteTitle = NewsnabifyTitle(searchCriteria.Series.Title);
+                    var episodeTitleQuery = NewsnabifyTitle(searchCriteria.EpisodeTitle);
+                    var sitePlusTitleQuery = $"&q={siteTitle}+{episodeTitleQuery}";
+                    pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", sitePlusTitleQuery));
 
-                    if (searchCriteria.IgnoreSceneDate)
+                    AddNetworkSearchIfNeeded(pageableRequests, searchCriteria.Series, episodeTitleQuery, "Episode");
+                }
+                else
+                {
+                    foreach (var queryTitle in queryTitles)
                     {
-                        var siteTitle = NewsnabifyTitle(searchCriteria.Series.Title);
-                        var episodeTitleQuery = NewsnabifyTitle(searchCriteria.EpisodeTitle);
-                        var sitePlusTitleQuery = $"&q={siteTitle}+{episodeTitleQuery}";
-                        pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", sitePlusTitleQuery));
+                        var normalizedQueryTitle = NewsnabifyTitle(queryTitle);
 
-                        AddNetworkSearchIfNeeded(pageableRequests, searchCriteria.Series, episodeTitleQuery, "Episode");
-
-                        if (!string.IsNullOrWhiteSpace(searchCriteria.ExternalId))
-                        {
-                            var externalId = NewsnabifyTitle(searchCriteria.ExternalId);
-                            var externalIdQuery = $"&q={externalId}";
-                            pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", externalIdQuery));
-                        }
-                    }
-                    else
-                    {
                         // ALWAYS do default search with site + date
                         foreach (var dateFormat in dateFormats)
                         {
@@ -119,39 +112,39 @@ namespace NzbDrone.Core.Indexers.Newznab
                                 searchQuery));
                         }
                     }
+                }
 
-                    // Add Site + Title search if selected
-                    if (Settings.SearchSiteTitleOnly)
-                    {
-                        // Use Site name
-                        var siteTitle = NewsnabifyTitle(searchCriteria.Series.Title);
-                        var searchQuery = $"&q={siteTitle}+{sitePlusEpisodeTitle}";
-                        pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", searchQuery));
+                // Add Site + Title search if selected
+                if (Settings.SearchSiteTitleOnly)
+                {
+                    // Use Site name
+                    var siteTitle = NewsnabifyTitle(searchCriteria.Series.Title);
+                    var searchQuery = $"&q={siteTitle}+{sitePlusEpisodeTitle}";
+                    pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", searchQuery));
 
-                        // Add network search if needed
-                        AddNetworkSearchIfNeeded(pageableRequests, searchCriteria.Series, sitePlusEpisodeTitle, "Episode");
-                    }
+                    // Add network search if needed
+                    AddNetworkSearchIfNeeded(pageableRequests, searchCriteria.Series, sitePlusEpisodeTitle, "Episode");
+                }
 
-                    // Add Title Only search if selected
-                    if (Settings.SearchTitleOnly)
-                    {
-                        var searchQuery = $"&q={episodeTitle}";
-                        pageableRequests.Add(GetPagedRequests(MaxPages,
-                            Settings.Categories,
-                            "search",
-                            searchQuery));
-                    }
+                // Add Title Only search if selected
+                if (Settings.SearchTitleOnly)
+                {
+                    var searchQuery = $"&q={episodeTitle}";
+                    pageableRequests.Add(GetPagedRequests(MaxPages,
+                        Settings.Categories,
+                        "search",
+                        searchQuery));
+                }
 
-                    // Add External ID search if selected and available
-                    if (Settings.SearchExternalIdOnly && !string.IsNullOrWhiteSpace(searchCriteria.ExternalId))
-                    {
-                        var externalId = NewsnabifyTitle(searchCriteria.ExternalId);
-                        var searchQuery = $"&q={externalId}";
-                        pageableRequests.Add(GetPagedRequests(MaxPages,
-                            Settings.Categories,
-                            "search",
-                            searchQuery));
-                    }
+                // Add External ID search if selected and available
+                if (!searchCriteria.IgnoreSceneDate && Settings.SearchExternalIdOnly && !string.IsNullOrWhiteSpace(searchCriteria.ExternalId))
+                {
+                    var externalId = NewsnabifyTitle(searchCriteria.ExternalId);
+                    var searchQuery = $"&q={externalId}";
+                    pageableRequests.Add(GetPagedRequests(MaxPages,
+                        Settings.Categories,
+                        "search",
+                        searchQuery));
                 }
             }
 

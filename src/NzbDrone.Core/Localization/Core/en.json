@@ -368,7 +368,7 @@
   "DisableIndexerBlocking": "Disable Indexer Blocking",
   "DisableIndexerBlockingHelpText": "When enabled, indexers will continue to be queried and releases grabbed even after failures. Failure state is still tracked and will take effect again if this is turned off.",
   "IgnoreSceneDate": "Ignore Scene Date",
-  "IgnoreSceneDateHelpText": "Do not use scene release date from metadata when searching or matching results. Use scene title or external ID instead when metadata dates are incorrect. Also used during automatic import when the scene date in the filename does not match any episode.",
+  "IgnoreSceneDateHelpText": "Do not use scene release date from metadata when searching or matching results. Use studio name and scene title instead when metadata dates are incorrect. Also used during automatic import when the scene date in the filename does not match any episode.",
   "PartialTitleMatch": "Partial Title Match",
   "PartialTitleMatchHelpText": "During automatic import, accept files that match the grabbed release by scene title even when the episode ID in grab history differs from the episode resolved from the filename.",
   "Discord": "Discord",
