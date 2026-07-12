@@ -27,6 +27,11 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Specifications
 
         public Decision IsSatisfiedBy(LocalEpisode localEpisode, DownloadClientItem downloadClientItem)
         {
+            if (localEpisode.IsSplitPart)
+            {
+                return Decision.Accept();
+            }
+
             var downloadPropersAndRepacks = _configService.DownloadPropersAndRepacks;
             var qualityProfile = localEpisode.Series.QualityProfile.Value;
             var qualityComparer = new QualityModelComparer(qualityProfile);

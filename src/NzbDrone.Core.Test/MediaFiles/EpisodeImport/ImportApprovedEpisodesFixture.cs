@@ -384,5 +384,37 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport
                   .Verify(v => v.UpgradeEpisodeFile(It.Is<EpisodeFile>(e => e.SceneName == firstDecision.LocalEpisode.SceneName), _approvedDecisions.First().LocalEpisode, false),
                       Times.Once());
         }
+
+        [Test]
+        public void should_import_all_split_parts_for_the_same_episode()
+        {
+            GivenExistingFileOnDisk();
+            GivenNewDownload();
+
+            var series = _approvedDecisions.First().LocalEpisode.Series;
+            var episode = _approvedDecisions.First().LocalEpisode.Episodes.First();
+            var downloadFolder = _downloadClientItem.OutputPath.ToString();
+
+            var decisions = new List<ImportDecision>();
+            for (var part = 1; part <= 3; part++)
+            {
+                decisions.Add(new ImportDecision(new LocalEpisode
+                {
+                    Series = series,
+                    Episodes = new List<Episode> { episode },
+                    Path = Path.Combine(downloadFolder, $"Sophia Locke - Punished Step Mom Part {part}.mp4"),
+                    Quality = new QualityModel(Quality.WEBDL1080p),
+                    FilePartNumber = part,
+                    OtherVideoFiles = true,
+                    SceneSource = true
+                }));
+            }
+
+            var results = Subject.Import(decisions, true, _downloadClientItem);
+
+            results.Where(r => r.Result == ImportResultType.Imported).Should().HaveCount(3);
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Add(It.Is<EpisodeFile>(f => f.Episodes.Value.Count == 1)), Times.Once());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Add(It.Is<EpisodeFile>(f => f.Episodes.Value.Count == 0)), Times.Exactly(2));
+        }
     }
 }

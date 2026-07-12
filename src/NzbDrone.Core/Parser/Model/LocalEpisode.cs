@@ -38,6 +38,9 @@ namespace NzbDrone.Core.Parser.Model
         public string ReleaseGroup { get; set; }
         public string SceneName { get; set; }
         public bool OtherVideoFiles { get; set; }
+        public int? FilePartNumber { get; set; }
+        public int? FilePartTotal { get; set; }
+        public bool IsSplitPart => FilePartNumber.HasValue;
         public List<CustomFormat> CustomFormats { get; set; }
         public int CustomFormatScore { get; set; }
         public GrabbedReleaseInfo Release { get; set; }

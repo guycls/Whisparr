@@ -14,6 +14,7 @@ using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Qualities;
+using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.MediaFiles.EpisodeImport
 {
@@ -81,8 +82,11 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
                                          .Intersect(localEpisode.Episodes.Select(e => e.Id))
                                          .Any())
                     {
-                        importResults.Add(new ImportResult(importDecision, "Episode has already been imported"));
-                        continue;
+                        if (!localEpisode.IsSplitPart || PartAlreadyImported(importResults, localEpisode))
+                        {
+                            importResults.Add(new ImportResult(importDecision, "Episode has already been imported"));
+                            continue;
+                        }
                     }
 
                     var episodeFile = new EpisodeFile();
@@ -94,7 +98,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
                     episodeFile.MediaInfo = localEpisode.MediaInfo;
                     episodeFile.Series = localEpisode.Series;
                     episodeFile.SeasonNumber = localEpisode.SeasonNumber;
-                    episodeFile.Episodes = localEpisode.Episodes;
+                    episodeFile.Episodes = ShouldLinkToEpisode(localEpisode) ? localEpisode.Episodes : new List<Episode>();
                     episodeFile.ReleaseGroup = localEpisode.ReleaseGroup;
                     episodeFile.Languages = localEpisode.Languages;
 
@@ -242,6 +246,21 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
             }
 
             return Path.GetFileName(path);
+        }
+
+        private static bool ShouldLinkToEpisode(LocalEpisode localEpisode)
+        {
+            return !localEpisode.IsSplitPart || localEpisode.FilePartNumber == 1;
+        }
+
+        private static bool PartAlreadyImported(List<ImportResult> importResults, LocalEpisode localEpisode)
+        {
+            return importResults.Any(r =>
+                r.Result == ImportResultType.Imported &&
+                r.ImportDecision.LocalEpisode.FilePartNumber == localEpisode.FilePartNumber &&
+                r.ImportDecision.LocalEpisode.Episodes.Select(e => e.Id)
+                    .Intersect(localEpisode.Episodes.Select(e => e.Id))
+                    .Any());
         }
     }
 }

@@ -205,5 +205,17 @@ namespace NzbDrone.Core.Test.MediaFiles
 
             Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_localEpisode.Episodes.Single().EpisodeFile, It.IsAny<DeleteMediaFileReason>()), Times.Never());
         }
+
+        [Test]
+        public void should_not_delete_existing_episode_file_when_importing_split_part()
+        {
+            GivenSingleEpisodeWithSingleEpisodeFile();
+            _localEpisode.FilePartNumber = 2;
+
+            Subject.UpgradeEpisodeFile(_episodeFile, _localEpisode);
+
+            Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(It.IsAny<EpisodeFile>(), It.IsAny<DeleteMediaFileReason>()), Times.Never());
+        }
     }
 }

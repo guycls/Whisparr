@@ -507,6 +507,8 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
 
             var imported = new List<ImportResult>();
             var importedTrackedDownload = new List<ManuallyImportedFile>();
+            var pendingImports = new List<(ManualImportFile File, ImportDecision Decision, TrackedDownload TrackedDownload, bool ExistingFile)>();
+            var hasMultipleVideoFiles = message.Files.Count > 1;
 
             for (var i = 0; i < message.Files.Count; i++)
             {
@@ -531,7 +533,8 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
                     Languages = file.Languages,
                     IndexerFlags = (IndexerFlags)file.IndexerFlags,
                     Series = series,
-                    Size = 0
+                    Size = 0,
+                    OtherVideoFiles = hasMultipleVideoFiles
                 };
 
                 if (file.DownloadId.IsNotNullOrWhiteSpace())
@@ -557,29 +560,42 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
                 localEpisode.Quality = file.Quality;
                 localEpisode.Languages = file.Languages;
                 localEpisode.IndexerFlags = (IndexerFlags)file.IndexerFlags;
+                localEpisode.OtherVideoFiles = hasMultipleVideoFiles;
+
+                var partInfo = FilePartParser.Parse(localEpisode.Path);
+                localEpisode.FilePartNumber = partInfo.PartNumber;
+                localEpisode.FilePartTotal = partInfo.PartTotal;
 
                 localEpisode.CustomFormats = _formatCalculator.ParseCustomFormat(localEpisode);
                 localEpisode.CustomFormatScore = localEpisode.Series.QualityProfile?.Value.CalculateCustomFormatScore(localEpisode.CustomFormats) ?? 0;
 
-                // TODO: Cleanup non-tracked downloads
+                pendingImports.Add((file, new ImportDecision(localEpisode), trackedDownload, existingFile));
+            }
 
-                var importDecision = new ImportDecision(localEpisode);
+            foreach (var group in pendingImports.GroupBy(p => p.TrackedDownload?.DownloadItem?.DownloadId ?? string.Empty))
+            {
+                var groupItems = group.ToList();
+                var trackedDownload = groupItems.First().TrackedDownload;
+                var importDecisions = groupItems.Select(g => g.Decision).ToList();
+                var existingFile = groupItems.First().ExistingFile;
 
                 if (trackedDownload == null)
                 {
-                    imported.AddRange(_importApprovedEpisodes.Import(new List<ImportDecision> { importDecision }, !existingFile, null, message.ImportMode));
+                    imported.AddRange(_importApprovedEpisodes.Import(importDecisions, !existingFile, null, message.ImportMode));
                 }
                 else
                 {
-                    var importResult = _importApprovedEpisodes.Import(new List<ImportDecision> { importDecision }, true, trackedDownload.DownloadItem, message.ImportMode).First();
+                    var importResults = _importApprovedEpisodes.Import(importDecisions, true, trackedDownload.DownloadItem, message.ImportMode);
+                    imported.AddRange(importResults);
 
-                    imported.Add(importResult);
-
-                    importedTrackedDownload.Add(new ManuallyImportedFile
+                    foreach (var importResult in importResults)
                     {
-                        TrackedDownload = trackedDownload,
-                        ImportResult = importResult
-                    });
+                        importedTrackedDownload.Add(new ManuallyImportedFile
+                        {
+                            TrackedDownload = trackedDownload,
+                            ImportResult = importResult
+                        });
+                    }
                 }
             }
 

@@ -78,7 +78,7 @@ namespace NzbDrone.Core.MediaFiles
 
         public EpisodeFile MoveEpisodeFile(EpisodeFile episodeFile, LocalEpisode localEpisode)
         {
-            var filePath = _buildFileNames.BuildFilePath(localEpisode.Episodes, localEpisode.Series, episodeFile, Path.GetExtension(localEpisode.Path));
+            var filePath = BuildDestinationPath(localEpisode, episodeFile);
 
             EnsureEpisodeFolder(episodeFile, localEpisode, filePath);
 
@@ -89,7 +89,7 @@ namespace NzbDrone.Core.MediaFiles
 
         public EpisodeFile CopyEpisodeFile(EpisodeFile episodeFile, LocalEpisode localEpisode)
         {
-            var filePath = _buildFileNames.BuildFilePath(localEpisode.Episodes, localEpisode.Series, episodeFile, Path.GetExtension(localEpisode.Path));
+            var filePath = BuildDestinationPath(localEpisode, episodeFile);
 
             EnsureEpisodeFolder(episodeFile, localEpisode, filePath);
 
@@ -101,6 +101,51 @@ namespace NzbDrone.Core.MediaFiles
 
             _logger.Debug("Copying episode file: {0} to {1}", episodeFile.Path, filePath);
             return TransferFile(episodeFile, localEpisode.Series, localEpisode.Episodes, filePath, TransferMode.Copy, localEpisode);
+        }
+
+        private string BuildDestinationPath(LocalEpisode localEpisode, EpisodeFile episodeFile)
+        {
+            var extension = Path.GetExtension(localEpisode.Path);
+            var filePath = _buildFileNames.BuildFilePath(localEpisode.Episodes, localEpisode.Series, episodeFile, extension);
+
+            if (localEpisode.IsSplitPart)
+            {
+                filePath = ApplySplitPartSuffix(filePath, localEpisode.FilePartNumber.Value);
+            }
+
+            return EnsureUniqueDestination(filePath, localEpisode.Path);
+        }
+
+        private static string ApplySplitPartSuffix(string filePath, int partNumber)
+        {
+            var extension = Path.GetExtension(filePath);
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+
+            return Path.Combine(Path.GetDirectoryName(filePath), $"{fileNameWithoutExtension} - Part {partNumber}{extension}");
+        }
+
+        private string EnsureUniqueDestination(string destinationPath, string sourcePath)
+        {
+            if (!_diskProvider.FileExists(destinationPath) || destinationPath.Equals(sourcePath, StringComparison.Ordinal))
+            {
+                return destinationPath;
+            }
+
+            var extension = Path.GetExtension(destinationPath);
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(destinationPath);
+            var directory = Path.GetDirectoryName(destinationPath);
+
+            for (var i = 2; i < 100; i++)
+            {
+                var candidate = Path.Combine(directory, $"{fileNameWithoutExtension}_{i}{extension}");
+
+                if (!_diskProvider.FileExists(candidate) || candidate.Equals(sourcePath, StringComparison.Ordinal))
+                {
+                    return candidate;
+                }
+            }
+
+            return destinationPath;
         }
 
         private EpisodeFile TransferFile(EpisodeFile episodeFile, Series series, List<Episode> episodes, string destinationFilePath, TransferMode mode, LocalEpisode localEpisode = null)

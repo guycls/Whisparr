@@ -9,6 +9,7 @@ using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation;
+using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Tv;
 
@@ -134,6 +135,8 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
                 localEpisode.FileEpisodeInfo = fileEpisodeInfo;
                 localEpisode.Size = _diskProvider.GetFileSize(localEpisode.Path);
 
+                ApplyFilePartInfo(localEpisode);
+
                 _aggregationService.Augment(localEpisode, downloadClientItem);
 
                 if (localEpisode.Episodes.Empty())
@@ -183,6 +186,13 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
             }
 
             return decision;
+        }
+
+        private static void ApplyFilePartInfo(LocalEpisode localEpisode)
+        {
+            var partInfo = FilePartParser.Parse(localEpisode.Path);
+            localEpisode.FilePartNumber = partInfo.PartNumber;
+            localEpisode.FilePartTotal = partInfo.PartTotal;
         }
 
         private Rejection EvaluateSpec(IImportDecisionEngineSpecification spec, LocalEpisode localEpisode, DownloadClientItem downloadClientItem)

@@ -37,43 +37,47 @@ namespace NzbDrone.Core.MediaFiles
         public EpisodeFileMoveResult UpgradeEpisodeFile(EpisodeFile episodeFile, LocalEpisode localEpisode, bool copyOnly = false)
         {
             var moveFileResult = new EpisodeFileMoveResult();
-            var existingFiles = localEpisode.Episodes
-                                            .Where(e => e.EpisodeFileId > 0)
-                                            .Select(e => e.EpisodeFile.Value)
-                                            .Where(e => e != null)
-                                            .GroupBy(e => e.Id)
-                                            .ToList();
 
-            var rootFolder = _diskProvider.GetParentFolder(localEpisode.Series.Path);
-
-            // If there are existing episode files and the root folder is missing, throw, so the old file isn't left behind during the import process.
-            // Exception: Allow network-based folder structures to be created automatically
-            if (existingFiles.Any() && !_diskProvider.FolderExists(rootFolder))
+            if (!localEpisode.IsSplitPart)
             {
-                // Check if this is a network-based folder structure that should be created automatically
-                var isNetworkStructure = !string.IsNullOrEmpty(localEpisode.Series.Network) &&
-                                       localEpisode.Series.Path.Contains(localEpisode.Series.Network);
+                var existingFiles = localEpisode.Episodes
+                                                .Where(e => e.EpisodeFileId > 0)
+                                                .Select(e => e.EpisodeFile.Value)
+                                                .Where(e => e != null)
+                                                .GroupBy(e => e.Id)
+                                                .ToList();
 
-                if (!isNetworkStructure)
+                var rootFolder = _diskProvider.GetParentFolder(localEpisode.Series.Path);
+
+                // If there are existing episode files and the root folder is missing, throw, so the old file isn't left behind during the import process.
+                // Exception: Allow network-based folder structures to be created automatically
+                if (existingFiles.Any() && !_diskProvider.FolderExists(rootFolder))
                 {
-                    throw new RootFolderNotFoundException($"Root folder '{rootFolder}' was not found.");
-                }
-            }
+                    // Check if this is a network-based folder structure that should be created automatically
+                    var isNetworkStructure = !string.IsNullOrEmpty(localEpisode.Series.Network) &&
+                                           localEpisode.Series.Path.Contains(localEpisode.Series.Network);
 
-            foreach (var existingFile in existingFiles)
-            {
-                var file = existingFile.First();
-                var episodeFilePath = Path.Combine(localEpisode.Series.Path, file.RelativePath);
-                var subfolder = rootFolder.GetRelativePath(_diskProvider.GetParentFolder(episodeFilePath));
-
-                if (_diskProvider.FileExists(episodeFilePath))
-                {
-                    _logger.Debug("Removing existing episode file: {0}", file);
-                    _recycleBinProvider.DeleteFile(episodeFilePath, subfolder);
+                    if (!isNetworkStructure)
+                    {
+                        throw new RootFolderNotFoundException($"Root folder '{rootFolder}' was not found.");
+                    }
                 }
 
-                moveFileResult.OldFiles.Add(file);
-                _mediaFileService.Delete(file, DeleteMediaFileReason.Upgrade);
+                foreach (var existingFile in existingFiles)
+                {
+                    var file = existingFile.First();
+                    var episodeFilePath = Path.Combine(localEpisode.Series.Path, file.RelativePath);
+                    var subfolder = rootFolder.GetRelativePath(_diskProvider.GetParentFolder(episodeFilePath));
+
+                    if (_diskProvider.FileExists(episodeFilePath))
+                    {
+                        _logger.Debug("Removing existing episode file: {0}", file);
+                        _recycleBinProvider.DeleteFile(episodeFilePath, subfolder);
+                    }
+
+                    moveFileResult.OldFiles.Add(file);
+                    _mediaFileService.Delete(file, DeleteMediaFileReason.Upgrade);
+                }
             }
 
             localEpisode.OldFiles = moveFileResult.OldFiles;
