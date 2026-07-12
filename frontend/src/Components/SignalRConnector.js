@@ -170,7 +170,7 @@ class SignalRConnector extends Component {
     // Both successful and failed commands need to be
     // completed, otherwise they spin until they timeout.
 
-    if (status === 'completed' || status === 'failed') {
+    if (status === 'completed' || status === 'failed' || status === 'cancelled' || status === 'aborted') {
       this.props.dispatchFinishCommand(resource);
     } else {
       this.props.dispatchUpdateCommand(resource);

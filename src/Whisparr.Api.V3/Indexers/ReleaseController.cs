@@ -33,6 +33,7 @@ namespace Whisparr.Api.V3.Indexers
         private readonly ISeriesService _seriesService;
         private readonly IEpisodeService _episodeService;
         private readonly IParsingService _parsingService;
+        private readonly ISearchProgressService _searchProgressService;
         private readonly Logger _logger;
 
         private readonly ICached<RemoteEpisode> _remoteEpisodeCache;
@@ -45,6 +46,7 @@ namespace Whisparr.Api.V3.Indexers
                              ISeriesService seriesService,
                              IEpisodeService episodeService,
                              IParsingService parsingService,
+                             ISearchProgressService searchProgressService,
                              ICacheManager cacheManager,
                              IQualityProfileService qualityProfileService,
                              Logger logger)
@@ -58,6 +60,7 @@ namespace Whisparr.Api.V3.Indexers
             _seriesService = seriesService;
             _episodeService = episodeService;
             _parsingService = parsingService;
+            _searchProgressService = searchProgressService;
             _logger = logger;
 
             PostValidator.RuleFor(s => s.IndexerId).ValidId();
@@ -150,56 +153,90 @@ namespace Whisparr.Api.V3.Indexers
 
         [HttpGet]
         [Produces("application/json")]
-        public async Task<List<ReleaseResource>> GetReleases(int? seriesId, int? episodeId, int? seasonNumber)
+        public async Task<List<ReleaseResource>> GetReleases(int? seriesId, int? episodeId, int? seasonNumber, string searchId)
         {
             if (episodeId.HasValue)
             {
-                return await GetEpisodeReleases(episodeId.Value);
+                return await GetEpisodeReleases(episodeId.Value, searchId);
             }
 
             if (seriesId.HasValue && seasonNumber.HasValue)
             {
-                return await GetSeasonReleases(seriesId.Value, seasonNumber.Value);
+                return await GetSeasonReleases(seriesId.Value, seasonNumber.Value, searchId);
             }
 
             return await GetRss();
         }
 
-        private async Task<List<ReleaseResource>> GetEpisodeReleases(int episodeId)
+        [HttpGet("search/progress/{searchId}")]
+        [Produces("application/json")]
+        public ActionResult<SearchProgressResource> GetSearchProgress(string searchId)
+        {
+            var progress = _searchProgressService.Get(searchId);
+
+            if (progress == null)
+            {
+                return NotFound();
+            }
+
+            return SearchProgressResourceMapper.ToResource(progress);
+        }
+
+        private async Task<List<ReleaseResource>> GetEpisodeReleases(int episodeId, string searchId)
         {
             try
             {
-                var decisions = await _releaseSearchService.EpisodeSearch(episodeId, true, true);
+                var decisions = await _releaseSearchService.EpisodeSearch(episodeId, true, true, searchId);
                 var prioritizedDecisions = _prioritizeDownloadDecision.PrioritizeDecisions(decisions);
 
                 return MapDecisions(prioritizedDecisions);
             }
             catch (SearchFailedException ex)
             {
+                if (searchId.IsNotNullOrWhiteSpace())
+                {
+                    _searchProgressService.Fail(searchId, ex.Message);
+                }
+
                 throw new NzbDroneClientException(HttpStatusCode.BadRequest, ex.Message);
             }
             catch (Exception ex)
             {
+                if (searchId.IsNotNullOrWhiteSpace())
+                {
+                    _searchProgressService.Fail(searchId, ex.Message);
+                }
+
                 _logger.Error(ex, "Episode search failed: " + ex.Message);
                 throw new NzbDroneClientException(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
 
-        private async Task<List<ReleaseResource>> GetSeasonReleases(int seriesId, int seasonNumber)
+        private async Task<List<ReleaseResource>> GetSeasonReleases(int seriesId, int seasonNumber, string searchId)
         {
             try
             {
-                var decisions = await _releaseSearchService.SeasonSearch(seriesId, seasonNumber, false, false, true, true);
+                var decisions = await _releaseSearchService.SeasonSearch(seriesId, seasonNumber, false, false, true, true, searchId);
                 var prioritizedDecisions = _prioritizeDownloadDecision.PrioritizeDecisions(decisions);
 
                 return MapDecisions(prioritizedDecisions);
             }
             catch (SearchFailedException ex)
             {
+                if (searchId.IsNotNullOrWhiteSpace())
+                {
+                    _searchProgressService.Fail(searchId, ex.Message);
+                }
+
                 throw new NzbDroneClientException(HttpStatusCode.BadRequest, ex.Message);
             }
             catch (Exception ex)
             {
+                if (searchId.IsNotNullOrWhiteSpace())
+                {
+                    _searchProgressService.Fail(searchId, ex.Message);
+                }
+
                 _logger.Error(ex, "Season search failed: " + ex.Message);
                 throw new NzbDroneClientException(HttpStatusCode.InternalServerError, ex.Message);
             }

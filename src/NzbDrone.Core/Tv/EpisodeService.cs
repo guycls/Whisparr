@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
@@ -19,6 +20,7 @@ namespace NzbDrone.Core.Tv
         Episode FindEpisode(int seriesId, int absoluteEpisodeNumber);
         Episode FindEpisodeByTitle(int seriesId, int seasonNumber, string releaseTitle);
         Episode MatchEpisodeByReleaseTokens(IEnumerable<Episode> candidates, string releaseTokens);
+        Episode MatchEpisodeByImportFileName(IEnumerable<Episode> candidates, string filePath, string downloadClientTitle = null);
         Episode FindEpisode(int seriesId, string date, string part);
         Episode FindByExternalId(string externalId);
         List<Episode> GetEpisodeBySeries(int seriesId);
@@ -152,6 +154,41 @@ namespace NzbDrone.Core.Tv
             }
 
             return null;
+        }
+
+        public Episode MatchEpisodeByImportFileName(IEnumerable<Episode> candidates, string filePath, string downloadClientTitle = null)
+        {
+            var candidateList = candidates?.ToList() ?? new List<Episode>();
+
+            if (candidateList.Empty() || filePath.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            var releaseTokens = GetReleaseTokensForImport(filePath, downloadClientTitle);
+            var matchedEpisode = MatchEpisodeByReleaseTokens(candidateList, releaseTokens);
+
+            if (matchedEpisode != null)
+            {
+                return matchedEpisode;
+            }
+
+            var normalizedFileName = Parser.Parser.NormalizeEpisodeTitle(Path.GetFileNameWithoutExtension(filePath));
+
+            if (normalizedFileName.IsNotNullOrWhiteSpace())
+            {
+                var exactMatches = candidateList
+                    .Where(e => e.Title.IsNotNullOrWhiteSpace() &&
+                                Parser.Parser.NormalizeEpisodeTitle(e.Title).Equals(normalizedFileName))
+                    .ToList();
+
+                if (exactMatches.Count == 1)
+                {
+                    return exactMatches.First();
+                }
+            }
+
+            return MatchEpisodeByLongestCommonSubstring(candidateList, normalizedFileName);
         }
 
         public List<Episode> EpisodesWithFiles(int seriesId)
@@ -407,6 +444,71 @@ namespace NzbDrone.Core.Tv
             }
 
             return matches;
+        }
+
+        private static string GetReleaseTokensForImport(string filePath, string downloadClientTitle)
+        {
+            var parsedInfo = Parser.Parser.ParsePath(filePath);
+
+            if (parsedInfo?.ReleaseTokens.IsNotNullOrWhiteSpace() == true)
+            {
+                return parsedInfo.ReleaseTokens;
+            }
+
+            if (parsedInfo?.ReleaseTitle.IsNotNullOrWhiteSpace() == true)
+            {
+                return parsedInfo.ReleaseTitle;
+            }
+
+            if (downloadClientTitle.IsNotNullOrWhiteSpace())
+            {
+                return downloadClientTitle;
+            }
+
+            return Path.GetFileNameWithoutExtension(filePath);
+        }
+
+        private Episode MatchEpisodeByLongestCommonSubstring(List<Episode> candidates, string normalizedFileName)
+        {
+            const int minSubstringLength = 5;
+
+            if (normalizedFileName.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            Episode bestMatch = null;
+            var bestLength = 0;
+            var tie = false;
+
+            foreach (var episode in candidates)
+            {
+                if (episode.Title.IsNullOrWhiteSpace())
+                {
+                    continue;
+                }
+
+                var normalizedTitle = Parser.Parser.NormalizeEpisodeTitle(episode.Title);
+                var length = normalizedFileName.LongestCommonSubstringLength(normalizedTitle);
+
+                if (length > bestLength)
+                {
+                    bestLength = length;
+                    bestMatch = episode;
+                    tie = false;
+                }
+                else if (length == bestLength && length > 0)
+                {
+                    tie = true;
+                }
+            }
+
+            if (bestMatch == null || tie || bestLength < minSubstringLength)
+            {
+                return null;
+            }
+
+            return bestMatch;
         }
     }
 }

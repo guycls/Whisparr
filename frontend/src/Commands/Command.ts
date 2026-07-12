@@ -47,6 +47,9 @@ interface Command extends ModelBase {
   sendUpdatesToClient: boolean;
   updateScheduledTask: boolean;
   lastExecutionTime: string;
+  progressStudio?: string;
+  progressPercent?: number;
+  isCancelling?: boolean;
 }
 
 export default Command;

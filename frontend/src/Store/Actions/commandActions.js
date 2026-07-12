@@ -1,13 +1,13 @@
 import { batchActions } from 'redux-batched-actions';
+import $ from 'jquery';
 import { messageTypes } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import { isSameCommand } from 'Utilities/Command';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
 import { hideMessage, showMessage } from './appActions';
-import { removeItem, updateItem } from './baseActions';
+import { removeItem, set, updateItem } from './baseActions';
 import createFetchHandler from './Creators/createFetchHandler';
 import createHandleActions from './Creators/createHandleActions';
-import createRemoveItemHandler from './Creators/createRemoveItemHandler';
 
 //
 // Variables
@@ -168,14 +168,73 @@ export const actionHandlers = handleThunks({
     executeCommandHelper(payload, dispatch);
   },
 
-  [CANCEL_COMMAND]: createRemoveItemHandler(section, '/command'),
+  [CANCEL_COMMAND]: function(getState, payload, dispatch) {
+    const {
+      id,
+      status,
+      queryParams
+    } = payload;
+
+    dispatch(set({ section, isDeleting: true }));
+
+    const ajaxOptions = {
+      url: `/command/${id}?${$.param(queryParams, true)}`,
+      method: 'DELETE'
+    };
+
+    const promise = createAjaxRequest(ajaxOptions).request;
+
+    promise.done(() => {
+      if (status === 'started') {
+        dispatch(batchActions([
+          set({
+            section,
+            isDeleting: false,
+            deleteError: null
+          }),
+
+          updateItem({
+            section,
+            id,
+            isCancelling: true
+          })
+        ]));
+      } else {
+        dispatch(batchActions([
+          set({
+            section,
+            isDeleting: false,
+            deleteError: null
+          }),
+
+          removeItem({ section, id })
+        ]));
+      }
+    });
+
+    promise.fail((xhr) => {
+      dispatch(set({
+        section,
+        isDeleting: false,
+        deleteError: xhr
+      }));
+    });
+
+    return promise;
+  },
 
   [ADD_COMMAND]: function(getState, payload, dispatch) {
     dispatch(updateItem({ section: 'commands', ...payload }));
   },
 
   [UPDATE_COMMAND]: function(getState, payload, dispatch) {
-    dispatch(updateItem({ section: 'commands', ...payload }));
+    const existing = getState().commands.items.find((command) => command.id === payload.id);
+
+    dispatch(updateItem({
+      section: 'commands',
+      ...payload,
+      isCancelling: existing?.isCancelling ?? false
+    }));
 
     showCommandMessage(payload, dispatch);
     scheduleRemoveCommand(payload, dispatch);
@@ -201,7 +260,11 @@ export const actionHandlers = handleThunks({
 
     delete commandFinishedCallbacks[payload.id];
 
-    dispatch(updateItem({ section: 'commands', ...payload }));
+    dispatch(updateItem({
+      section: 'commands',
+      ...payload,
+      isCancelling: false
+    }));
     scheduleRemoveCommand(payload, dispatch);
     showCommandMessage(payload, dispatch);
   },

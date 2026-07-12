@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, KeyboardEvent } from 'react';
 import Link from 'Components/Link/Link';
 import EpisodeDetailsModal from 'Episode/EpisodeDetailsModal';
 import { EpisodeEntities } from 'Episode/useEpisode';
@@ -36,13 +36,30 @@ function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
 
     setIsDetailsModalOpen(true);
   }, [onModalOpen]);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleLinkPress();
+      }
+    },
+    [handleLinkPress]
+  );
   const handleModalClose = useCallback(() => {
     setIsDetailsModalOpen(false);
   }, []);
 
   return (
     <div className={styles.container}>
-      <Link className={classNames(styles.link, className)} onPress={handleLinkPress}>
+      <Link
+        className={classNames(styles.link, className)}
+        component="span"
+        role="button"
+        tabIndex={0}
+        onPress={handleLinkPress}
+        onKeyDown={handleKeyDown}
+      >
         {episodeTitle}
       </Link>
 

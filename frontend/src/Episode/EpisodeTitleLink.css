@@ -8,7 +8,9 @@
 
   display: inline-block;
   overflow: hidden;
-  
+  cursor: pointer;
+  user-select: text;
+
   max-width: 800px;
   text-overflow: ellipsis;
   white-space: nowrap;

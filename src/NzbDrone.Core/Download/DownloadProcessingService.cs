@@ -53,6 +53,8 @@ namespace NzbDrone.Core.Download
 
             foreach (var trackedDownload in trackedDownloads)
             {
+                CommandCancellation.ThrowIfCancelled();
+
                 try
                 {
                     if (trackedDownload.State == TrackedDownloadState.FailedPending)

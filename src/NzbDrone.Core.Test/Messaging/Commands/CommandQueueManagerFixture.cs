@@ -36,6 +36,88 @@ namespace NzbDrone.Core.Test.Messaging.Commands
                   {
                       return commands.SingleOrDefault(e => e.Id == c);
                   });
+
+            Mocker.GetMock<ICommandRepository>()
+                  .Setup(s => s.End(It.IsAny<CommandModel>()))
+                  .Callback<CommandModel>(c =>
+                  {
+                      var existing = commands.SingleOrDefault(e => e.Id == c.Id);
+
+                      if (existing != null)
+                      {
+                          existing.Status = c.Status;
+                          existing.Message = c.Message;
+                          existing.EndedAt = c.EndedAt;
+                          existing.Duration = c.Duration;
+                      }
+                  });
+        }
+
+        [Test]
+        public void cancel_queued_should_persist_cancelled_status()
+        {
+            var command = Subject.Push<RefreshMonitoredDownloadsCommand>(new RefreshMonitoredDownloadsCommand());
+
+            Subject.Cancel(command.Id);
+
+            command.Status.Should().Be(CommandStatus.Cancelled);
+            command.Message.Should().Be("Cancelled");
+
+            Mocker.GetMock<ICommandRepository>()
+                  .Verify(v => v.End(It.Is<CommandModel>(c => c.Id == command.Id && c.Status == CommandStatus.Cancelled)), Times.Once());
+        }
+
+        [Test]
+        public void cancel_started_should_cancel_token()
+        {
+            var command = Subject.Push<RefreshMonitoredDownloadsCommand>(new RefreshMonitoredDownloadsCommand());
+            command.StartedAt = DateTime.UtcNow;
+            command.Status = CommandStatus.Started;
+
+            var token = Subject.RegisterCancellation(command);
+
+            Subject.Cancel(command.Id);
+
+            token.IsCancellationRequested.Should().BeTrue();
+        }
+
+        [Test]
+        public void cancel_completed_should_throw()
+        {
+            var command = Subject.Push<RefreshMonitoredDownloadsCommand>(new RefreshMonitoredDownloadsCommand());
+            command.StartedAt = DateTime.UtcNow;
+            command.Status = CommandStatus.Completed;
+
+            Action action = () => Subject.Cancel(command.Id);
+
+            action.Should().Throw<NzbDrone.Core.Exceptions.NzbDroneClientException>();
+        }
+
+        [Test]
+        public void abort_should_set_cancelled_status()
+        {
+            var command = Subject.Push<RefreshMonitoredDownloadsCommand>(new RefreshMonitoredDownloadsCommand());
+            command.StartedAt = DateTime.UtcNow;
+            command.Status = CommandStatus.Started;
+
+            Subject.Abort(command, "Cancelled");
+
+            command.Status.Should().Be(CommandStatus.Cancelled);
+            command.Message.Should().Be("Cancelled");
+
+            Mocker.GetMock<ICommandRepository>()
+                  .Verify(v => v.End(It.Is<CommandModel>(c => c.Id == command.Id && c.Status == CommandStatus.Cancelled)), Times.Once());
+        }
+
+        [Test]
+        public void set_progress_should_calculate_percent()
+        {
+            var command = Subject.Push<RefreshMonitoredDownloadsCommand>(new RefreshMonitoredDownloadsCommand());
+
+            Subject.SetProgress(command, "Studio A", 56, 100);
+
+            command.ProgressStudio.Should().Be("Studio A");
+            command.ProgressPercent.Should().Be(56);
         }
 
         [Test]

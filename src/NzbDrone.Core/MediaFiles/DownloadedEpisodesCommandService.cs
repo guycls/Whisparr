@@ -68,6 +68,8 @@ namespace NzbDrone.Core.MediaFiles
 
         public void Execute(DownloadedEpisodesScanCommand message)
         {
+            CommandCancellation.ThrowIfCancelled();
+
             List<ImportResult> importResults;
 
             if (message.Path.IsNotNullOrWhiteSpace())

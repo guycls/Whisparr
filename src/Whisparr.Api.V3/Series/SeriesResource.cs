@@ -38,6 +38,7 @@ namespace Whisparr.Api.V3.Series
         // View & Edit
         public string Path { get; set; }
         public int QualityProfileId { get; set; }
+        public string StudioSearchPrefix { get; set; }
 
         // Editing Only
         public bool Monitored { get; set; }
@@ -100,6 +101,7 @@ namespace Whisparr.Api.V3.Series
 
                        Path = model.Path,
                        QualityProfileId = model.QualityProfileId,
+                       StudioSearchPrefix = model.StudioSearchPrefix,
 
                        Monitored = model.Monitored,
                        SeriesType = model.SeriesType,
@@ -158,6 +160,7 @@ namespace Whisparr.Api.V3.Series
 
                        Path = resource.Path,
                        QualityProfileId = resource.QualityProfileId,
+                       StudioSearchPrefix = resource.StudioSearchPrefix,
 
                        Monitored = resource.Monitored,
                        SeriesType = resource.SeriesType,

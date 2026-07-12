@@ -61,6 +61,8 @@ namespace NzbDrone.Core.IndexerSearch
 
             foreach (var group in groups.OrderBy(g => g.Episodes.Min(e => e.LastSearchTime ?? DateTime.MinValue)))
             {
+                CommandCancellation.ThrowIfCancelled();
+
                 List<DownloadDecision> decisions;
 
                 var seriesId = group.SeriesId;
@@ -111,6 +113,8 @@ namespace NzbDrone.Core.IndexerSearch
         {
             foreach (var episodeId in message.EpisodeIds)
             {
+                CommandCancellation.ThrowIfCancelled();
+
                 var decisions = _releaseSearchService.EpisodeSearch(episodeId, message.Trigger == CommandTrigger.Manual, false).GetAwaiter().GetResult();
                 var processed = _processDownloadDecisions.ProcessDecisions(decisions).GetAwaiter().GetResult();
 

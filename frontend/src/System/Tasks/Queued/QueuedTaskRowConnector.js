@@ -21,8 +21,9 @@ function createMapStateToProps() {
 function createMapDispatchToProps(dispatch, props) {
   return {
     onCancelPress() {
-      dispatch(cancelCommand({
-        id: props.id
+      return dispatch(cancelCommand({
+        id: props.id,
+        status: props.status
       }));
     }
   };

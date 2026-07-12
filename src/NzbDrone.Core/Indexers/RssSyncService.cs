@@ -65,6 +65,8 @@ namespace NzbDrone.Core.Indexers
 
         public void Execute(RssSyncCommand message)
         {
+            CommandCancellation.ThrowIfCancelled();
+
             var processed = Sync().GetAwaiter().GetResult();
             var grabbedOrPending = processed.Grabbed.Concat(processed.Pending).ToList();
 

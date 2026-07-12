@@ -11,6 +11,7 @@ import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createSeriesSelector from 'Store/Selectors/createSeriesSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
+import { filterEpisodesByQualityRange, isFullQualityRange } from 'Utilities/Quality/qualityFilterTiers';
 import SeriesDetailsSeason from './SeriesDetailsSeason';
 
 function filterByMonitorStatus(episodes, monitorStatusFilter) {
@@ -37,11 +38,13 @@ function createMapStateToProps() {
   return createSelector(
     (state, { seasonNumber }) => seasonNumber,
     (state, { monitorStatusFilter }) => monitorStatusFilter,
+    (state, { qualityFilter }) => qualityFilter,
     createClientSideCollectionSelector('episodes'),
     createSeriesSelector(),
     createCommandsSelector(),
     createDimensionsSelector(),
-    (seasonNumber, monitorStatusFilter, episodes, series, commands, dimensions) => {
+    (state) => state.episodeFiles.items,
+    (seasonNumber, monitorStatusFilter, qualityFilter, episodes, series, commands, dimensions, episodeFiles) => {
       const isSearching = isCommandExecuting(findCommand(commands, {
         name: commandNames.SEASON_SEARCH,
         seriesId: series.id,
@@ -49,7 +52,13 @@ function createMapStateToProps() {
       }));
 
       const allItems = episodes.items.filter((episode) => episode.seasonNumber === seasonNumber);
-      const items = filterByMonitorStatus(allItems, monitorStatusFilter);
+      const monitorFilteredItems = filterByMonitorStatus(allItems, monitorStatusFilter);
+      const items = filterEpisodesByQualityRange(
+        monitorFilteredItems,
+        episodeFiles,
+        qualityFilter.minIndex,
+        qualityFilter.maxIndex
+      );
 
       return {
         allItems,
@@ -129,10 +138,19 @@ class SeriesDetailsSeasonConnector extends Component {
   render() {
     const {
       monitorStatusFilter,
+      qualityFilter,
       items
     } = this.props;
 
-    if (monitorStatusFilter !== 'all' && !items.length) {
+    const isQualityFilterActive = !isFullQualityRange(
+      qualityFilter.minIndex,
+      qualityFilter.maxIndex
+    );
+
+    if (
+      (monitorStatusFilter !== 'all' || isQualityFilterActive) &&
+      !items.length
+    ) {
       return null;
     }
 
@@ -153,6 +171,7 @@ SeriesDetailsSeasonConnector.propTypes = {
   seriesId: PropTypes.number.isRequired,
   seasonNumber: PropTypes.number.isRequired,
   monitorStatusFilter: PropTypes.string.isRequired,
+  qualityFilter: PropTypes.object.isRequired,
   toggleSeasonMonitored: PropTypes.func.isRequired,
   toggleEpisodesMonitored: PropTypes.func.isRequired,
   setEpisodesTableOption: PropTypes.func.isRequired,

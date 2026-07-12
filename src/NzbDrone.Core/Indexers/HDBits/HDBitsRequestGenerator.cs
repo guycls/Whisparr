@@ -75,9 +75,9 @@ namespace NzbDrone.Core.Indexers.HDBits
 
         private bool TryAddSearchParameters(TorrentQuery query, SearchCriteriaBase searchCriteria)
         {
-            if (searchCriteria.Series.Title.IsNotNullOrWhiteSpace())
+            if (searchCriteria.Series.StudioSearchTitle.IsNotNullOrWhiteSpace())
             {
-                query.Search = searchCriteria.Series.Title;
+                query.Search = searchCriteria.Series.StudioSearchTitle;
                 return true;
             }
 

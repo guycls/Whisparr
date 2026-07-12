@@ -89,7 +89,7 @@ namespace NzbDrone.Core.Indexers.Newznab
 
                 if (searchCriteria.IgnoreSceneDate)
                 {
-                    var siteTitle = NewsnabifyTitle(searchCriteria.Series.Title);
+                    var siteTitle = NewsnabifyTitle(searchCriteria.Series.StudioSearchTitle);
                     var episodeTitleQuery = NewsnabifyTitle(searchCriteria.EpisodeTitle);
                     var sitePlusTitleQuery = $"&q={siteTitle}+{episodeTitleQuery}";
                     pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", sitePlusTitleQuery));
@@ -118,7 +118,7 @@ namespace NzbDrone.Core.Indexers.Newznab
                 if (Settings.SearchSiteTitleOnly)
                 {
                     // Use Site name
-                    var siteTitle = NewsnabifyTitle(searchCriteria.Series.Title);
+                    var siteTitle = NewsnabifyTitle(searchCriteria.Series.StudioSearchTitle);
                     var searchQuery = $"&q={siteTitle}+{sitePlusEpisodeTitle}";
                     pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", searchQuery));
 
@@ -183,7 +183,7 @@ namespace NzbDrone.Core.Indexers.Newznab
                     if (Settings.SearchSiteTitleOnly)
                     {
                         // Use Site name
-                        var siteTitle = NewsnabifyTitle(searchCriteria.Series.Title);
+                        var siteTitle = NewsnabifyTitle(searchCriteria.Series.StudioSearchTitle);
                         var searchQuery = $"&q={siteTitle}+{normalizedQueryTitle}";
                         pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", searchQuery));
 

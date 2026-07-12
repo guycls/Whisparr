@@ -129,6 +129,12 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("DisableIndexerBlocking", value); }
         }
 
+        public bool DisableSearch429Retries
+        {
+            get { return GetValueBoolean("DisableSearch429Retries", false); }
+            set { SetValue("DisableSearch429Retries", value); }
+        }
+
         public bool IgnoreSceneDate
         {
             get { return GetValueBoolean("IgnoreSceneDate", false); }

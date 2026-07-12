@@ -52,6 +52,7 @@ namespace NzbDrone.Core.Configuration
         int MaximumSize { get; set; }
         int MinimumAge { get; set; }
         bool DisableIndexerBlocking { get; set; }
+        bool DisableSearch429Retries { get; set; }
         bool IgnoreSceneDate { get; set; }
         bool PartialTitleMatch { get; set; }
 

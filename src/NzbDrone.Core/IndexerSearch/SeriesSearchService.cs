@@ -15,18 +15,21 @@ namespace NzbDrone.Core.IndexerSearch
         private readonly IEpisodeService _episodeService;
         private readonly ISearchForReleases _releaseSearchService;
         private readonly IProcessDownloadDecisions _processDownloadDecisions;
+        private readonly ICommandProgressReporter _commandProgressReporter;
         private readonly Logger _logger;
 
         public SeriesSearchService(ISeriesService seriesService,
                                    IEpisodeService episodeService,
                                    ISearchForReleases releaseSearchService,
                                    IProcessDownloadDecisions processDownloadDecisions,
+                                   ICommandProgressReporter commandProgressReporter,
                                    Logger logger)
         {
             _seriesService = seriesService;
             _episodeService = episodeService;
             _releaseSearchService = releaseSearchService;
             _processDownloadDecisions = processDownloadDecisions;
+            _commandProgressReporter = commandProgressReporter;
             _logger = logger;
         }
 
@@ -47,26 +50,33 @@ namespace NzbDrone.Core.IndexerSearch
                                 e.AirDateUtc.Value.Before(DateTime.UtcNow))
                     .ToList();
 
+                var progress = new SceneProgressTracker(_commandProgressReporter, series.Title, episodes.Count);
+
                 foreach (var episode in episodes)
                 {
+                    CommandCancellation.ThrowIfCancelled();
+
                     var decisions = _releaseSearchService.EpisodeSearch(episode, userInvokedSearch, false).GetAwaiter().GetResult();
                     var processDecisions = _processDownloadDecisions.ProcessDecisions(decisions).GetAwaiter().GetResult();
                     downloadedCount += processDecisions.Grabbed.Count;
+
+                    progress.ReportSceneProcessed();
                 }
             }
             else
             {
-                foreach (var season in series.Seasons.OrderBy(s => s.SeasonNumber))
+                var monitoredSeasons = series.Seasons.Where(s => s.Monitored).OrderBy(s => s.SeasonNumber).ToList();
+                var progress = new SceneProgressTracker(_commandProgressReporter, series.Title, monitoredSeasons.Count);
+
+                foreach (var season in monitoredSeasons)
                 {
-                    if (!season.Monitored)
-                    {
-                        _logger.Debug("Season {0} of {1} is not monitored, skipping search", season.SeasonNumber, series.Title);
-                        continue;
-                    }
+                    CommandCancellation.ThrowIfCancelled();
 
                     var decisions = _releaseSearchService.SeasonSearch(message.SeriesId, season.SeasonNumber, false, true, userInvokedSearch, false).GetAwaiter().GetResult();
                     var processDecisions = _processDownloadDecisions.ProcessDecisions(decisions).GetAwaiter().GetResult();
                     downloadedCount += processDecisions.Grabbed.Count;
+
+                    progress.ReportSceneProcessed();
                 }
             }
 

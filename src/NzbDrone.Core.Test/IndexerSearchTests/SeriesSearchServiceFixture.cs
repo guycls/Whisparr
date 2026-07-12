@@ -28,12 +28,14 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
                           Seasons = new List<Season>()
                       };
 
+            Mocker.GetMock<ICommandProgressReporter>();
+
             Mocker.GetMock<ISeriesService>()
                   .Setup(s => s.GetSeries(It.IsAny<int>()))
                   .Returns(_series);
 
             Mocker.GetMock<ISearchForReleases>()
-                  .Setup(s => s.SeasonSearch(_series.Id, It.IsAny<int>(), false, false, true, false))
+                  .Setup(s => s.SeasonSearch(_series.Id, It.IsAny<int>(), false, false, true, false, null))
                   .Returns(Task.FromResult(new List<DownloadDecision>()));
 
             Mocker.GetMock<IProcessDownloadDecisions>()
@@ -53,7 +55,7 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             Subject.Execute(new SeriesSearchCommand { SeriesId = _series.Id, Trigger = CommandTrigger.Manual });
 
             Mocker.GetMock<ISearchForReleases>()
-                .Verify(v => v.SeasonSearch(_series.Id, It.IsAny<int>(), false, true, true, false), Times.Exactly(_series.Seasons.Count(s => s.Monitored)));
+                .Verify(v => v.SeasonSearch(_series.Id, It.IsAny<int>(), false, true, true, false, null), Times.Exactly(_series.Seasons.Count(s => s.Monitored)));
         }
 
         [Test]
@@ -69,13 +71,31 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
                               };
 
             Mocker.GetMock<ISearchForReleases>()
-                  .Setup(s => s.SeasonSearch(_series.Id, It.IsAny<int>(), false, true, true, false))
+                  .Setup(s => s.SeasonSearch(_series.Id, It.IsAny<int>(), false, true, true, false, null))
                   .Returns(Task.FromResult(new List<DownloadDecision>()))
-                  .Callback<int, int, bool, bool, bool, bool>((seriesId, seasonNumber, missingOnly, monitoredOnly, userInvokedSearch, interactiveSearch) => seasonOrder.Add(seasonNumber));
+                  .Callback<int, int, bool, bool, bool, bool, string>((seriesId, seasonNumber, missingOnly, monitoredOnly, userInvokedSearch, interactiveSearch, searchId) => seasonOrder.Add(seasonNumber));
 
             Subject.Execute(new SeriesSearchCommand { SeriesId = _series.Id, Trigger = CommandTrigger.Manual });
 
             seasonOrder.First().Should().Be(_series.Seasons.OrderBy(s => s.SeasonNumber).First().SeasonNumber);
+        }
+
+        [Test]
+        public void should_report_progress_for_each_monitored_season()
+        {
+            _series.Seasons = new List<Season>
+                              {
+                                  new Season { SeasonNumber = 1, Monitored = true },
+                                  new Season { SeasonNumber = 2, Monitored = true }
+                              };
+
+            Subject.Execute(new SeriesSearchCommand { SeriesId = _series.Id, Trigger = CommandTrigger.Manual });
+
+            Mocker.GetMock<ICommandProgressReporter>()
+                  .Verify(v => v.ReportSceneProgress(_series.Title, 1, 2), Times.Once);
+
+            Mocker.GetMock<ICommandProgressReporter>()
+                  .Verify(v => v.ReportSceneProgress(_series.Title, 2, 2), Times.Once);
         }
     }
 }

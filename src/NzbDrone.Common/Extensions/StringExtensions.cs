@@ -242,5 +242,34 @@ namespace NzbDrone.Common.Extensions
         {
             return input.Contains(':') ? $"[{input}]" : input;
         }
+
+        public static int LongestCommonSubstringLength(this string left, string right)
+        {
+            if (string.IsNullOrEmpty(left) || string.IsNullOrEmpty(right))
+            {
+                return 0;
+            }
+
+            var maxLength = 0;
+            var lengths = new int[left.Length + 1, right.Length + 1];
+
+            for (var i = 1; i <= left.Length; i++)
+            {
+                for (var j = 1; j <= right.Length; j++)
+                {
+                    if (left[i - 1] == right[j - 1])
+                    {
+                        lengths[i, j] = lengths[i - 1, j - 1] + 1;
+
+                        if (lengths[i, j] > maxLength)
+                        {
+                            maxLength = lengths[i, j];
+                        }
+                    }
+                }
+            }
+
+            return maxLength;
+        }
     }
 }

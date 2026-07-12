@@ -34,7 +34,11 @@ namespace NzbDrone.Core.Tv
         public string Network { get; set; }
         public bool UseSceneNumbering { get; set; }
         public string TitleSlug { get; set; }
+        public string StudioSearchPrefix { get; set; }
         public string Path { get; set; }
+
+        public string StudioSearchTitle =>
+            StudioSearchPrefix.IsNotNullOrWhiteSpace() ? StudioSearchPrefix : Title;
         public int Year { get; set; }
         public Ratings Ratings { get; set; }
         public List<string> Genres { get; set; }
@@ -69,6 +73,7 @@ namespace NzbDrone.Core.Tv
 
             RootFolderPath = otherSeries.RootFolderPath;
             Tags = otherSeries.Tags;
+            StudioSearchPrefix = otherSeries.StudioSearchPrefix;
             AddOptions = otherSeries.AddOptions;
         }
     }

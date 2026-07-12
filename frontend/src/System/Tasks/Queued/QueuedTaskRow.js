@@ -10,6 +10,7 @@ import { icons, kinds } from 'Helpers/Props';
 import formatDate from 'Utilities/Date/formatDate';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import formatTimeSpan from 'Utilities/Date/formatTimeSpan';
+import formatCommandDisplayName from 'Utilities/Command/formatCommandDisplayName';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import styles from './QueuedTaskRow.css';
@@ -43,6 +44,20 @@ function getStatusIconProps(status, message) {
         name: icons.FATAL,
         kind: kinds.DANGER,
         title: `${title}: ${message}`
+      };
+
+    case 'cancelled':
+      return {
+        name: icons.WARNING,
+        kind: kinds.WARNING,
+        title: message === 'Cancelled' ? title : `${title}: ${message}`
+      };
+
+    case 'aborted':
+      return {
+        name: icons.BLOCKLIST,
+        kind: kinds.DANGER,
+        title: message === 'Aborted' ? title : `${title}: ${message}`
       };
 
     default:
@@ -138,6 +153,17 @@ class QueuedTaskRow extends Component {
     });
   };
 
+  onConfirmCancel = () => {
+    const { onCancelPress } = this.props;
+
+    onCancelPress()
+      .done(() => {
+        this.setState({
+          isCancelConfirmModalOpen: false
+        });
+      });
+  };
+
   onAbortCancel = () => {
     this.setState({
       isCancelConfirmModalOpen: false
@@ -150,6 +176,7 @@ class QueuedTaskRow extends Component {
   render() {
     const {
       trigger,
+      name,
       commandName,
       queued,
       started,
@@ -157,10 +184,12 @@ class QueuedTaskRow extends Component {
       status,
       duration,
       message,
+      progressStudio,
+      progressPercent,
+      isCancelling,
       clientUserAgent,
       longDateFormat,
-      timeFormat,
-      onCancelPress
+      timeFormat
     } = this.props;
 
     const {
@@ -195,7 +224,14 @@ class QueuedTaskRow extends Component {
 
         <TableRowCell>
           <span className={styles.commandName}>
-            {commandName}
+            {formatCommandDisplayName({
+              name,
+              commandName,
+              status,
+              progressStudio,
+              progressPercent,
+              isCancelling
+            })}
           </span>
           {
             clientUserAgent ?
@@ -235,9 +271,9 @@ class QueuedTaskRow extends Component {
           className={styles.actions}
         >
           {
-            status === 'queued' &&
+            (status === 'queued' || status === 'started') && !isCancelling &&
               <IconButton
-                title={translate('RemovedFromTaskQueue')}
+                title={status === 'started' ? translate('CancelTask') : translate('RemovedFromTaskQueue')}
                 name={icons.REMOVE}
                 onPress={this.onCancelPress}
               />
@@ -248,10 +284,10 @@ class QueuedTaskRow extends Component {
           isOpen={isCancelConfirmModalOpen}
           kind={kinds.DANGER}
           title={translate('Cancel')}
-          message={translate('CancelPendingTask')}
+          message={status === 'started' ? translate('CancelRunningTask') : translate('CancelPendingTask')}
           confirmLabel={translate('YesCancel')}
           cancelLabel={translate('NoLeaveIt')}
-          onConfirm={onCancelPress}
+          onConfirm={this.onConfirmCancel}
           onCancel={this.onAbortCancel}
         />
       </TableRow>
@@ -261,6 +297,7 @@ class QueuedTaskRow extends Component {
 
 QueuedTaskRow.propTypes = {
   trigger: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
   commandName: PropTypes.string.isRequired,
   queued: PropTypes.string.isRequired,
   started: PropTypes.string,
@@ -268,6 +305,9 @@ QueuedTaskRow.propTypes = {
   status: PropTypes.string.isRequired,
   duration: PropTypes.string,
   message: PropTypes.string,
+  progressStudio: PropTypes.string,
+  progressPercent: PropTypes.number,
+  isCancelling: PropTypes.bool,
   clientUserAgent: PropTypes.string,
   showRelativeDates: PropTypes.bool.isRequired,
   shortDateFormat: PropTypes.string.isRequired,

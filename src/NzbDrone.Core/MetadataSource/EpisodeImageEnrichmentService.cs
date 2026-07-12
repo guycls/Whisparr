@@ -6,6 +6,7 @@ using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource.ThePornDb;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.MetadataSource
@@ -23,7 +24,7 @@ namespace NzbDrone.Core.MetadataSource
             _logger = logger;
         }
 
-        public void Enrich(IEnumerable<Episode> episodes, IEnumerable<Episode> existingEpisodes = null)
+        public void Enrich(IEnumerable<Episode> episodes, IEnumerable<Episode> existingEpisodes = null, SceneProgressTracker progress = null)
         {
             if (_configService.TpdbApiKey.IsNullOrWhiteSpace())
             {
@@ -68,6 +69,10 @@ namespace NzbDrone.Core.MetadataSource
                 catch (Exception ex)
                 {
                     _logger.Debug(ex, "Failed to enrich episode image from TPDB for scene {0}", episode.TvdbId);
+                }
+                finally
+                {
+                    progress?.ReportSceneProcessed();
                 }
             }
         }

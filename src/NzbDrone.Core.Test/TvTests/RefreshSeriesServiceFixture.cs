@@ -10,6 +10,7 @@ using NzbDrone.Core.AutoTagging;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MetadataSource;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Commands;
@@ -36,6 +37,8 @@ namespace NzbDrone.Core.Test.TvTests
                                                                 season1
                                                             })
                                      .Build();
+
+            Mocker.GetMock<ICommandProgressReporter>();
 
             Mocker.GetMock<ISeriesService>()
                   .Setup(s => s.GetSeries(_series.Id))
@@ -69,7 +72,7 @@ namespace NzbDrone.Core.Test.TvTests
             Subject.Execute(new RefreshSeriesCommand(new List<int> { _series.Id }));
 
             Mocker.GetMock<IEpisodeImageEnrichmentService>()
-                .Verify(e => e.Enrich(It.IsAny<IEnumerable<Episode>>(), It.IsAny<IEnumerable<Episode>>()), Times.Once());
+                .Verify(e => e.Enrich(It.IsAny<IEnumerable<Episode>>(), It.IsAny<IEnumerable<Episode>>(), It.IsAny<SceneProgressTracker>()), Times.Once());
         }
 
         [Test]

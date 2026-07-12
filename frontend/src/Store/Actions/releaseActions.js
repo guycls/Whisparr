@@ -1,10 +1,11 @@
 import { createAction } from 'redux-actions';
+import { batchActions } from 'redux-batched-actions';
 import { filterBuilderTypes, filterBuilderValueTypes, filterTypePredicates, filterTypes, sortDirections } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import sortByProp from 'Utilities/Array/sortByProp';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
 import translate from 'Utilities/String/translate';
-import createFetchHandler from './Creators/createFetchHandler';
+import { set, update } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
 import createSetClientSideCollectionFilterReducer from './Creators/Reducers/createSetClientSideCollectionFilterReducer';
 import createSetClientSideCollectionSortReducer from './Creators/Reducers/createSetClientSideCollectionSortReducer';
@@ -17,6 +18,48 @@ export const episodeSection = 'releases.episode';
 export const seasonSection = 'releases.season';
 
 let abortCurrentRequest = null;
+let progressPollInterval = null;
+
+function generateSearchId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+function stopProgressPolling(dispatch) {
+  if (progressPollInterval) {
+    clearInterval(progressPollInterval);
+    progressPollInterval = null;
+  }
+
+  dispatch(set({
+    section,
+    searchStatusMessage: null,
+    searchId: null
+  }));
+}
+
+function startProgressPolling(searchId, dispatch) {
+  if (progressPollInterval) {
+    clearInterval(progressPollInterval);
+    progressPollInterval = null;
+  }
+
+  const poll = () => {
+    createAjaxRequest({
+      url: `/release/search/progress/${searchId}`
+    }).request.done((data) => {
+      if (data.message) {
+        dispatch(set({
+          section,
+          searchStatusMessage: data.message,
+          searchId
+        }));
+      }
+    });
+  };
+
+  poll();
+  progressPollInterval = setInterval(poll, 500);
+}
 
 //
 // State
@@ -26,6 +69,8 @@ export const defaultState = {
   isPopulated: false,
   error: null,
   items: [],
+  searchStatusMessage: null,
+  searchId: null,
   sortKey: 'releaseWeight',
   sortDirection: sortDirections.ASCENDING,
   sortPredicates: {
@@ -309,20 +354,63 @@ export const setSeasonReleasesFilter = createAction(SET_SEASON_RELEASES_FILTER);
 //
 // Helpers
 
-const fetchReleasesHelper = createFetchHandler(section, '/release');
-
 //
 // Action Handlers
 
 export const actionHandlers = handleThunks({
 
   [FETCH_RELEASES]: function(getState, payload, dispatch) {
-    const abortRequest = fetchReleasesHelper(getState, payload, dispatch);
+    const searchId = generateSearchId();
+
+    dispatch(set({
+      section,
+      isFetching: true,
+      searchStatusMessage: null,
+      searchId
+    }));
+
+    startProgressPolling(searchId, dispatch);
+
+    const { request, abortRequest } = createAjaxRequest({
+      url: '/release',
+      data: {
+        ...payload,
+        searchId
+      },
+      traditional: true
+    });
+
+    request.done((data) => {
+      stopProgressPolling(dispatch);
+
+      dispatch(batchActions([
+        update({ section, data }),
+        set({
+          section,
+          isFetching: false,
+          isPopulated: true,
+          error: null
+        })
+      ]));
+    });
+
+    request.fail((xhr) => {
+      stopProgressPolling(dispatch);
+
+      dispatch(set({
+        section,
+        isFetching: false,
+        isPopulated: false,
+        error: xhr.aborted ? null : xhr
+      }));
+    });
 
     abortCurrentRequest = abortRequest;
   },
 
   [CANCEL_FETCH_RELEASES]: function(getState, payload, dispatch) {
+    stopProgressPolling(dispatch);
+
     if (abortCurrentRequest) {
       abortCurrentRequest = abortCurrentRequest();
     }

@@ -7,9 +7,13 @@ namespace NzbDrone.Core.ProgressMessaging
     public static class ProgressMessageContext
     {
         private static AsyncLocal<CommandModel> _commandModelAsync = new AsyncLocal<CommandModel>();
+        private static AsyncLocal<CancellationToken> _cancellationTokenAsync = new AsyncLocal<CancellationToken>();
 
         [ThreadStatic]
         private static CommandModel _commandModel;
+
+        [ThreadStatic]
+        private static CancellationToken _cancellationToken;
 
         [ThreadStatic]
         private static bool _reentrancyLock;
@@ -24,6 +28,19 @@ namespace NzbDrone.Core.ProgressMessaging
             {
                 _commandModel = value;
                 _commandModelAsync.Value = value;
+            }
+        }
+
+        public static CancellationToken CancellationToken
+        {
+            get
+            {
+                return _cancellationToken != default ? _cancellationToken : _cancellationTokenAsync.Value;
+            }
+            set
+            {
+                _cancellationToken = value;
+                _cancellationTokenAsync.Value = value;
             }
         }
 

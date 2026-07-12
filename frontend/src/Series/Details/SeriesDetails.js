@@ -35,6 +35,7 @@ import translate from 'Utilities/String/translate';
 import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
 import SeriesDetailsStatusMenu from './Menus/SeriesDetailsStatusMenu';
+import SeriesDetailsQualityFilterMenu from './Menus/SeriesDetailsQualityFilterMenu';
 import SeriesDetailsViewMenu from './Menus/SeriesDetailsViewMenu';
 import SeriesAlternateTitles from './SeriesAlternateTitles';
 import SeriesDetailsLinks from './SeriesDetailsLinks';
@@ -209,8 +210,10 @@ class SeriesDetails extends Component {
       safeForWorkMode,
       view,
       monitorStatusFilter,
+      qualityFilter,
       onViewSelect,
-      onStatusSelect
+      onStatusSelect,
+      onQualityFilterChange
     } = this.props;
 
     const {
@@ -325,6 +328,13 @@ class SeriesDetails extends Component {
           </PageToolbarSection>
 
           <PageToolbarSection alignContent={align.RIGHT}>
+            <SeriesDetailsQualityFilterMenu
+              qualityFilter={qualityFilter}
+              onQualityFilterChange={onQualityFilterChange}
+            />
+
+            <PageToolbarSeparator />
+
             <SeriesDetailsStatusMenu
               monitorStatusFilter={monitorStatusFilter}
               onStatusSelect={onStatusSelect}
@@ -683,6 +693,7 @@ class SeriesDetails extends Component {
                           seriesId={id}
                           view={view}
                           monitorStatusFilter={monitorStatusFilter}
+                          qualityFilter={qualityFilter}
                           {...season}
                           isExpanded={expandedState[season.seasonNumber]}
                           onExpandPress={this.onExpandPress}
@@ -792,8 +803,10 @@ SeriesDetails.propTypes = {
   onSearchPress: PropTypes.func.isRequired,
   onViewSelect: PropTypes.func.isRequired,
   onStatusSelect: PropTypes.func.isRequired,
+  onQualityFilterChange: PropTypes.func.isRequired,
   view: PropTypes.string.isRequired,
   monitorStatusFilter: PropTypes.string.isRequired,
+  qualityFilter: PropTypes.object.isRequired,
   safeForWorkMode: PropTypes.bool
 };
 

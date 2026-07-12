@@ -27,6 +27,10 @@ namespace Whisparr.Api.V3.Commands
 
         public string ClientUserAgent { get; set; }
 
+        public string ProgressStudio { get; set; }
+
+        public int? ProgressPercent { get; set; }
+
         [JsonIgnore]
         public string CompletionMessage { get; set; }
 
@@ -112,6 +116,9 @@ namespace Whisparr.Api.V3.Commands
                 Trigger = model.Trigger,
 
                 ClientUserAgent = UserAgentParser.SimplifyUserAgent(model.Body.ClientUserAgent),
+
+                ProgressStudio = model.ProgressStudio,
+                ProgressPercent = model.ProgressPercent,
 
                 CompletionMessage = model.Body.CompletionMessage,
                 LastExecutionTime = model.Body.LastExecutionTime

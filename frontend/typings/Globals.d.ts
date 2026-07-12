@@ -1,4 +1,5 @@
 declare module '*.module.css';
+declare module 'react-slider';
 
 interface Window {
   Whisparr: {

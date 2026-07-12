@@ -78,6 +78,10 @@ interface AppState {
   seriesDetails: {
     view: 'list' | 'grid';
     monitorStatusFilter: 'all' | 'monitored' | 'unmonitored' | 'downloaded' | 'missing';
+    qualityFilter: {
+      minIndex: number;
+      maxIndex: number;
+    };
   };
   seriesIndex: SeriesIndexAppState;
   settings: SettingsAppState;

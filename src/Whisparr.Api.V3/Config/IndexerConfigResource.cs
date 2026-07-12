@@ -10,6 +10,7 @@ namespace Whisparr.Api.V3.Config
         public int MaximumSize { get; set; }
         public int RssSyncInterval { get; set; }
         public bool DisableIndexerBlocking { get; set; }
+        public bool DisableSearch429Retries { get; set; }
         public bool IgnoreSceneDate { get; set; }
         public bool PartialTitleMatch { get; set; }
     }
@@ -25,6 +26,7 @@ namespace Whisparr.Api.V3.Config
                 MaximumSize = model.MaximumSize,
                 RssSyncInterval = model.RssSyncInterval,
                 DisableIndexerBlocking = model.DisableIndexerBlocking,
+                DisableSearch429Retries = model.DisableSearch429Retries,
                 IgnoreSceneDate = model.IgnoreSceneDate,
                 PartialTitleMatch = model.PartialTitleMatch
             };

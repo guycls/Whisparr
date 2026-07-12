@@ -73,6 +73,9 @@ namespace NzbDrone.Core.Messaging.Commands
 
                 _logger.Trace("{0} -> {1}", command.GetType().Name, handler.GetType().Name);
 
+                var cancellationToken = _commandQueueManager.RegisterCancellation(commandModel);
+                ProgressMessageContext.CancellationToken = cancellationToken;
+
                 _commandQueueManager.Start(commandModel);
                 BroadcastCommandUpdate(commandModel);
 
@@ -83,7 +86,18 @@ namespace NzbDrone.Core.Messaging.Commands
 
                 handler.Execute(command);
 
-                _commandQueueManager.Complete(commandModel, command.CompletionMessage ?? commandModel.Message);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _commandQueueManager.Abort(commandModel, "Cancelled");
+                }
+                else
+                {
+                    _commandQueueManager.Complete(commandModel, command.CompletionMessage ?? commandModel.Message);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _commandQueueManager.Abort(commandModel, "Cancelled");
             }
             catch (CommandFailedException ex)
             {
@@ -99,6 +113,9 @@ namespace NzbDrone.Core.Messaging.Commands
             }
             finally
             {
+                ProgressMessageContext.CancellationToken = default;
+                _commandQueueManager.UnregisterCancellation(commandModel.Id);
+
                 BroadcastCommandUpdate(commandModel);
 
                 _eventAggregator.PublishEvent(new CommandExecutedEvent(commandModel));

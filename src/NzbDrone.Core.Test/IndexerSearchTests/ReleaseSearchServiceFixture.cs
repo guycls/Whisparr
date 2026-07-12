@@ -299,5 +299,45 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             criteria.Count.Should().Be(1);
             criteria[0].IgnoreSceneDate.Should().BeTrue();
         }
+
+        [Test]
+        public async Task should_use_title_and_title_slug_for_scene_titles_when_no_prefix_set()
+        {
+            _xemSeries.Title = "Original Studio";
+            _xemSeries.TitleSlug = "original-studio";
+
+            WithEpisodes();
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.EpisodeSearch(_xemEpisodes.First(), true, false);
+
+            var criteria = allCriteria.OfType<SingleEpisodeSearchCriteria>().ToList();
+
+            criteria.Count.Should().Be(1);
+            criteria[0].SceneTitles.Should().Contain("Original Studio");
+            criteria[0].SceneTitles.Should().Contain("original-studio");
+        }
+
+        [Test]
+        public async Task should_use_studio_search_prefix_instead_of_title_when_prefix_set()
+        {
+            _xemSeries.Title = "Original Studio";
+            _xemSeries.TitleSlug = "original-studio";
+            _xemSeries.StudioSearchPrefix = "Search Prefix";
+
+            WithEpisodes();
+
+            var allCriteria = WatchForSearchCriteria();
+
+            await Subject.EpisodeSearch(_xemEpisodes.First(), true, false);
+
+            var criteria = allCriteria.OfType<SingleEpisodeSearchCriteria>().ToList();
+
+            criteria.Count.Should().Be(1);
+            criteria[0].SceneTitles.Should().Contain("Search Prefix");
+            criteria[0].SceneTitles.Should().Contain("original-studio");
+            criteria[0].SceneTitles.Should().NotContain("Original Studio");
+        }
     }
 }

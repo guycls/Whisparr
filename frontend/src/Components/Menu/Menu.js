@@ -115,12 +115,17 @@ class Menu extends Component {
 
   onWindowClick = (event) => {
     const menuButton = document.getElementById(this._menuButtonId);
+    const menuContent = document.getElementById(this._menuContentId);
 
     if (!menuButton) {
       return;
     }
 
-    if (!menuButton.contains(event.target) && this.state.isMenuOpen) {
+    if (
+      !menuButton.contains(event.target) &&
+      !(menuContent && menuContent.contains(event.target)) &&
+      this.state.isMenuOpen
+    ) {
       this.setState({ isMenuOpen: false });
       this._removeListener();
     }
@@ -221,6 +226,7 @@ class Menu extends Component {
                 childrenArray[1],
                 {
                   forwardedRef: ref,
+                  id: this._menuContentId,
                   style: {
                     ...style,
                     maxHeight

@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { Fragment } from 'react';
+import React, { Fragment, useCallback, useMemo, useState } from 'react';
 import Alert from 'Components/Alert';
+import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
@@ -120,8 +121,23 @@ function InteractiveSearch(props) {
     onSortPress,
     onFilterSelect,
     onGrabPress,
-    onForceDownloadPress
+    onForceDownloadPress,
+    searchStatusMessage
   } = props;
+
+  const [filter, setFilter] = useState('');
+
+  const onFilterChange = useCallback(({ value }) => {
+    setFilter(value.toLowerCase());
+  }, []);
+
+  const textFilteredItems = useMemo(() => {
+    if (!filter) {
+      return items;
+    }
+
+    return items.filter((item) => item.title.toLowerCase().includes(filter));
+  }, [items, filter]);
 
   const errorMessage = getErrorMessage(error);
   const visibleColumns = columns.filter((column) => column.isVisible);
@@ -129,10 +145,20 @@ function InteractiveSearch(props) {
     visibleColumns.filter((column) => column.name !== 'title') :
     visibleColumns;
   const stackedColumnCount = tableColumns.length;
+  const hasTextFilter = !!filter;
+  const hasHiddenByTextFilter = hasTextFilter && items.length > 0 && !textFilteredItems.length;
 
   return (
     <div>
       <div className={styles.filterMenuContainer}>
+        <TextInput
+          className={styles.filterInput}
+          placeholder={translate('FilterReleasesPlaceholder')}
+          name="filter"
+          value={filter}
+          onChange={onFilterChange}
+        />
+
         <FilterMenu
           alignMenu={align.RIGHT}
           selectedFilterKey={selectedFilterKey}
@@ -146,7 +172,16 @@ function InteractiveSearch(props) {
       </div>
 
       {
-        isFetching ? <LoadingIndicator /> : null
+        isFetching ? (
+          <div className={styles.loadingContainer}>
+            <LoadingIndicator />
+            {
+              searchStatusMessage ?
+                <div className={styles.statusMessage}>{searchStatusMessage}</div> :
+                null
+            }
+          </div>
+        ) : null
       }
 
       {
@@ -180,7 +215,15 @@ function InteractiveSearch(props) {
       }
 
       {
-        isPopulated && !!items.length ?
+        hasHiddenByTextFilter ?
+          <Alert kind={kinds.WARNING}>
+            {translate('AllResultsAreHiddenByTheAppliedFilter')}
+          </Alert> :
+          null
+      }
+
+      {
+        isPopulated && !!textFilteredItems.length ?
           <Table
             columns={tableColumns}
             sortKey={sortKey}
@@ -189,7 +232,7 @@ function InteractiveSearch(props) {
           >
             <TableBody>
               {
-                items.map((item) => {
+                textFilteredItems.map((item) => {
                   return (
                     <InteractiveSearchRow
                       key={`${item.indexerId}-${item.guid}`}
@@ -212,6 +255,14 @@ function InteractiveSearch(props) {
 
       {
         totalReleasesCount !== items.length && !!items.length ?
+          <div className={styles.filteredMessage}>
+            {translate('SomeResultsAreHiddenByTheAppliedFilter')}
+          </div> :
+          null
+      }
+
+      {
+        hasTextFilter && items.length !== textFilteredItems.length && !!textFilteredItems.length ?
           <div className={styles.filteredMessage}>
             {translate('SomeResultsAreHiddenByTheAppliedFilter')}
           </div> :
@@ -240,7 +291,8 @@ InteractiveSearch.propTypes = {
   onSortPress: PropTypes.func.isRequired,
   onFilterSelect: PropTypes.func.isRequired,
   onGrabPress: PropTypes.func.isRequired,
-  onForceDownloadPress: PropTypes.func
+  onForceDownloadPress: PropTypes.func,
+  searchStatusMessage: PropTypes.string
 };
 
 export default InteractiveSearch;

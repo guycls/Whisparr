@@ -91,6 +91,18 @@ function IndexerOptions(props) {
               />
             </FormGroup>
 
+            <FormGroup>
+              <FormLabel>{translate('DisableSearch429Retries')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="disableSearch429Retries"
+                helpText={translate('DisableSearch429RetriesHelpText')}
+                onChange={onInputChange}
+                {...settings.disableSearch429Retries}
+              />
+            </FormGroup>
+
             <FormGroup
               advancedSettings={advancedSettings}
               isAdvanced={true}

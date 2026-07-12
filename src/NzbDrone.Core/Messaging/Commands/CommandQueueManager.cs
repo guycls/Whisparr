@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -26,12 +27,16 @@ namespace NzbDrone.Core.Messaging.Commands
         CommandModel Get(int id);
         List<CommandModel> GetStarted();
         void SetMessage(CommandModel command, string message);
+        void SetProgress(CommandModel command, string studio, int processed, int total);
         void SetResult(CommandModel command, CommandResult result);
         void Start(CommandModel command);
         void Complete(CommandModel command, string message);
         void Fail(CommandModel command, string message, Exception e);
         void Requeue();
         void Cancel(int id);
+        void Abort(CommandModel command, string message);
+        CancellationToken RegisterCancellation(CommandModel command);
+        void UnregisterCancellation(int id);
         void CleanCommands();
     }
 
@@ -42,6 +47,7 @@ namespace NzbDrone.Core.Messaging.Commands
         private readonly Logger _logger;
 
         private readonly CommandQueue _commandQueue;
+        private readonly ConcurrentDictionary<int, CancellationTokenSource> _cancellationTokenSources = new ConcurrentDictionary<int, CancellationTokenSource>();
 
         public CommandQueueManager(ICommandRepository repo,
                                    IServiceFactory serviceFactory,
@@ -181,6 +187,12 @@ namespace NzbDrone.Core.Messaging.Commands
             command.Message = message;
         }
 
+        public void SetProgress(CommandModel command, string studio, int processed, int total)
+        {
+            command.ProgressStudio = studio;
+            command.ProgressPercent = total > 0 ? (int)Math.Round(processed * 100.0 / total) : 0;
+        }
+
         public void SetResult(CommandModel command, CommandResult result)
         {
             command.Result = result;
@@ -225,9 +237,60 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public void Cancel(int id)
         {
-            if (!_commandQueue.RemoveIfQueued(id))
+            var command = Get(id);
+
+            if (command == null)
             {
                 throw new NzbDroneClientException(HttpStatusCode.Conflict, "Unable to cancel task");
+            }
+
+            if (command.Status == CommandStatus.Queued)
+            {
+                if (_commandQueue.RemoveIfQueued(id))
+                {
+                    Update(command, CommandStatus.Cancelled, "Cancelled");
+                    return;
+                }
+            }
+            else if (command.Status == CommandStatus.Started)
+            {
+                if (_cancellationTokenSources.TryGetValue(id, out var cts))
+                {
+                    cts.Cancel();
+                    return;
+                }
+            }
+
+            throw new NzbDroneClientException(HttpStatusCode.Conflict, "Unable to cancel task");
+        }
+
+        public void Abort(CommandModel command, string message)
+        {
+            if (command.Status == CommandStatus.Cancelled ||
+                command.Status == CommandStatus.Completed ||
+                command.Status == CommandStatus.Failed)
+            {
+                return;
+            }
+
+            Update(command, CommandStatus.Cancelled, message);
+
+            _commandQueue.PulseAllConsumers();
+        }
+
+        public CancellationToken RegisterCancellation(CommandModel command)
+        {
+            var cts = new CancellationTokenSource();
+            _cancellationTokenSources[command.Id] = cts;
+
+            return cts.Token;
+        }
+
+        public void UnregisterCancellation(int id)
+        {
+            if (_cancellationTokenSources.TryRemove(id, out var cts))
+            {
+                cts.Dispose();
             }
         }
 
@@ -258,7 +321,16 @@ namespace NzbDrone.Core.Messaging.Commands
             SetMessage(command, message);
 
             command.EndedAt = DateTime.UtcNow;
-            command.Duration = command.EndedAt.Value.Subtract(command.StartedAt.Value);
+
+            if (command.StartedAt.HasValue)
+            {
+                command.Duration = command.EndedAt.Value.Subtract(command.StartedAt.Value);
+            }
+            else
+            {
+                command.Duration = TimeSpan.Zero;
+            }
+
             command.Status = status;
 
             _logger.Trace("Updating command status");

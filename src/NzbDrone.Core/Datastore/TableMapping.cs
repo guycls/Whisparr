@@ -147,7 +147,9 @@ namespace NzbDrone.Core.Datastore
             Mapper.Entity<DelayProfile>("DelayProfiles").RegisterModel();
             Mapper.Entity<User>("Users").RegisterModel();
             Mapper.Entity<CommandModel>("Commands").RegisterModel()
-                .Ignore(c => c.Message);
+                .Ignore(c => c.Message)
+                .Ignore(c => c.ProgressStudio)
+                .Ignore(c => c.ProgressPercent);
 
             Mapper.Entity<IndexerStatus>("IndexerStatus").RegisterModel();
             Mapper.Entity<DownloadClientStatus>("DownloadClientStatus").RegisterModel();

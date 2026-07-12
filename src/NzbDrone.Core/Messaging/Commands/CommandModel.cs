@@ -18,5 +18,7 @@ namespace NzbDrone.Core.Messaging.Commands
         public string Exception { get; set; }
         public CommandTrigger Trigger { get; set; }
         public string Message { get; set; }
+        public string ProgressStudio { get; set; }
+        public int? ProgressPercent { get; set; }
     }
 }

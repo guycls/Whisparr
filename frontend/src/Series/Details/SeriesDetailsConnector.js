@@ -9,7 +9,7 @@ import { clearEpisodes, fetchEpisodes } from 'Store/Actions/episodeActions';
 import { clearEpisodeFiles, fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { toggleSeriesMonitored } from 'Store/Actions/seriesActions';
-import { setSeriesDetailsView, setSeriesDetailsMonitorStatusFilter } from 'Store/Actions/seriesDetailsActions';
+import { setSeriesDetailsView, setSeriesDetailsMonitorStatusFilter, setSeriesDetailsQualityFilter } from 'Store/Actions/seriesDetailsActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
 import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
@@ -71,7 +71,9 @@ function createMapStateToProps() {
     (state) => state.settings.safeForWorkMode,
     (state) => state.seriesDetails.view,
     (state) => state.seriesDetails.monitorStatusFilter,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter) => {
+    (state) => state.seriesDetails.qualityFilter,
+    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter) => {
+      const resolvedQualityFilter = qualityFilter ?? { minIndex: 0, maxIndex: 6 };
       const sortedSeries = _.orderBy(allSeries, 'sortTitle');
       const seriesIndex = _.findIndex(sortedSeries, { titleSlug });
       const series = sortedSeries[seriesIndex];
@@ -136,7 +138,8 @@ function createMapStateToProps() {
         nextSeries,
         safeForWorkMode,
         view,
-        monitorStatusFilter
+        monitorStatusFilter,
+        qualityFilter: resolvedQualityFilter
       };
     }
   );
@@ -152,7 +155,8 @@ const mapDispatchToProps = {
   clearQueueDetails,
   executeCommand,
   setSeriesDetailsView,
-  setSeriesDetailsMonitorStatusFilter
+  setSeriesDetailsMonitorStatusFilter,
+  setSeriesDetailsQualityFilter
 };
 
 class SeriesDetailsConnector extends Component {
@@ -246,6 +250,10 @@ class SeriesDetailsConnector extends Component {
     this.props.setSeriesDetailsMonitorStatusFilter({ monitorStatusFilter });
   };
 
+  onQualityFilterChange = (qualityFilter) => {
+    this.props.setSeriesDetailsQualityFilter({ qualityFilter });
+  };
+
   //
   // Render
 
@@ -258,6 +266,7 @@ class SeriesDetailsConnector extends Component {
         onSearchPress={this.onSearchPress}
         onViewSelect={this.onViewSelect}
         onStatusSelect={this.onStatusSelect}
+        onQualityFilterChange={this.onQualityFilterChange}
       />
     );
   }
@@ -280,7 +289,8 @@ SeriesDetailsConnector.propTypes = {
   clearQueueDetails: PropTypes.func.isRequired,
   executeCommand: PropTypes.func.isRequired,
   setSeriesDetailsView: PropTypes.func.isRequired,
-  setSeriesDetailsMonitorStatusFilter: PropTypes.func.isRequired
+  setSeriesDetailsMonitorStatusFilter: PropTypes.func.isRequired,
+  setSeriesDetailsQualityFilter: PropTypes.func.isRequired
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(SeriesDetailsConnector);

@@ -78,6 +78,30 @@ namespace NzbDrone.Core.Test.IndexerTests
         }
 
         [Test]
+        public async Task should_not_retry_when_disable_search_429_retries_enabled()
+        {
+            Mocker.GetMock<IConfigService>()
+                .SetupGet(v => v.DisableSearch429Retries)
+                .Returns(true);
+
+            Mocker.GetMock<IHttpClient>()
+                .Setup(o => o.ExecuteAsync(It.IsAny<HttpRequest>()))
+                .Throws(new TooManyRequestsException(_request, _rateLimitResponse));
+
+            var releases = await Subject.Fetch(new SeasonSearchCriteria
+            {
+                Series = new Series { Title = "Test" },
+                SceneTitles = new List<string> { "Test" }
+            });
+
+            releases.Should().BeEmpty();
+            Mocker.GetMock<IHttpClient>().Verify(v => v.ExecuteAsync(It.IsAny<HttpRequest>()), Times.Once());
+            Subject.RetryDelays.Should().BeEmpty();
+            Mocker.GetMock<IIndexerStatusService>()
+                  .Verify(v => v.RecordFailure(1, TimeSpan.FromSeconds(30)), Times.Once());
+        }
+
+        [Test]
         public async Task should_disable_indexer_after_max_retries_exhausted()
         {
             Mocker.GetMock<IHttpClient>()

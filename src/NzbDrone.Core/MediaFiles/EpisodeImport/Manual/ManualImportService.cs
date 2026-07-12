@@ -226,7 +226,26 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
                 return MapItem(new ImportDecision(localEpisode, new Rejection("Episodes not selected")), rootFolder, downloadId, null);
             }
 
-            return ProcessFile(rootFolder, rootFolder, path, downloadId, series);
+            var result = ProcessFile(rootFolder, rootFolder, path, downloadId, series);
+
+            if (series != null &&
+                !seasonNumber.HasValue &&
+                !episodeIds.Any() &&
+                (result.Episodes == null || !result.Episodes.Any()))
+            {
+                var downloadClientTitle = GetTrackedDownload(downloadId)?.DownloadItem?.Title;
+                var allEpisodes = _episodeService.GetEpisodeBySeries(series.Id);
+                var matchedEpisode = _episodeService.MatchEpisodeByImportFileName(allEpisodes, path, downloadClientTitle);
+
+                if (matchedEpisode != null)
+                {
+                    result.Series = series;
+                    result.SeasonNumber = matchedEpisode.SeasonNumber;
+                    result.Episodes = new List<Episode> { matchedEpisode };
+                }
+            }
+
+            return result;
         }
 
         private List<ManualImportItem> ProcessFolder(string rootFolder, string baseFolder, string downloadId, int? seriesId, bool filterExistingFiles)

@@ -30,6 +30,7 @@ namespace NzbDrone.Core.Tv
         private readonly ICheckIfSeriesShouldBeRefreshed _checkIfSeriesShouldBeRefreshed;
         private readonly IConfigService _configService;
         private readonly IAutoTaggingService _autoTaggingService;
+        private readonly ICommandProgressReporter _commandProgressReporter;
         private readonly Logger _logger;
 
         public RefreshSeriesService(IProvideSeriesInfo seriesInfo,
@@ -42,6 +43,7 @@ namespace NzbDrone.Core.Tv
                                     ICheckIfSeriesShouldBeRefreshed checkIfSeriesShouldBeRefreshed,
                                     IConfigService configService,
                                     IAutoTaggingService autoTaggingService,
+                                    ICommandProgressReporter commandProgressReporter,
                                     Logger logger)
         {
             _seriesInfo = seriesInfo;
@@ -54,6 +56,7 @@ namespace NzbDrone.Core.Tv
             _checkIfSeriesShouldBeRefreshed = checkIfSeriesShouldBeRefreshed;
             _configService = configService;
             _autoTaggingService = autoTaggingService;
+            _commandProgressReporter = commandProgressReporter;
             _logger = logger;
         }
 
@@ -67,6 +70,7 @@ namespace NzbDrone.Core.Tv
 
             Series seriesInfo;
             List<Episode> episodes;
+            SceneProgressTracker progress = null;
 
             try
             {
@@ -74,7 +78,8 @@ namespace NzbDrone.Core.Tv
                 seriesInfo = tuple.Item1;
                 episodes = tuple.Item2;
                 var existingEpisodes = _episodeService.GetEpisodeBySeries(series.Id);
-                _episodeImageEnrichment.Enrich(episodes, existingEpisodes);
+                progress = new SceneProgressTracker(_commandProgressReporter, series.Title, episodes.Count);
+                _episodeImageEnrichment.Enrich(episodes, existingEpisodes, progress);
             }
             catch (SeriesNotFoundException)
             {
@@ -132,7 +137,7 @@ namespace NzbDrone.Core.Tv
             series.LastAired = lastAiredEpisode?.AirDateUtc;
 
             _seriesService.UpdateSeries(series, publishUpdatedEvent: false);
-            _refreshEpisodeService.RefreshEpisodeInfo(series, episodes);
+            _refreshEpisodeService.RefreshEpisodeInfo(series, episodes, progress);
 
             _logger.Debug("Finished series refresh for {0}", series.Title);
             _eventAggregator.PublishEvent(new SeriesUpdatedEvent(series));
@@ -225,6 +230,8 @@ namespace NzbDrone.Core.Tv
             {
                 foreach (var seriesId in message.SeriesIds)
                 {
+                    CommandCancellation.ThrowIfCancelled();
+
                     var series = _seriesService.GetSeries(seriesId);
 
                     try
@@ -254,6 +261,8 @@ namespace NzbDrone.Core.Tv
 
                 foreach (var series in allSeries)
                 {
+                    CommandCancellation.ThrowIfCancelled();
+
                     var seriesLocal = series;
                     if (trigger == CommandTrigger.Manual || _checkIfSeriesShouldBeRefreshed.ShouldRefresh(seriesLocal))
                     {

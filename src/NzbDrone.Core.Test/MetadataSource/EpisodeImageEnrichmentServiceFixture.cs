@@ -6,6 +6,7 @@ using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.MetadataSource.ThePornDb;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 
@@ -160,6 +161,27 @@ namespace NzbDrone.Core.Test.MetadataSource
 
             Mocker.GetMock<ITpdbSceneClient>().Verify(c => c.GetScreenshotUrl(It.IsAny<int>()), Times.Never);
             remoteEpisode.Images.Should().BeEmpty();
+        }
+
+        [Test]
+        public void should_report_progress_for_each_enriched_scene()
+        {
+            Mocker.GetMock<IConfigService>()
+                .SetupGet(c => c.TpdbApiKey)
+                .Returns("test-key");
+
+            Mocker.GetMock<ITpdbSceneClient>()
+                .Setup(c => c.GetScreenshotUrl(It.IsAny<int>()))
+                .Returns("https://example.com/scene.jpg");
+
+            var reporter = new Mock<ICommandProgressReporter>();
+            var progress = new SceneProgressTracker(reporter.Object, "Studio A", 2);
+            var episodes = new List<Episode> { CreateEpisode(123), CreateEpisode(456) };
+
+            Subject.Enrich(episodes, null, progress);
+
+            reporter.Verify(v => v.ReportSceneProgress("Studio A", 1, 2), Times.Once);
+            reporter.Verify(v => v.ReportSceneProgress("Studio A", 2, 2), Times.Once);
         }
 
         private static Episode CreateEpisode(int tvdbId)

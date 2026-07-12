@@ -5,6 +5,7 @@ using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaCover;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Tv.Events;
 
@@ -12,7 +13,7 @@ namespace NzbDrone.Core.Tv
 {
     public interface IRefreshEpisodeService
     {
-        void RefreshEpisodeInfo(Series series, IEnumerable<Episode> remoteEpisodes);
+        void RefreshEpisodeInfo(Series series, IEnumerable<Episode> remoteEpisodes, SceneProgressTracker progress = null);
     }
 
     public class RefreshEpisodeService : IRefreshEpisodeService
@@ -30,7 +31,7 @@ namespace NzbDrone.Core.Tv
             _logger = logger;
         }
 
-        public void RefreshEpisodeInfo(Series series, IEnumerable<Episode> remoteEpisodes)
+        public void RefreshEpisodeInfo(Series series, IEnumerable<Episode> remoteEpisodes, SceneProgressTracker progress = null)
         {
             _logger.Info("Starting episode info refresh for: {0}", series);
             var successCount = 0;
@@ -90,6 +91,10 @@ namespace NzbDrone.Core.Tv
                 {
                     _logger.Fatal(e, "An error has occurred while updating episode info for series {0}. {1}", series, episode);
                     failCount++;
+                }
+                finally
+                {
+                    progress?.ReportSceneProcessed();
                 }
             }
 

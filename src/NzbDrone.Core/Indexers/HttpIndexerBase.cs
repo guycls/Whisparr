@@ -59,7 +59,7 @@ namespace NzbDrone.Core.Indexers
                 return Task.FromResult<IList<ReleaseInfo>>(Array.Empty<ReleaseInfo>());
             }
 
-            return FetchReleases(g => g.GetSearchRequests(searchCriteria));
+            return FetchReleases(g => g.GetSearchRequests(searchCriteria), allow429Retries: !_configService.DisableSearch429Retries);
         }
 
         public override Task<IList<ReleaseInfo>> Fetch(SeasonSearchCriteria searchCriteria)
@@ -69,7 +69,7 @@ namespace NzbDrone.Core.Indexers
                 return Task.FromResult<IList<ReleaseInfo>>(Array.Empty<ReleaseInfo>());
             }
 
-            return FetchReleases(g => g.GetSearchRequests(searchCriteria));
+            return FetchReleases(g => g.GetSearchRequests(searchCriteria), allow429Retries: !_configService.DisableSearch429Retries);
         }
 
         public override HttpRequest GetDownloadRequest(string link)
@@ -77,7 +77,7 @@ namespace NzbDrone.Core.Indexers
             return new HttpRequest(link);
         }
 
-        protected virtual async Task<IList<ReleaseInfo>> FetchReleases(Func<IIndexerRequestGenerator, IndexerPageableRequestChain> pageableRequestChainSelector, bool isRecent = false)
+        protected virtual async Task<IList<ReleaseInfo>> FetchReleases(Func<IIndexerRequestGenerator, IndexerPageableRequestChain> pageableRequestChainSelector, bool isRecent = false, bool allow429Retries = true)
         {
             var releases = new List<ReleaseInfo>();
             var url = string.Empty;
@@ -109,7 +109,7 @@ namespace NzbDrone.Core.Indexers
                         {
                             url = request.Url.FullUri;
 
-                            var page = await FetchPage(request, parser);
+                            var page = await FetchPage(request, parser, allow429Retries);
 
                             pagedReleases.AddRange(page);
 
@@ -281,9 +281,9 @@ namespace NzbDrone.Core.Indexers
             return PageSize != 0 && page.Count >= PageSize;
         }
 
-        protected virtual async Task<IList<ReleaseInfo>> FetchPage(IndexerRequest request, IParseIndexerResponse parser)
+        protected virtual async Task<IList<ReleaseInfo>> FetchPage(IndexerRequest request, IParseIndexerResponse parser, bool allow429Retries = true)
         {
-            var response = await FetchIndexerResponse(request);
+            var response = await FetchIndexerResponse(request, allow429Retries);
 
             try
             {
@@ -297,7 +297,7 @@ namespace NzbDrone.Core.Indexers
             }
         }
 
-        protected virtual async Task<IndexerResponse> FetchIndexerResponse(IndexerRequest request)
+        protected virtual async Task<IndexerResponse> FetchIndexerResponse(IndexerRequest request, bool allow429Retries = true)
         {
             _logger.Debug("Downloading Feed " + request.HttpRequest.ToString(false));
 
@@ -308,7 +308,9 @@ namespace NzbDrone.Core.Indexers
 
             request.HttpRequest.RateLimitKey = Definition.Id.ToString();
 
-            for (var attempt = 0; attempt <= Max429Retries; attempt++)
+            var maxRetries = allow429Retries ? Max429Retries : 0;
+
+            for (var attempt = 0; attempt <= maxRetries; attempt++)
             {
                 try
                 {
@@ -317,13 +319,13 @@ namespace NzbDrone.Core.Indexers
                 }
                 catch (TooManyRequestsException ex)
                 {
-                    if (attempt >= Max429Retries)
+                    if (attempt >= maxRetries)
                     {
                         throw;
                     }
 
                     var retryAfter = ex.RetryAfter != TimeSpan.Zero ? ex.RetryAfter : Default429RetryAfter;
-                    _logger.Warn("API Request Limit reached for {0}. Waiting {1} before retry {2}/{3}", this, retryAfter, attempt + 1, Max429Retries);
+                    _logger.Warn("API Request Limit reached for {0}. Waiting {1} before retry {2}/{3}", this, retryAfter, attempt + 1, maxRetries);
                     await WaitFor429RetryAsync(retryAfter);
                 }
             }
