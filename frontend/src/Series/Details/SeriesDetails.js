@@ -26,6 +26,7 @@ import DeleteSeriesModal from 'Series/Delete/DeleteSeriesModal';
 import EditSeriesModalConnector from 'Series/Edit/EditSeriesModalConnector';
 import SeriesHistoryModal from 'Series/History/SeriesHistoryModal';
 import MonitoringOptionsModal from 'Series/MonitoringOptions/MonitoringOptionsModal';
+import SiteRipSearchModal from 'Series/SiteRip/SiteRipSearchModal';
 import SeriesPoster from 'Series/SeriesPoster';
 import { getSeriesStatusDetails } from 'Series/SeriesStatus';
 import QualityProfileNameConnector from 'Settings/Profiles/Quality/QualityProfileNameConnector';
@@ -80,6 +81,7 @@ class SeriesDetails extends Component {
       isDeleteSeriesModalOpen: false,
       isSeriesHistoryModalOpen: false,
       isMonitorOptionsModalOpen: false,
+      isSiteRipModalOpen: false,
       allExpanded: false,
       allCollapsed: false,
       expandedState: {},
@@ -139,6 +141,14 @@ class SeriesDetails extends Component {
 
   onMonitorOptionsClose = () => {
     this.setState({ isMonitorOptionsModalOpen: false });
+  };
+
+  onSiteRipPress = () => {
+    this.setState({ isSiteRipModalOpen: true });
+  };
+
+  onSiteRipModalClose = () => {
+    this.setState({ isSiteRipModalOpen: false });
   };
 
   onExpandAllPress = () => {
@@ -202,6 +212,7 @@ class SeriesDetails extends Component {
       hasEpisodes,
       hasMonitoredEpisodes,
       hasEpisodeFiles,
+      hasQBittorrent,
       previousSeries,
       nextSeries,
       onMonitorTogglePress,
@@ -228,6 +239,7 @@ class SeriesDetails extends Component {
       isDeleteSeriesModalOpen,
       isSeriesHistoryModalOpen,
       isMonitorOptionsModalOpen,
+      isSiteRipModalOpen,
       allExpanded,
       allCollapsed,
       expandedState,
@@ -282,6 +294,17 @@ class SeriesDetails extends Component {
               title={hasMonitoredEpisodes ? undefined : translate('NoMonitoredEpisodes')}
               onPress={onSearchPress}
             />
+
+            {
+              hasQBittorrent ?
+                <PageToolbarButton
+                  label={translate('SiteRipSearch')}
+                  iconName={icons.INTERACTIVE}
+                  isDisabled={!hasEpisodes}
+                  onPress={this.onSiteRipPress}
+                /> :
+                null
+            }
 
             <PageToolbarSeparator />
 
@@ -758,6 +781,13 @@ class SeriesDetails extends Component {
             seriesId={id}
             onModalClose={this.onMonitorOptionsClose}
           />
+
+          <SiteRipSearchModal
+            isOpen={isSiteRipModalOpen}
+            seriesId={id}
+            seriesTitle={title}
+            onModalClose={this.onSiteRipModalClose}
+          />
         </PageContentBody>
       </PageContent>
     );
@@ -796,6 +826,7 @@ SeriesDetails.propTypes = {
   hasEpisodes: PropTypes.bool.isRequired,
   hasMonitoredEpisodes: PropTypes.bool.isRequired,
   hasEpisodeFiles: PropTypes.bool.isRequired,
+  hasQBittorrent: PropTypes.bool.isRequired,
   previousSeries: PropTypes.object.isRequired,
   nextSeries: PropTypes.object.isRequired,
   onMonitorTogglePress: PropTypes.func.isRequired,

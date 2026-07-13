@@ -1,15 +1,19 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
+using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Download;
+using NzbDrone.Core.Download.History;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.History;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
+using NzbDrone.Core.SiteRip;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Core.Tv.Events;
@@ -309,6 +313,530 @@ namespace NzbDrone.Core.Test.Download.TrackedDownloads
             var trackedDownloads = Subject.GetTrackedDownloads();
             trackedDownloads.Should().HaveCount(1);
             trackedDownloads.First().RemoteEpisode.Should().BeNull();
+        }
+
+        [Test]
+        public void should_retrack_after_siterip_regrab_when_download_already_imported_returns_false()
+        {
+            const string downloadId = "ABC123";
+            const int siteRipDownloadId = 10;
+
+            var client = new DownloadClientDefinition
+            {
+                Id = 1,
+                Protocol = DownloadProtocol.Torrent
+            };
+
+            var item = new DownloadClientItem
+            {
+                Title = "SiteRIP pack torrent",
+                DownloadId = downloadId,
+                DownloadClientInfo = new DownloadClientItemClientInfo
+                {
+                    Protocol = client.Protocol,
+                    Id = client.Id,
+                    Name = "qBittorrent"
+                }
+            };
+
+            var grabbedHistory = new EpisodeHistory
+            {
+                DownloadId = downloadId,
+                SeriesId = 5,
+                EpisodeId = 100,
+                EventType = EpisodeHistoryEventType.Grabbed,
+                Date = DateTime.UtcNow,
+                Data = new Dictionary<string, string> { [HistoryDataKeys.ShouldOverride] = "true" }
+            };
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(new List<EpisodeHistory> { grabbedHistory });
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(downloadId))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadImported });
+
+            Mocker.GetMock<ICustomFormatCalculationService>()
+                  .Setup(s => s.ParseCustomFormat(It.IsAny<RemoteEpisode>(), It.IsAny<long>()))
+                  .Returns(new List<CustomFormat>());
+
+            Subject.TrackDownload(client, item);
+            Subject.GetTrackedDownloads().First().State.Should().Be(TrackedDownloadState.Imported);
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.DownloadAlreadyImported(downloadId))
+                  .Returns(false);
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(downloadId))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadGrabbed });
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(downloadId))
+                  .Returns(new SiteRipDownload
+                  {
+                      Id = siteRipDownloadId,
+                      DownloadId = downloadId,
+                      SeriesId = 5
+                  });
+
+            Mocker.GetMock<ISiteRipDownloadFileRepository>()
+                  .Setup(r => r.GetUnimportedByDownloadId(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false },
+                      new SiteRipDownloadFile { EpisodeId = 101, FileIndex = 2, Imported = false }
+                  });
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.HasPendingFiles(siteRipDownloadId))
+                  .Returns(true);
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.GetPendingFiles(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false },
+                      new SiteRipDownloadFile { EpisodeId = 101, FileIndex = 2, Imported = false }
+                  });
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetSeries(5))
+                  .Returns(new Series { Id = 5 });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode>
+                  {
+                      new Episode { Id = 100, SeriesId = 5 },
+                      new Episode { Id = 101, SeriesId = 5 }
+                  });
+
+            var trackedDownload = Subject.TrackDownload(client, item);
+
+            trackedDownload.State.Should().Be(TrackedDownloadState.Downloading);
+            trackedDownload.RemoteEpisode.Should().NotBeNull();
+            trackedDownload.RemoteEpisode.Episodes.Should().HaveCount(2);
+            trackedDownload.RemoteEpisode.Episodes.Select(e => e.Id).Should().BeEquivalentTo(new[] { 100, 101 });
+        }
+
+        [Test]
+        public void should_preserve_imported_state_when_fully_imported_and_no_pending_siterip_files()
+        {
+            const string downloadId = "DEF456";
+
+            var client = new DownloadClientDefinition
+            {
+                Id = 1,
+                Protocol = DownloadProtocol.Torrent
+            };
+
+            var item = new DownloadClientItem
+            {
+                Title = "SiteRIP pack torrent",
+                DownloadId = downloadId,
+                DownloadClientInfo = new DownloadClientItemClientInfo
+                {
+                    Protocol = client.Protocol,
+                    Id = client.Id,
+                    Name = "qBittorrent"
+                }
+            };
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(It.IsAny<string>()))
+                  .Returns(new List<EpisodeHistory>());
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(It.IsAny<string>()))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadImported });
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.DownloadAlreadyImported(It.IsAny<string>()))
+                  .Returns(true);
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(It.IsAny<string>()))
+                  .Returns((SiteRipDownload)null);
+
+            Mocker.GetMock<IParsingService>()
+                  .Setup(s => s.Map(It.IsAny<ParsedEpisodeInfo>(), It.IsAny<int>(), It.IsAny<IEnumerable<int>>()))
+                  .Returns(default(RemoteEpisode));
+
+            Mocker.GetMock<ICustomFormatCalculationService>()
+                  .Setup(s => s.ParseCustomFormat(It.IsAny<RemoteEpisode>(), It.IsAny<long>()))
+                  .Returns(new List<CustomFormat>());
+
+            Subject.TrackDownload(client, item);
+            Subject.GetTrackedDownloads().First().State.Should().Be(TrackedDownloadState.Imported);
+
+            var trackedDownload = Subject.TrackDownload(client, item);
+
+            trackedDownload.State.Should().Be(TrackedDownloadState.Imported);
+        }
+
+        [Test]
+        public void should_build_siterip_remote_episode_when_site_rip_download_exists_without_should_override()
+        {
+            const string downloadId = "GHI789";
+            const int siteRipDownloadId = 10;
+
+            var client = new DownloadClientDefinition
+            {
+                Id = 1,
+                Protocol = DownloadProtocol.Torrent
+            };
+
+            var item = new DownloadClientItem
+            {
+                Title = "SiteRIP pack torrent",
+                DownloadId = downloadId,
+                DownloadClientInfo = new DownloadClientItemClientInfo
+                {
+                    Protocol = client.Protocol,
+                    Id = client.Id,
+                    Name = "qBittorrent"
+                }
+            };
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(new List<EpisodeHistory>
+                  {
+                      new EpisodeHistory
+                      {
+                          DownloadId = downloadId,
+                          SeriesId = 5,
+                          EpisodeId = 100,
+                          EventType = EpisodeHistoryEventType.Grabbed,
+                          Date = DateTime.UtcNow,
+                          SourceTitle = "Unparseable SiteRIP pack title 720p",
+                          Data = new Dictionary<string, string>()
+                      }
+                  });
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(downloadId))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadGrabbed });
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(downloadId))
+                  .Returns(new SiteRipDownload
+                  {
+                      Id = siteRipDownloadId,
+                      DownloadId = downloadId,
+                      SeriesId = 5
+                  });
+
+            Mocker.GetMock<ISiteRipDownloadFileRepository>()
+                  .Setup(r => r.GetUnimportedByDownloadId(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false },
+                      new SiteRipDownloadFile { EpisodeId = 101, FileIndex = 2, Imported = false }
+                  });
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.HasPendingFiles(siteRipDownloadId))
+                  .Returns(true);
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.GetPendingFiles(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false },
+                      new SiteRipDownloadFile { EpisodeId = 101, FileIndex = 2, Imported = false }
+                  });
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetSeries(5))
+                  .Returns(new Series { Id = 5, Title = "Primal" });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode>
+                  {
+                      new Episode { Id = 100, SeriesId = 5, Title = "Scene A" },
+                      new Episode { Id = 101, SeriesId = 5, Title = "Scene B" }
+                  });
+
+            Mocker.GetMock<ICustomFormatCalculationService>()
+                  .Setup(s => s.ParseCustomFormat(It.IsAny<RemoteEpisode>(), It.IsAny<long>()))
+                  .Returns(new List<CustomFormat>());
+
+            var trackedDownload = Subject.TrackDownload(client, item);
+
+            trackedDownload.State.Should().Be(TrackedDownloadState.Downloading);
+            trackedDownload.RemoteEpisode.Should().NotBeNull();
+            trackedDownload.RemoteEpisode.Series.Id.Should().Be(5);
+            trackedDownload.RemoteEpisode.Episodes.Should().HaveCount(2);
+            trackedDownload.RemoteEpisode.Episodes.Select(e => e.Id).Should().BeEquivalentTo(new[] { 100, 101 });
+            trackedDownload.RemoteEpisode.ReleaseSource.Should().Be(ReleaseSourceType.SiteRip);
+        }
+
+        [Test]
+        public void should_force_downloading_when_ignored_history_and_pending_siterip_files()
+        {
+            const string downloadId = "IGNORED123";
+            const int siteRipDownloadId = 10;
+
+            var client = new DownloadClientDefinition
+            {
+                Id = 1,
+                Protocol = DownloadProtocol.Torrent
+            };
+
+            var item = new DownloadClientItem
+            {
+                Title = "SiteRIP pack torrent",
+                DownloadId = downloadId,
+                DownloadClientInfo = new DownloadClientItemClientInfo
+                {
+                    Protocol = client.Protocol,
+                    Id = client.Id,
+                    Name = "qBittorrent"
+                }
+            };
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(new List<EpisodeHistory>
+                  {
+                      new EpisodeHistory
+                      {
+                          DownloadId = downloadId,
+                          SeriesId = 5,
+                          EpisodeId = 100,
+                          EventType = EpisodeHistoryEventType.Grabbed,
+                          Date = DateTime.UtcNow,
+                          Data = new Dictionary<string, string> { [HistoryDataKeys.IsSiteRip] = "true" }
+                      }
+                  });
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(downloadId))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadIgnored });
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(downloadId))
+                  .Returns(new SiteRipDownload
+                  {
+                      Id = siteRipDownloadId,
+                      DownloadId = downloadId,
+                      SeriesId = 5
+                  });
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.HasPendingFiles(siteRipDownloadId))
+                  .Returns(true);
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.GetPendingFiles(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false }
+                  });
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetSeries(5))
+                  .Returns(new Series { Id = 5 });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode> { new Episode { Id = 100, SeriesId = 5 } });
+
+            Mocker.GetMock<ICustomFormatCalculationService>()
+                  .Setup(s => s.ParseCustomFormat(It.IsAny<RemoteEpisode>(), It.IsAny<long>()))
+                  .Returns(new List<CustomFormat>());
+
+            var trackedDownload = Subject.TrackDownload(client, item);
+
+            trackedDownload.State.Should().Be(TrackedDownloadState.Downloading);
+        }
+
+        [Test]
+        public void should_force_downloading_when_imported_history_and_pending_siterip_files_on_fresh_track()
+        {
+            const string downloadId = "IMPORTED123";
+            const int siteRipDownloadId = 10;
+
+            var client = new DownloadClientDefinition
+            {
+                Id = 1,
+                Protocol = DownloadProtocol.Torrent
+            };
+
+            var item = new DownloadClientItem
+            {
+                Title = "SiteRIP pack torrent",
+                DownloadId = downloadId,
+                DownloadClientInfo = new DownloadClientItemClientInfo
+                {
+                    Protocol = client.Protocol,
+                    Id = client.Id,
+                    Name = "qBittorrent"
+                }
+            };
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(new List<EpisodeHistory>
+                  {
+                      new EpisodeHistory
+                      {
+                          DownloadId = downloadId,
+                          SeriesId = 5,
+                          EpisodeId = 100,
+                          EventType = EpisodeHistoryEventType.Grabbed,
+                          Date = DateTime.UtcNow,
+                          Data = new Dictionary<string, string> { [HistoryDataKeys.IsSiteRip] = "true" }
+                      }
+                  });
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(downloadId))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadImported });
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(downloadId))
+                  .Returns(new SiteRipDownload
+                  {
+                      Id = siteRipDownloadId,
+                      DownloadId = downloadId,
+                      SeriesId = 5
+                  });
+
+            Mocker.GetMock<ISiteRipDownloadFileRepository>()
+                  .Setup(r => r.GetUnimportedByDownloadId(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false },
+                      new SiteRipDownloadFile { EpisodeId = 101, FileIndex = 2, Imported = false }
+                  });
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.HasPendingFiles(siteRipDownloadId))
+                  .Returns(true);
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.GetPendingFiles(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false },
+                      new SiteRipDownloadFile { EpisodeId = 101, FileIndex = 2, Imported = false }
+                  });
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetSeries(5))
+                  .Returns(new Series { Id = 5 });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode>
+                  {
+                      new Episode { Id = 100, SeriesId = 5 },
+                      new Episode { Id = 101, SeriesId = 5 }
+                  });
+
+            Mocker.GetMock<ICustomFormatCalculationService>()
+                  .Setup(s => s.ParseCustomFormat(It.IsAny<RemoteEpisode>(), It.IsAny<long>()))
+                  .Returns(new List<CustomFormat>());
+
+            var trackedDownload = Subject.TrackDownload(client, item);
+
+            trackedDownload.State.Should().Be(TrackedDownloadState.Downloading);
+            trackedDownload.RemoteEpisode.Episodes.Should().HaveCount(2);
+        }
+
+        [Test]
+        public void should_build_siterip_remote_episode_when_imported_db_rows_but_episode_has_no_file()
+        {
+            const string downloadId = "STALEIMPORTED";
+            const int siteRipDownloadId = 10;
+
+            var client = new DownloadClientDefinition
+            {
+                Id = 1,
+                Protocol = DownloadProtocol.Torrent
+            };
+
+            var item = new DownloadClientItem
+            {
+                Title = "SiteRIP pack torrent",
+                DownloadId = downloadId,
+                DownloadClientInfo = new DownloadClientItemClientInfo
+                {
+                    Protocol = client.Protocol,
+                    Id = client.Id,
+                    Name = "qBittorrent"
+                }
+            };
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(new List<EpisodeHistory>
+                  {
+                      new EpisodeHistory
+                      {
+                          DownloadId = downloadId,
+                          SeriesId = 5,
+                          EpisodeId = 100,
+                          EventType = EpisodeHistoryEventType.Grabbed,
+                          Date = DateTime.UtcNow,
+                          Data = new Dictionary<string, string> { [HistoryDataKeys.IsSiteRip] = "true" }
+                      }
+                  });
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(downloadId))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadGrabbed });
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(downloadId))
+                  .Returns(new SiteRipDownload
+                  {
+                      Id = siteRipDownloadId,
+                      DownloadId = downloadId,
+                      SeriesId = 5
+                  });
+
+            Mocker.GetMock<ISiteRipDownloadFileRepository>()
+                  .Setup(r => r.GetUnimportedByDownloadId(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>());
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.HasPendingFiles(siteRipDownloadId))
+                  .Returns(true);
+
+            Mocker.GetMock<ISiteRipPendingFileService>()
+                  .Setup(s => s.GetPendingFiles(siteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = true },
+                      new SiteRipDownloadFile { EpisodeId = 101, FileIndex = 2, Imported = true }
+                  });
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetSeries(5))
+                  .Returns(new Series { Id = 5 });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode>
+                  {
+                      new Episode { Id = 100, SeriesId = 5, EpisodeFileId = 0 },
+                      new Episode { Id = 101, SeriesId = 5, EpisodeFileId = 0 }
+                  });
+
+            Mocker.GetMock<ICustomFormatCalculationService>()
+                  .Setup(s => s.ParseCustomFormat(It.IsAny<RemoteEpisode>(), It.IsAny<long>()))
+                  .Returns(new List<CustomFormat>());
+
+            var trackedDownload = Subject.TrackDownload(client, item);
+
+            trackedDownload.RemoteEpisode.Episodes.Should().HaveCount(2);
+            trackedDownload.RemoteEpisode.Episodes.Select(e => e.Id).Should().BeEquivalentTo(new[] { 100, 101 });
         }
     }
 }

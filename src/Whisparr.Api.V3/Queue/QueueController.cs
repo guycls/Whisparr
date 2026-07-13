@@ -15,6 +15,7 @@ using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Queue;
+using NzbDrone.Core.SiteRip;
 using NzbDrone.SignalR;
 using Whisparr.Http;
 using Whisparr.Http.Extensions;
@@ -36,6 +37,8 @@ namespace Whisparr.Api.V3.Queue
         private readonly IIgnoredDownloadService _ignoredDownloadService;
         private readonly IProvideDownloadClient _downloadClientProvider;
         private readonly IBlocklistService _blocklistService;
+        private readonly ISiteRipCancelService _siteRipCancelService;
+        private readonly ISiteRipProgressService _siteRipProgressService;
 
         public QueueController(IBroadcastSignalRMessage broadcastSignalRMessage,
                            IQueueService queueService,
@@ -45,7 +48,9 @@ namespace Whisparr.Api.V3.Queue
                            IFailedDownloadService failedDownloadService,
                            IIgnoredDownloadService ignoredDownloadService,
                            IProvideDownloadClient downloadClientProvider,
-                           IBlocklistService blocklistService)
+                           IBlocklistService blocklistService,
+                           ISiteRipCancelService siteRipCancelService,
+                           ISiteRipProgressService siteRipProgressService)
             : base(broadcastSignalRMessage)
         {
             _queueService = queueService;
@@ -55,6 +60,8 @@ namespace Whisparr.Api.V3.Queue
             _ignoredDownloadService = ignoredDownloadService;
             _downloadClientProvider = downloadClientProvider;
             _blocklistService = blocklistService;
+            _siteRipCancelService = siteRipCancelService;
+            _siteRipProgressService = siteRipProgressService;
 
             _qualityComparer = new QualityModelComparer(qualityProfileService.GetDefaultProfile(string.Empty));
         }
@@ -82,11 +89,23 @@ namespace Whisparr.Api.V3.Queue
                 return;
             }
 
-            var trackedDownload = GetTrackedDownload(id);
+            var queueItem = _queueService.Find(id);
+
+            if (queueItem == null)
+            {
+                throw new NotFoundException();
+            }
+
+            var trackedDownload = _trackedDownloadService.Find(queueItem.DownloadId);
 
             if (trackedDownload == null)
             {
                 throw new NotFoundException();
+            }
+
+            if (TryRemoveSiteRipScene(queueItem, trackedDownload, removeFromClient, blocklist, skipRedownload, changeCategory))
+            {
+                return;
             }
 
             Remove(trackedDownload, removeFromClient, blocklist, skipRedownload, changeCategory);
@@ -96,13 +115,14 @@ namespace Whisparr.Api.V3.Queue
         [HttpDelete("bulk")]
         public object RemoveMany([FromBody] QueueBulkResource resource, [FromQuery] bool removeFromClient = true, [FromQuery] bool blocklist = false, [FromQuery] bool skipRedownload = false, [FromQuery] bool changeCategory = false)
         {
-            var trackedDownloadIds = new List<string>();
+            var trackedDownloadIdsToStop = new List<string>();
             var pendingToRemove = new List<NzbDrone.Core.Queue.Queue>();
+            var siteRipCancels = new Dictionary<string, (List<int> EpisodeIds, TrackedDownload TrackedDownload)>(StringComparer.OrdinalIgnoreCase);
             var trackedToRemove = new List<TrackedDownload>();
 
-            foreach (var id in resource.Ids)
+            foreach (var queueId in resource.Ids)
             {
-                var pendingRelease = _pendingReleaseService.FindPendingQueueItem(id);
+                var pendingRelease = _pendingReleaseService.FindPendingQueueItem(queueId);
 
                 if (pendingRelease != null)
                 {
@@ -110,12 +130,33 @@ namespace Whisparr.Api.V3.Queue
                     continue;
                 }
 
-                var trackedDownload = GetTrackedDownload(id);
+                var queueItem = _queueService.Find(queueId);
 
-                if (trackedDownload != null)
+                if (queueItem == null)
                 {
-                    trackedToRemove.Add(trackedDownload);
+                    continue;
                 }
+
+                var trackedDownload = _trackedDownloadService.Find(queueItem.DownloadId);
+
+                if (trackedDownload == null)
+                {
+                    continue;
+                }
+
+                if (IsSiteRipSceneRemoval(queueItem))
+                {
+                    if (!siteRipCancels.TryGetValue(queueItem.DownloadId, out var entry))
+                    {
+                        entry = (new List<int>(), trackedDownload);
+                        siteRipCancels[queueItem.DownloadId] = entry;
+                    }
+
+                    entry.EpisodeIds.Add(queueItem.Episode.Id);
+                    continue;
+                }
+
+                trackedToRemove.Add(trackedDownload);
             }
 
             foreach (var pendingRelease in pendingToRemove.DistinctBy(p => p.Id))
@@ -123,13 +164,33 @@ namespace Whisparr.Api.V3.Queue
                 Remove(pendingRelease, blocklist);
             }
 
+            foreach (var siteRipCancel in siteRipCancels)
+            {
+                var result = CancelSiteRipEpisodes(
+                    siteRipCancel.Key,
+                    siteRipCancel.Value.EpisodeIds.Distinct().ToList(),
+                    siteRipCancel.Value.TrackedDownload,
+                    removeFromClient,
+                    blocklist,
+                    skipRedownload,
+                    changeCategory);
+
+                if (result.TorrentRemoved || !result.HasRemainingScenes)
+                {
+                    trackedDownloadIdsToStop.Add(siteRipCancel.Key);
+                }
+            }
+
             foreach (var trackedDownload in trackedToRemove.DistinctBy(t => t.DownloadItem.DownloadId))
             {
                 Remove(trackedDownload, removeFromClient, blocklist, skipRedownload, changeCategory);
-                trackedDownloadIds.Add(trackedDownload.DownloadItem.DownloadId);
+                trackedDownloadIdsToStop.Add(trackedDownload.DownloadItem.DownloadId);
             }
 
-            _trackedDownloadService.StopTracking(trackedDownloadIds);
+            if (trackedDownloadIdsToStop.Any())
+            {
+                _trackedDownloadService.StopTracking(trackedDownloadIdsToStop);
+            }
 
             return new { };
         }
@@ -360,6 +421,59 @@ namespace Whisparr.Api.V3.Queue
             }
 
             return trackedDownload;
+        }
+
+        private bool TryRemoveSiteRipScene(NzbDrone.Core.Queue.Queue queueItem,
+                                           TrackedDownload trackedDownload,
+                                           bool removeFromClient,
+                                           bool blocklist,
+                                           bool skipRedownload,
+                                           bool changeCategory)
+        {
+            if (!IsSiteRipSceneRemoval(queueItem))
+            {
+                return false;
+            }
+
+            var result = CancelSiteRipEpisodes(
+                queueItem.DownloadId,
+                new List<int> { queueItem.Episode.Id },
+                trackedDownload,
+                removeFromClient,
+                blocklist,
+                skipRedownload,
+                changeCategory);
+
+            if (result.TorrentRemoved || !result.HasRemainingScenes)
+            {
+                _trackedDownloadService.StopTracking(queueItem.DownloadId);
+            }
+
+            return true;
+        }
+
+        private SiteRipCancelResult CancelSiteRipEpisodes(string downloadId,
+                                                          List<int> episodeIds,
+                                                          TrackedDownload trackedDownload,
+                                                          bool removeFromClient,
+                                                          bool blocklist,
+                                                          bool skipRedownload,
+                                                          bool changeCategory)
+        {
+            return _siteRipCancelService.CancelEpisodes(downloadId, episodeIds, new SiteRipCancelOptions
+            {
+                RemoveFromClient = removeFromClient,
+                Blocklist = blocklist,
+                SkipRedownload = skipRedownload,
+                ChangeCategory = changeCategory,
+                TrackedDownload = trackedDownload
+            });
+        }
+
+        private bool IsSiteRipSceneRemoval(NzbDrone.Core.Queue.Queue queueItem)
+        {
+            return queueItem.Episode != null &&
+                   _siteRipProgressService.IsSiteRipDownload(queueItem.DownloadId);
         }
 
         private TrackedDownload GetTrackedDownload(int queueId)

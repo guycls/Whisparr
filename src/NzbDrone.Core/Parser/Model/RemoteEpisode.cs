@@ -74,6 +74,7 @@ namespace NzbDrone.Core.Parser.Model
         Search = 2,
         UserInvokedSearch = 3,
         InteractiveSearch = 4,
-        ReleasePush = 5
+        ReleasePush = 5,
+        SiteRip = 6
     }
 }

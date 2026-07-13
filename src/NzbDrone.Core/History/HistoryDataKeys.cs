@@ -22,5 +22,6 @@ namespace NzbDrone.Core.History
         public const string ReleaseSource = "ReleaseSource";
         public const string ReleaseHash = "ReleaseHash";
         public const string TorrentInfoHash = "TorrentInfoHash";
+        public const string IsSiteRip = "isSiteRip";
     }
 }

@@ -99,6 +99,7 @@ interface Series extends ModelBase {
   status: SeriesStatus;
   tags: number[];
   studioSearchPrefix?: string;
+  studioSiteripSuffix?: string;
   title: string;
   titleSlug: string;
   tvdbId: number;

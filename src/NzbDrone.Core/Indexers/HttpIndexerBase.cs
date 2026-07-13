@@ -72,6 +72,16 @@ namespace NzbDrone.Core.Indexers
             return FetchReleases(g => g.GetSearchRequests(searchCriteria), allow429Retries: !_configService.DisableSearch429Retries);
         }
 
+        public override Task<IList<ReleaseInfo>> Fetch(SiteRipSearchCriteria searchCriteria)
+        {
+            if (!SupportsSearch)
+            {
+                return Task.FromResult<IList<ReleaseInfo>>(Array.Empty<ReleaseInfo>());
+            }
+
+            return FetchReleases(g => g.GetSearchRequests(searchCriteria), allow429Retries: !_configService.DisableSearch429Retries);
+        }
+
         public override HttpRequest GetDownloadRequest(string link)
         {
             return new HttpRequest(link);

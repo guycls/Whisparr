@@ -11,6 +11,7 @@ using NzbDrone.Core.Download.Aggregation;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
+using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.DecisionEngine
 {
@@ -72,6 +73,34 @@ namespace NzbDrone.Core.DecisionEngine
 
                 try
                 {
+                    if (searchCriteria is SiteRipSearchCriteria siteRipCriteria)
+                    {
+                        var parsedEpisodeInfo = Parser.Parser.ParseTitle(report.Title) ?? new ParsedEpisodeInfo
+                        {
+                            ReleaseTitle = report.Title,
+                            Languages = LanguageParser.ParseLanguages(report.Title),
+                            Quality = QualityParser.ParseQuality(report.Title)
+                        };
+
+                        parsedEpisodeInfo.ExternalId = Parser.Parser.ParseExternalId(report.Title);
+
+                        var remoteEpisode = new RemoteEpisode
+                        {
+                            Release = report,
+                            Series = siteRipCriteria.Series,
+                            Episodes = new List<Episode>(),
+                            ParsedEpisodeInfo = parsedEpisodeInfo,
+                            Languages = parsedEpisodeInfo.Languages,
+                            DownloadAllowed = false
+                        };
+
+                        remoteEpisode.CustomFormats = _formatCalculator.ParseCustomFormat(remoteEpisode, remoteEpisode.Release.Size);
+                        remoteEpisode.CustomFormatScore = remoteEpisode.Series?.QualityProfile?.Value.CalculateCustomFormatScore(remoteEpisode.CustomFormats) ?? 0;
+
+                        decision = new DownloadDecision(remoteEpisode);
+                    }
+                    else
+                    {
                     var parsedEpisodeInfo = Parser.Parser.ParseTitle(report.Title);
 
                     // Try to extract external ID from the release title
@@ -136,6 +165,7 @@ namespace NzbDrone.Core.DecisionEngine
 
                         decision = new DownloadDecision(remoteEpisode, new Rejection("Unable to parse release"));
                     }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -153,7 +183,11 @@ namespace NzbDrone.Core.DecisionEngine
 
                     if (searchCriteria != null)
                     {
-                        if (searchCriteria.InteractiveSearch)
+                        if (searchCriteria is SiteRipSearchCriteria)
+                        {
+                            source = ReleaseSourceType.SiteRip;
+                        }
+                        else if (searchCriteria.InteractiveSearch)
                         {
                             source = ReleaseSourceType.InteractiveSearch;
                         }

@@ -16,6 +16,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
         private readonly IHttpClient _httpClient;
         private readonly Logger _logger;
         private readonly ICached<Dictionary<string, string>> _authCookieCache;
+        private readonly ICached<bool> _isQBitTorrent5Cache;
 
         public QBittorrentProxyV2(IHttpClient httpClient, ICacheManager cacheManager, Logger logger)
         {
@@ -23,6 +24,7 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             _logger = logger;
 
             _authCookieCache = cacheManager.GetCache<Dictionary<string, string>>(GetType(), "authCookies");
+            _isQBitTorrent5Cache = cacheManager.GetCache<bool>(GetType(), "isQBitTorrent5");
         }
 
         public bool IsApiSupported(QBittorrentSettings settings)
@@ -145,11 +147,21 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
         public void AddTorrentFromUrl(string torrentUrl, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings)
         {
+            AddTorrentFromUrl(torrentUrl, seedConfiguration, settings, (QBittorrentState)settings.InitialState == QBittorrentState.Pause);
+        }
+
+        public void AddTorrentFromFile(string fileName, byte[] fileContent, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings)
+        {
+            AddTorrentFromFile(fileName, fileContent, seedConfiguration, settings, (QBittorrentState)settings.InitialState == QBittorrentState.Pause);
+        }
+
+        public void AddTorrentFromUrl(string torrentUrl, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings, bool paused)
+        {
             var request = BuildRequest(settings).Resource("/api/v2/torrents/add")
                                                 .Post()
                                                 .AddFormParameter("urls", torrentUrl);
 
-            AddTorrentDownloadFormParameters(request, settings);
+            AddTorrentDownloadFormParameters(request, settings, paused);
 
             if (seedConfiguration != null)
             {
@@ -158,20 +170,19 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
             var result = ProcessRequest(request, settings);
 
-            // Note: Older qbit versions returned nothing, so we can't do != "Ok." here.
             if (result == "Fails.")
             {
                 throw new DownloadClientException("Download client failed to add torrent by url");
             }
         }
 
-        public void AddTorrentFromFile(string fileName, byte[] fileContent, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings)
+        public void AddTorrentFromFile(string fileName, byte[] fileContent, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings, bool paused)
         {
             var request = BuildRequest(settings).Resource("/api/v2/torrents/add")
                                                 .Post()
                                                 .AddFormUpload("torrents", fileName, fileContent);
 
-            AddTorrentDownloadFormParameters(request, settings);
+            AddTorrentDownloadFormParameters(request, settings, paused);
 
             if (seedConfiguration != null)
             {
@@ -180,7 +191,6 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
             var result = ProcessRequest(request, settings);
 
-            // Note: Current qbit versions return nothing, so we can't do != "Ok." here.
             if (result == "Fails.")
             {
                 throw new DownloadClientException("Download client failed to add torrent");
@@ -240,22 +250,15 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             }
         }
 
-        private void AddTorrentDownloadFormParameters(HttpRequestBuilder request, QBittorrentSettings settings)
+        private void AddTorrentDownloadFormParameters(HttpRequestBuilder request, QBittorrentSettings settings, bool? forcePaused = null)
         {
             if (settings.TvCategory.IsNotNullOrWhiteSpace())
             {
                 request.AddFormParameter("category", settings.TvCategory);
             }
 
-            // Note: ForceStart is handled by separate api call
-            if ((QBittorrentState)settings.InitialState == QBittorrentState.Start)
-            {
-                request.AddFormParameter("paused", false);
-            }
-            else if ((QBittorrentState)settings.InitialState == QBittorrentState.Pause)
-            {
-                request.AddFormParameter("paused", true);
-            }
+            var paused = forcePaused ?? (QBittorrentState)settings.InitialState == QBittorrentState.Pause;
+            request.AddFormParameter("paused", paused ? "true" : "false");
 
             if (settings.SequentialOrder)
             {
@@ -325,7 +328,11 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
         public void PauseTorrent(string hash, QBittorrentSettings settings)
         {
-            var request = BuildRequest(settings).Resource("/api/v2/torrents/pause")
+            var resource = IsQBitTorrent5OrLater(settings)
+                ? "/api/v2/torrents/stop"
+                : "/api/v2/torrents/pause";
+
+            var request = BuildRequest(settings).Resource(resource)
                                                 .Post()
                                                 .AddFormParameter("hashes", hash);
             ProcessRequest(request, settings);
@@ -333,10 +340,29 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
         public void ResumeTorrent(string hash, QBittorrentSettings settings)
         {
-            var request = BuildRequest(settings).Resource("/api/v2/torrents/resume")
+            var resource = IsQBitTorrent5OrLater(settings)
+                ? "/api/v2/torrents/start"
+                : "/api/v2/torrents/resume";
+
+            var request = BuildRequest(settings).Resource(resource)
                                                 .Post()
                                                 .AddFormParameter("hashes", hash);
             ProcessRequest(request, settings);
+        }
+
+        private bool IsQBitTorrent5OrLater(QBittorrentSettings settings)
+        {
+            var cacheKey = $"{settings.Host}:{settings.Port}";
+
+            return _isQBitTorrent5Cache.Get(cacheKey, () => FetchIsQBitTorrent5OrLater(settings), TimeSpan.FromDays(1));
+        }
+
+        private bool FetchIsQBitTorrent5OrLater(QBittorrentSettings settings)
+        {
+            var version = GetVersion(settings);
+            var versionPart = version.Split('-', ' ')[0];
+
+            return Version.TryParse(versionPart, out var parsed) && parsed.Major >= 5;
         }
 
         public void SetForceStart(string hash, bool enabled, QBittorrentSettings settings)
@@ -346,6 +372,36 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
                                                 .AddFormParameter("hashes", hash)
                                                 .AddFormParameter("value", enabled ? "true" : "false");
             ProcessRequest(request, settings);
+        }
+
+        public void SetFilesWanted(string hash, IEnumerable<int> wantedFileIndices, QBittorrentSettings settings)
+        {
+            var files = GetTorrentFiles(hash, settings);
+            var wanted = new HashSet<int>(wantedFileIndices);
+
+            foreach (var file in files)
+            {
+                var priority = wanted.Contains(file.Index) ? 1 : 0;
+                var request = BuildRequest(settings).Resource("/api/v2/torrents/filePrio")
+                                                    .Post()
+                                                    .AddFormParameter("hash", hash)
+                                                    .AddFormParameter("id", file.Index.ToString())
+                                                    .AddFormParameter("priority", priority.ToString());
+                ProcessRequest(request, settings);
+            }
+        }
+
+        public void SetFilesUnwanted(string hash, IEnumerable<int> unwantedFileIndices, QBittorrentSettings settings)
+        {
+            foreach (var index in unwantedFileIndices)
+            {
+                var request = BuildRequest(settings).Resource("/api/v2/torrents/filePrio")
+                                                    .Post()
+                                                    .AddFormParameter("hash", hash)
+                                                    .AddFormParameter("id", index.ToString())
+                                                    .AddFormParameter("priority", "0");
+                ProcessRequest(request, settings);
+            }
         }
 
         private static HttpRequestBuilder BuildRequest(QBittorrentSettings settings)

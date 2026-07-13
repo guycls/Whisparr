@@ -15,6 +15,7 @@ using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Qualities;
+using NzbDrone.Core.SiteRip;
 using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.Download
@@ -37,6 +38,7 @@ namespace NzbDrone.Core.Download
         private readonly IEpisodeService _episodeService;
         private readonly ITrackedDownloadAlreadyImported _trackedDownloadAlreadyImported;
         private readonly IMediaFileService _mediaFileService;
+        private readonly ISiteRipDownloadRepository _siteRipDownloadRepository;
         private readonly Logger _logger;
 
         public CompletedDownloadService(IEventAggregator eventAggregator,
@@ -48,6 +50,7 @@ namespace NzbDrone.Core.Download
                                         IEpisodeService episodeService,
                                         ITrackedDownloadAlreadyImported trackedDownloadAlreadyImported,
                                         IMediaFileService mediaFileService,
+                                        ISiteRipDownloadRepository siteRipDownloadRepository,
                                         Logger logger)
         {
             _eventAggregator = eventAggregator;
@@ -59,6 +62,7 @@ namespace NzbDrone.Core.Download
             _episodeService = episodeService;
             _trackedDownloadAlreadyImported = trackedDownloadAlreadyImported;
             _mediaFileService = mediaFileService;
+            _siteRipDownloadRepository = siteRipDownloadRepository;
             _logger = logger;
         }
 
@@ -162,6 +166,12 @@ namespace NzbDrone.Core.Download
 
             if (!ValidatePath(trackedDownload))
             {
+                return;
+            }
+
+            if (_siteRipDownloadRepository.FindByDownloadId(trackedDownload.DownloadItem.DownloadId) != null)
+            {
+                TryCompleteSiteRipDownload(trackedDownload);
                 return;
             }
 
@@ -313,6 +323,43 @@ namespace NzbDrone.Core.Download
 
             _logger.Debug("Not all episodes have been imported for the release '{0}'", trackedDownload.DownloadItem.Title);
             return false;
+        }
+
+        private void TryCompleteSiteRipDownload(TrackedDownload trackedDownload)
+        {
+            if (trackedDownload.RemoteEpisode?.Series == null)
+            {
+                return;
+            }
+
+            var grabbedEpisodeIds = _historyService.FindByDownloadId(trackedDownload.DownloadItem.DownloadId)
+                .Where(h => h.EventType == EpisodeHistoryEventType.Grabbed)
+                .Select(h => h.EpisodeId)
+                .Distinct()
+                .ToList();
+
+            if (grabbedEpisodeIds.Empty())
+            {
+                return;
+            }
+
+            var episodes = _episodeService.GetEpisodes(grabbedEpisodeIds);
+
+            if (episodes.Any(e => !e.HasFile))
+            {
+                _logger.Debug("SiteRIP import still pending for {0}", trackedDownload.DownloadItem.Title);
+                return;
+            }
+
+            var files = _mediaFileService.GetFiles(episodes.Select(e => e.EpisodeFileId).Where(id => id > 0).Distinct());
+            var grabbedHistory = _historyService.FindByDownloadId(trackedDownload.DownloadItem.DownloadId)
+                .Where(h => h.EventType == EpisodeHistoryEventType.Grabbed)
+                .ToList();
+            var releaseInfo = grabbedHistory.Count > 0 ? new GrabbedReleaseInfo(grabbedHistory) : null;
+
+            trackedDownload.State = TrackedDownloadState.Imported;
+            _eventAggregator.PublishEvent(new DownloadCompletedEvent(trackedDownload, trackedDownload.RemoteEpisode.Series.Id, files, releaseInfo));
+            _logger.Debug("All SiteRIP episodes imported for {0}", trackedDownload.DownloadItem.Title);
         }
 
         private void SendManualInteractionRequiredNotification(TrackedDownload trackedDownload)

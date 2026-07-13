@@ -30,5 +30,10 @@ namespace NzbDrone.Core.Indexers
         {
             return new IndexerPageableRequestChain();
         }
+
+        public virtual IndexerPageableRequestChain GetSearchRequests(SiteRipSearchCriteria searchCriteria)
+        {
+            return new IndexerPageableRequestChain();
+        }
     }
 }

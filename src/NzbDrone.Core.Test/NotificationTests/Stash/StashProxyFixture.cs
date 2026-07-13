@@ -109,5 +109,25 @@ namespace NzbDrone.Core.Test.NotificationTests.Stash
 
             Subject.IsPathTracked(_settings, "/data/missing.mp4").Should().BeFalse();
         }
+
+        [Test]
+        public void update_should_submit_identify_in_separate_request_when_enabled()
+        {
+            var postCount = 0;
+
+            _settings.MetadataIdentify = true;
+
+            Mocker.GetMock<IHttpClient>()
+                .Setup(c => c.Post(It.IsAny<HttpRequest>()))
+                .Returns<HttpRequest>(r =>
+                {
+                    postCount++;
+                    return new HttpResponse(r, new HttpHeader(), "{\"data\":{\"metadataScan\":\"1\"}}");
+                });
+
+            Subject.Update(_settings, "/data/studio/scene.mp4");
+
+            postCount.Should().Be(2);
+        }
     }
 }

@@ -10,6 +10,7 @@ import { clearEpisodeFiles, fetchEpisodeFiles } from 'Store/Actions/episodeFileA
 import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { toggleSeriesMonitored } from 'Store/Actions/seriesActions';
 import { setSeriesDetailsView, setSeriesDetailsMonitorStatusFilter, setSeriesDetailsQualityFilter } from 'Store/Actions/seriesDetailsActions';
+import { fetchDownloadClients } from 'Store/Actions/settingsActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
 import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
@@ -72,7 +73,8 @@ function createMapStateToProps() {
     (state) => state.seriesDetails.view,
     (state) => state.seriesDetails.monitorStatusFilter,
     (state) => state.seriesDetails.qualityFilter,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter) => {
+    (state) => state.settings.downloadClients,
+    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, downloadClients) => {
       const resolvedQualityFilter = qualityFilter ?? { minIndex: 0, maxIndex: 6 };
       const sortedSeries = _.orderBy(allSeries, 'sortTitle');
       const seriesIndex = _.findIndex(sortedSeries, { titleSlug });
@@ -117,6 +119,8 @@ function createMapStateToProps() {
       const isFetching = isEpisodesFetching || isEpisodeFilesFetching;
       const isPopulated = isEpisodesPopulated && isEpisodeFilesPopulated;
       const alternateTitles = filterAlternateTitles(series.alternateTitles, series.title, series.useSceneNumbering);
+      const downloadClientItems = downloadClients?.items ?? [];
+      const hasQBittorrent = downloadClientItems.some((c) => c.enable && c.implementation === 'QBittorrent');
 
       return {
         ...series,
@@ -134,6 +138,9 @@ function createMapStateToProps() {
         hasEpisodes,
         hasMonitoredEpisodes,
         hasEpisodeFiles,
+        hasQBittorrent,
+        isDownloadClientsPopulated: downloadClients?.isPopulated ?? false,
+        isDownloadClientsFetching: downloadClients?.isFetching ?? false,
         previousSeries,
         nextSeries,
         safeForWorkMode,
@@ -156,7 +163,8 @@ const mapDispatchToProps = {
   executeCommand,
   setSeriesDetailsView,
   setSeriesDetailsMonitorStatusFilter,
-  setSeriesDetailsQualityFilter
+  setSeriesDetailsQualityFilter,
+  fetchDownloadClients
 };
 
 class SeriesDetailsConnector extends Component {
@@ -167,6 +175,15 @@ class SeriesDetailsConnector extends Component {
   componentDidMount() {
     registerPagePopulator(this.populate, ['seriesUpdated']);
     this.populate();
+
+    const {
+      isDownloadClientsPopulated,
+      isDownloadClientsFetching
+    } = this.props;
+
+    if (!isDownloadClientsPopulated && !isDownloadClientsFetching) {
+      this.props.fetchDownloadClients();
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -290,7 +307,10 @@ SeriesDetailsConnector.propTypes = {
   executeCommand: PropTypes.func.isRequired,
   setSeriesDetailsView: PropTypes.func.isRequired,
   setSeriesDetailsMonitorStatusFilter: PropTypes.func.isRequired,
-  setSeriesDetailsQualityFilter: PropTypes.func.isRequired
+  setSeriesDetailsQualityFilter: PropTypes.func.isRequired,
+  fetchDownloadClients: PropTypes.func.isRequired,
+  isDownloadClientsPopulated: PropTypes.bool,
+  isDownloadClientsFetching: PropTypes.bool
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(SeriesDetailsConnector);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Qualities;
@@ -18,6 +19,7 @@ namespace NzbDrone.Core.History
         List<EpisodeHistory> GetBySeason(int seriesId, int seasonNumber, EpisodeHistoryEventType? eventType);
         List<EpisodeHistory> FindDownloadHistory(int idSeriesId, QualityModel quality);
         void DeleteForSeries(List<int> seriesIds);
+        void DeleteGrabbed(string downloadId, IEnumerable<int> episodeIds);
         List<EpisodeHistory> Since(DateTime date, EpisodeHistoryEventType? eventType);
         PagingSpec<EpisodeHistory> GetPaged(PagingSpec<EpisodeHistory> pagingSpec, int[] languages, int[] qualities);
     }
@@ -100,6 +102,23 @@ namespace NzbDrone.Core.History
         public void DeleteForSeries(List<int> seriesIds)
         {
             Delete(c => seriesIds.Contains(c.SeriesId));
+        }
+
+        public void DeleteGrabbed(string downloadId, IEnumerable<int> episodeIds)
+        {
+            var episodeIdList = episodeIds.ToList();
+
+            if (episodeIdList.Empty())
+            {
+                return;
+            }
+
+            var upper = downloadId.ToUpper();
+            var lower = downloadId.ToLower();
+
+            Delete(h => (h.DownloadId == downloadId || h.DownloadId == upper || h.DownloadId == lower) &&
+                        h.EventType == EpisodeHistoryEventType.Grabbed &&
+                        episodeIdList.Contains(h.EpisodeId));
         }
 
         public List<EpisodeHistory> Since(DateTime date, EpisodeHistoryEventType? eventType)

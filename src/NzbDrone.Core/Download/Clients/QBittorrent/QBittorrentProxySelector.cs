@@ -19,8 +19,8 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
 
         void AddTorrentFromUrl(string torrentUrl, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings);
         void AddTorrentFromFile(string fileName, byte[] fileContent, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings);
-
-        void RemoveTorrent(string hash, bool removeData, QBittorrentSettings settings);
+        void AddTorrentFromUrl(string torrentUrl, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings, bool paused);
+        void AddTorrentFromFile(string fileName, byte[] fileContent, TorrentSeedConfiguration seedConfiguration, QBittorrentSettings settings, bool paused);
         void SetTorrentLabel(string hash, string label, QBittorrentSettings settings);
         void AddLabel(string label, QBittorrentSettings settings);
         Dictionary<string, QBittorrentLabel> GetLabels(QBittorrentSettings settings);
@@ -29,6 +29,9 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
         void PauseTorrent(string hash, QBittorrentSettings settings);
         void ResumeTorrent(string hash, QBittorrentSettings settings);
         void SetForceStart(string hash, bool enabled, QBittorrentSettings settings);
+        void SetFilesWanted(string hash, IEnumerable<int> wantedFileIndices, QBittorrentSettings settings);
+        void SetFilesUnwanted(string hash, IEnumerable<int> unwantedFileIndices, QBittorrentSettings settings);
+        void RemoveTorrent(string hash, bool removeData, QBittorrentSettings settings);
     }
 
     public interface IQBittorrentProxySelector

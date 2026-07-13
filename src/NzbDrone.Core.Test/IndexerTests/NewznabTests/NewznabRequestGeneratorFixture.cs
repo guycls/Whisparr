@@ -379,5 +379,64 @@ namespace NzbDrone.Core.Test.IndexerTests.NewznabTests
             requests.Should().Contain(x => x.Url.Query.Contains("21"));
             requests.Should().Contain(x => x.Url.Query.Contains("2021"));
         }
+
+        [Test]
+        public void should_search_siterip_with_title_slug()
+        {
+            _capabilities.SupportedSearchParameters = new[] { "q" };
+
+            var siteRipCriteria = new SiteRipSearchCriteria
+            {
+                Series = new Tv.Series { TitleSlug = "brazzers-exxtra" },
+                SceneTitles = new List<string> { "brazzers-exxtra" }
+            };
+
+            var results = Subject.GetSearchRequests(siteRipCriteria);
+            var requests = results.GetAllTiers().SelectMany(x => x).ToList();
+
+            requests.Should().NotBeEmpty();
+            requests.Should().Contain(x => x.Url.Query.Contains("siterip"));
+            requests.Should().Contain(x => x.Url.Query.Contains("brazzers"));
+        }
+
+        [Test]
+        public void should_search_siterip_with_studio_prefix()
+        {
+            _capabilities.SupportedSearchParameters = new[] { "q" };
+
+            var siteRipCriteria = new SiteRipSearchCriteria
+            {
+                Series = new Tv.Series { StudioSearchPrefix = "Brazzers", TitleSlug = "brazzers-exxtra" },
+                SceneTitles = new List<string> { "Brazzers" }
+            };
+
+            var results = Subject.GetSearchRequests(siteRipCriteria);
+            var requests = results.GetAllTiers().SelectMany(x => x).ToList();
+
+            requests.Should().NotBeEmpty();
+            requests.Should().OnlyContain(x => x.Url.Query.Contains("siterip"));
+            requests.Should().Contain(x => x.Url.Query.Contains("Brazzers"));
+            requests.Should().NotContain(x => x.Url.Query.Contains("brazzers-exxtra"));
+        }
+
+        [Test]
+        public void should_search_siterip_with_custom_suffix()
+        {
+            _capabilities.SupportedSearchParameters = new[] { "q" };
+
+            var siteRipCriteria = new SiteRipSearchCriteria
+            {
+                Series = new Tv.Series { TitleSlug = "brazzers-exxtra", StudioSiteripSuffix = "sitepack" },
+                SceneTitles = new List<string> { "brazzers-exxtra" }
+            };
+
+            var results = Subject.GetSearchRequests(siteRipCriteria);
+            var requests = results.GetAllTiers().SelectMany(x => x).ToList();
+
+            requests.Should().NotBeEmpty();
+            requests.Should().OnlyContain(x => x.Url.Query.Contains("sitepack"));
+            requests.Should().NotContain(x => x.Url.Query.Contains("siterip"));
+            requests.Should().Contain(x => x.Url.Query.Contains("brazzers"));
+        }
     }
 }

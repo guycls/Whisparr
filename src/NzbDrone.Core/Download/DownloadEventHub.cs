@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Linq;
 using NLog;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download.TrackedDownloads;
+using NzbDrone.Core.History;
 using NzbDrone.Core.Messaging.Events;
+using NzbDrone.Core.SiteRip;
 
 namespace NzbDrone.Core.Download
 {
@@ -12,14 +15,23 @@ namespace NzbDrone.Core.Download
     {
         private readonly IConfigService _configService;
         private readonly IProvideDownloadClient _downloadClientProvider;
+        private readonly ISiteRipDownloadRepository _siteRipDownloadRepository;
+        private readonly ISiteRipPendingFileService _siteRipPendingFileService;
+        private readonly IHistoryService _historyService;
         private readonly Logger _logger;
 
         public DownloadEventHub(IConfigService configService,
             IProvideDownloadClient downloadClientProvider,
+            ISiteRipDownloadRepository siteRipDownloadRepository,
+            ISiteRipPendingFileService siteRipPendingFileService,
+            IHistoryService historyService,
             Logger logger)
         {
             _configService = configService;
             _downloadClientProvider = downloadClientProvider;
+            _siteRipDownloadRepository = siteRipDownloadRepository;
+            _siteRipPendingFileService = siteRipPendingFileService;
+            _historyService = historyService;
             _logger = logger;
         }
 
@@ -30,6 +42,11 @@ namespace NzbDrone.Core.Download
             if (trackedDownload == null ||
                 message.TrackedDownload.DownloadItem.Removed ||
                 !trackedDownload.DownloadItem.CanBeRemoved)
+            {
+                return;
+            }
+
+            if (HasRemainingSiteRipScenes(message.DownloadId))
             {
                 return;
             }
@@ -117,6 +134,23 @@ namespace NzbDrone.Core.Download
             {
                 _logger.Error(e, "Couldn't mark item {0} as imported from client {1}", trackedDownload.DownloadItem.Title, downloadClient.Name);
             }
+        }
+
+        private bool HasRemainingSiteRipScenes(string downloadId)
+        {
+            var siteRipDownload = _siteRipDownloadRepository.FindByDownloadId(downloadId);
+
+            if (siteRipDownload == null)
+            {
+                return false;
+            }
+
+            if (_siteRipPendingFileService.HasPendingFiles(siteRipDownload.Id))
+            {
+                return true;
+            }
+
+            return _historyService.Find(downloadId, EpisodeHistoryEventType.Grabbed).Any();
         }
     }
 }

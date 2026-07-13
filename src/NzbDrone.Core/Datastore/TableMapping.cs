@@ -35,6 +35,7 @@ using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Profiles.Releases;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.RemotePathMappings;
+using NzbDrone.Core.SiteRip;
 using NzbDrone.Core.RootFolders;
 using NzbDrone.Core.Tags;
 using NzbDrone.Core.ThingiProvider;
@@ -164,6 +165,9 @@ namespace NzbDrone.Core.Datastore
             Mapper.Entity<ImportListExclusion>("ImportListExclusions").RegisterModel();
 
             Mapper.Entity<AutoTagging.AutoTag>("AutoTagging").RegisterModel();
+
+            Mapper.Entity<SiteRipDownload>("SiteRipDownloads").RegisterModel();
+            Mapper.Entity<SiteRipDownloadFile>("SiteRipDownloadFiles").RegisterModel();
         }
 
         private static void RegisterMappers()

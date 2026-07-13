@@ -43,7 +43,8 @@ function createMapStateToProps() {
         'qualityProfileId',
         'path',
         'tags',
-        'studioSearchPrefix'
+        'studioSearchPrefix',
+        'studioSiteripSuffix'
       ]);
 
       const settings = selectSettings(seriesSettings, pendingChanges, saveError);

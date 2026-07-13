@@ -35,6 +35,7 @@ namespace NzbDrone.Core.Tv
         public bool UseSceneNumbering { get; set; }
         public string TitleSlug { get; set; }
         public string StudioSearchPrefix { get; set; }
+        public string StudioSiteripSuffix { get; set; }
         public string Path { get; set; }
 
         public string StudioSearchTitle =>
@@ -74,6 +75,7 @@ namespace NzbDrone.Core.Tv
             RootFolderPath = otherSeries.RootFolderPath;
             Tags = otherSeries.Tags;
             StudioSearchPrefix = otherSeries.StudioSearchPrefix;
+            StudioSiteripSuffix = otherSeries.StudioSiteripSuffix;
             AddOptions = otherSeries.AddOptions;
         }
     }

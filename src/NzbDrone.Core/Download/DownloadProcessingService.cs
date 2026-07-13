@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using NLog;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
+using NzbDrone.Core.SiteRip;
 
 namespace NzbDrone.Core.Download
 {
@@ -14,6 +15,7 @@ namespace NzbDrone.Core.Download
         private readonly ICompletedDownloadService _completedDownloadService;
         private readonly IFailedDownloadService _failedDownloadService;
         private readonly ITrackedDownloadService _trackedDownloadService;
+        private readonly ISiteRipImportService _siteRipImportService;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
 
@@ -21,6 +23,7 @@ namespace NzbDrone.Core.Download
                                          ICompletedDownloadService completedDownloadService,
                                          IFailedDownloadService failedDownloadService,
                                          ITrackedDownloadService trackedDownloadService,
+                                         ISiteRipImportService siteRipImportService,
                                          IEventAggregator eventAggregator,
                                          Logger logger)
         {
@@ -28,6 +31,7 @@ namespace NzbDrone.Core.Download
             _completedDownloadService = completedDownloadService;
             _failedDownloadService = failedDownloadService;
             _trackedDownloadService = trackedDownloadService;
+            _siteRipImportService = siteRipImportService;
             _eventAggregator = eventAggregator;
             _logger = logger;
         }
@@ -47,9 +51,14 @@ namespace NzbDrone.Core.Download
         public void Execute(ProcessMonitoredDownloadsCommand message)
         {
             var enableCompletedDownloadHandling = _configService.EnableCompletedDownloadHandling;
-            var trackedDownloads = _trackedDownloadService.GetTrackedDownloads()
-                                                          .Where(t => t.IsTrackable)
-                                                          .ToList();
+            var allTrackedDownloads = _trackedDownloadService.GetTrackedDownloads();
+
+            // SiteRIP imports per-file while the torrent may still be downloading or temporarily missing from the client queue.
+            _siteRipImportService.ProcessActiveDownloads(allTrackedDownloads);
+
+            var trackedDownloads = allTrackedDownloads
+                .Where(t => t.IsTrackable)
+                .ToList();
 
             foreach (var trackedDownload in trackedDownloads)
             {

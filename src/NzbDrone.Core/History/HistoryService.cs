@@ -27,6 +27,7 @@ namespace NzbDrone.Core.History
         List<EpisodeHistory> FindByDownloadId(string downloadId);
         string FindDownloadId(EpisodeImportedEvent trackedDownload);
         List<EpisodeHistory> Since(DateTime date, EpisodeHistoryEventType? eventType);
+        void DeleteGrabbed(string downloadId, IEnumerable<int> episodeIds);
     }
 
     public class HistoryService : IHistoryService,
@@ -159,6 +160,7 @@ namespace NzbDrone.Core.History
 
                 // Store override flag for force downloads
                 history.Data.SetShouldOverride(message.Episode.ShouldOverride);
+                history.Data.SetIsSiteRip(message.Episode.ReleaseSource == ReleaseSourceType.SiteRip);
 
                 history.Data.Add("AgeMinutes", message.Episode.Release.AgeMinutes.ToString());
                 history.Data.Add("PublishedDate", message.Episode.Release.PublishDate.ToString("s") + "Z");
@@ -363,6 +365,11 @@ namespace NzbDrone.Core.History
         public List<EpisodeHistory> Since(DateTime date, EpisodeHistoryEventType? eventType)
         {
             return _historyRepository.Since(date, eventType);
+        }
+
+        public void DeleteGrabbed(string downloadId, IEnumerable<int> episodeIds)
+        {
+            _historyRepository.DeleteGrabbed(downloadId, episodeIds);
         }
     }
 }

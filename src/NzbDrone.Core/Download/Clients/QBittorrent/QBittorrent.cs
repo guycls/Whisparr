@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using FluentValidation.Results;
+using MonoTorrent;
 using NLog;
 using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Indexers;
 using NzbDrone.Core.MediaFiles.TorrentInfo;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.RemotePathMappings;
@@ -729,6 +732,214 @@ namespace NzbDrone.Core.Download.Clients.QBittorrent
             var torrentProperties = Proxy.GetTorrentProperties(torrent.Hash, Settings);
 
             torrent.SeedingTime = torrentProperties.SeedingTime;
+        }
+
+        public List<QBittorrentTorrentFile> GetTorrentFileList(string hash)
+        {
+            return Proxy.GetTorrentFiles(hash.ToLower(), Settings);
+        }
+
+        public string GetTorrentFileFullPath(string hash, string torrentFileName)
+        {
+            var properties = Proxy.GetTorrentProperties(hash.ToLower(), Settings);
+            var savePath = new OsPath(properties.SavePath);
+            var relativeFileName = torrentFileName;
+
+            // qBittorrent returns `/` separators in file names even on Windows.
+            if (savePath.Kind == OsPathKind.Windows)
+            {
+                relativeFileName = torrentFileName.Replace('/', '\\');
+            }
+
+            var filePath = savePath + new OsPath(relativeFileName);
+
+            return _remotePathMappingService.RemapRemoteToLocal(Settings.Host, filePath).FullPath;
+        }
+
+        public async Task<string> EnsureSiteRipTorrentAdded(RemoteEpisode remoteEpisode, IIndexer indexer)
+        {
+            string hash;
+
+            try
+            {
+                hash = await Download(remoteEpisode, indexer);
+            }
+            catch (DownloadClientException ex)
+            {
+                hash = await TryResolveExistingTorrentHash(remoteEpisode, indexer);
+
+                if (hash.IsNullOrWhiteSpace())
+                {
+                    throw;
+                }
+
+                _logger.Debug(ex, "SiteRIP torrent add rejected, using existing torrent {0}", hash);
+            }
+
+            if (hash.IsNullOrWhiteSpace())
+            {
+                throw new DownloadClientException("Failed to add SiteRIP torrent to qBittorrent");
+            }
+
+            hash = hash.ToLower();
+
+            if (!WaitForTorrent(hash))
+            {
+                throw new DownloadClientException("Timed out waiting for SiteRIP torrent to be added");
+            }
+
+            return hash.ToUpper();
+        }
+
+        public void ApplySiteRipFileSelection(string downloadId, IEnumerable<int> wantedFileIndices)
+        {
+            var hash = downloadId.ToLower();
+
+            try
+            {
+                Proxy.PauseTorrent(hash, Settings);
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Failed to pause torrent {0} before setting file priorities", hash);
+            }
+
+            Proxy.SetFilesWanted(hash, wantedFileIndices, Settings);
+
+            try
+            {
+                Proxy.ResumeTorrent(hash, Settings);
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Failed to resume torrent {0} after setting file priorities", hash);
+            }
+        }
+
+        public void UnwantSiteRipFileIndices(string downloadId, IEnumerable<int> unwantedFileIndices)
+        {
+            var indices = unwantedFileIndices?.Distinct().ToList();
+
+            if (indices == null || indices.Empty())
+            {
+                return;
+            }
+
+            var hash = downloadId.ToLower();
+
+            try
+            {
+                Proxy.PauseTorrent(hash, Settings);
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Failed to pause torrent {0} before unwanting file priorities", hash);
+            }
+
+            Proxy.SetFilesUnwanted(hash, indices, Settings);
+
+            try
+            {
+                Proxy.ResumeTorrent(hash, Settings);
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Failed to resume torrent {0} after unwanting file priorities", hash);
+            }
+        }
+
+        public async Task<string> DownloadSiteRip(RemoteEpisode remoteEpisode, IIndexer indexer, IEnumerable<int> wantedFileIndices)
+        {
+            var downloadId = await EnsureSiteRipTorrentAdded(remoteEpisode, indexer);
+            ApplySiteRipFileSelection(downloadId, wantedFileIndices);
+            return downloadId;
+        }
+
+        private async Task<string> TryResolveExistingTorrentHash(RemoteEpisode remoteEpisode, IIndexer indexer)
+        {
+            var candidates = new List<string>();
+
+            if (remoteEpisode.Release is TorrentInfo torrentInfo && torrentInfo.InfoHash.IsNotNullOrWhiteSpace())
+            {
+                candidates.Add(torrentInfo.InfoHash);
+            }
+
+            var magnetUrl = GetMagnetUrl(remoteEpisode);
+
+            if (magnetUrl.IsNotNullOrWhiteSpace())
+            {
+                try
+                {
+                    candidates.Add(MagnetLink.Parse(magnetUrl).InfoHash.ToHex());
+                }
+                catch (FormatException ex)
+                {
+                    _logger.Debug(ex, "Failed to parse magnet for existing torrent lookup");
+                }
+            }
+
+            var torrentHash = await TryComputeHashFromTorrentUrl(remoteEpisode, indexer);
+
+            if (torrentHash.IsNotNullOrWhiteSpace())
+            {
+                candidates.Add(torrentHash);
+            }
+
+            foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                if (candidate.IsNullOrWhiteSpace())
+                {
+                    continue;
+                }
+
+                if (Proxy.IsTorrentLoaded(candidate.ToLower(), Settings))
+                {
+                    return candidate;
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetMagnetUrl(RemoteEpisode remoteEpisode)
+        {
+            if (remoteEpisode.Release.DownloadUrl.IsNotNullOrWhiteSpace() &&
+                remoteEpisode.Release.DownloadUrl.StartsWith("magnet:"))
+            {
+                return remoteEpisode.Release.DownloadUrl;
+            }
+
+            if (remoteEpisode.Release is TorrentInfo torrentInfo && torrentInfo.MagnetUrl.IsNotNullOrWhiteSpace())
+            {
+                return torrentInfo.MagnetUrl;
+            }
+
+            return null;
+        }
+
+        private async Task<string> TryComputeHashFromTorrentUrl(RemoteEpisode remoteEpisode, IIndexer indexer)
+        {
+            var torrentUrl = remoteEpisode.Release.DownloadUrl;
+
+            if (torrentUrl.IsNullOrWhiteSpace() || torrentUrl.StartsWith("magnet:"))
+            {
+                return null;
+            }
+
+            try
+            {
+                var request = indexer?.GetDownloadRequest(torrentUrl) ?? new HttpRequest(torrentUrl);
+                request.Headers.Accept = "application/x-bittorrent";
+
+                var response = await _httpClient.GetAsync(request);
+
+                return _torrentFileInfoReader.GetHashFromTorrentFile(response.ResponseData);
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Failed to compute torrent hash from URL for existing torrent lookup");
+                return null;
+            }
         }
     }
 }

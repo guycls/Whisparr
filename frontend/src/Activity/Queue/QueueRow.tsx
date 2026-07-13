@@ -231,13 +231,18 @@ function QueueRow(props: QueueRowProps) {
         }
 
         if (name === 'episodes.title') {
+          const siteRipSuffix = ' [SiteRIP]';
+          const episodeDisplayTitle = title.endsWith(siteRipSuffix)
+            ? title
+            : episode?.title ?? title;
+
           return (
             <TableRowCell key={name}>
               {series && episode ? (
                 <EpisodeTitleLink
                   episodeId={episode.id}
                   seriesId={series.id}
-                  episodeTitle={episode.title}
+                  episodeTitle={episodeDisplayTitle}
                   episodeEntity="episodes"
                   showOpenSeriesButton={true}
                 />

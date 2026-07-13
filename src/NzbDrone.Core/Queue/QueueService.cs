@@ -6,6 +6,9 @@ using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Qualities;
+using NzbDrone.Common.Extensions;
+using NzbDrone.Core.History;
+using NzbDrone.Core.SiteRip;
 using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.Queue
@@ -20,11 +23,26 @@ namespace NzbDrone.Core.Queue
     public class QueueService : IQueueService, IHandle<TrackedDownloadRefreshedEvent>
     {
         private readonly IEventAggregator _eventAggregator;
+        private readonly ISiteRipProgressService _siteRipProgressService;
+        private readonly ISiteRipDownloadRepository _siteRipDownloadRepository;
+        private readonly ISiteRipPendingFileService _siteRipPendingFileService;
+        private readonly IEpisodeService _episodeService;
+        private readonly ISeriesService _seriesService;
         private static List<Queue> _queue = new ();
 
-        public QueueService(IEventAggregator eventAggregator)
+        public QueueService(IEventAggregator eventAggregator,
+                            ISiteRipProgressService siteRipProgressService,
+                            ISiteRipDownloadRepository siteRipDownloadRepository,
+                            ISiteRipPendingFileService siteRipPendingFileService,
+                            IEpisodeService episodeService,
+                            ISeriesService seriesService)
         {
             _eventAggregator = eventAggregator;
+            _siteRipProgressService = siteRipProgressService;
+            _siteRipDownloadRepository = siteRipDownloadRepository;
+            _siteRipPendingFileService = siteRipPendingFileService;
+            _episodeService = episodeService;
+            _seriesService = seriesService;
         }
 
         public List<Queue> GetQueue()
@@ -44,6 +62,16 @@ namespace NzbDrone.Core.Queue
 
         private IEnumerable<Queue> MapQueue(TrackedDownload trackedDownload)
         {
+            if (TryGetSiteRipPendingEpisodes(trackedDownload, out var episodes, out var series))
+            {
+                foreach (var episode in episodes)
+                {
+                    yield return MapQueueItem(trackedDownload, episode, series);
+                }
+
+                yield break;
+            }
+
             if (trackedDownload.RemoteEpisode?.Episodes != null && trackedDownload.RemoteEpisode.Episodes.Any())
             {
                 foreach (var episode in trackedDownload.RemoteEpisode.Episodes)
@@ -57,15 +85,41 @@ namespace NzbDrone.Core.Queue
             }
         }
 
-        private Queue MapQueueItem(TrackedDownload trackedDownload, Episode episode)
+        private bool TryGetSiteRipPendingEpisodes(TrackedDownload trackedDownload, out List<Episode> episodes, out Series series)
+        {
+            episodes = null;
+            series = null;
+
+            var siteRipDownload = _siteRipDownloadRepository.FindByDownloadId(trackedDownload.DownloadItem.DownloadId);
+
+            if (siteRipDownload == null)
+            {
+                return false;
+            }
+
+            var pendingFiles = _siteRipPendingFileService.GetPendingFiles(siteRipDownload.Id);
+
+            if (pendingFiles.Empty())
+            {
+                return false;
+            }
+
+            var episodeIds = pendingFiles.Select(f => f.EpisodeId).Distinct().ToList();
+            episodes = _episodeService.GetEpisodes(episodeIds);
+            series = trackedDownload.RemoteEpisode?.Series ?? _seriesService.GetSeries(siteRipDownload.SeriesId);
+
+            return episodes.Any() && series != null;
+        }
+
+        private Queue MapQueueItem(TrackedDownload trackedDownload, Episode episode, Series seriesOverride = null)
         {
             var queue = new Queue
             {
-                Series = trackedDownload.RemoteEpisode?.Series,
+                Series = seriesOverride ?? trackedDownload.RemoteEpisode?.Series,
                 Episode = episode,
                 Languages = trackedDownload.RemoteEpisode?.Languages ?? new List<Language> { Language.Unknown },
                 Quality = trackedDownload.RemoteEpisode?.ParsedEpisodeInfo.Quality ?? new QualityModel(Quality.Unknown),
-                Title = Parser.Parser.RemoveFileExtension(trackedDownload.DownloadItem.Title),
+                Title = _siteRipProgressService.FormatQueueTitle(episode, Parser.Parser.RemoveFileExtension(trackedDownload.DownloadItem.Title), trackedDownload.DownloadItem.DownloadId),
                 Size = trackedDownload.DownloadItem.TotalSize,
                 Sizeleft = trackedDownload.DownloadItem.RemainingSize,
                 Timeleft = trackedDownload.DownloadItem.RemainingTime,
@@ -85,6 +139,13 @@ namespace NzbDrone.Core.Queue
             };
 
             queue.Id = HashConverter.GetHashInt31($"trackedDownload-{trackedDownload.DownloadClient}-{trackedDownload.DownloadItem.DownloadId}-ep{episode?.Id ?? 0}");
+
+            if (episode != null &&
+                _siteRipProgressService.TryGetEpisodeProgress(trackedDownload.DownloadItem.DownloadId, episode.Id, out var totalSize, out var remainingSize))
+            {
+                queue.Size = totalSize;
+                queue.Sizeleft = remainingSize;
+            }
 
             if (queue.Timeleft.HasValue)
             {

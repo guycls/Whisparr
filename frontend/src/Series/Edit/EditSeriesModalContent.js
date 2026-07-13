@@ -81,7 +81,8 @@ class EditSeriesModalContent extends Component {
       qualityProfileId,
       path,
       tags,
-      studioSearchPrefix
+      studioSearchPrefix,
+      studioSiteripSuffix
     } = item;
 
     return (
@@ -182,6 +183,18 @@ class EditSeriesModalContent extends Component {
                 name="studioSearchPrefix"
                 helpText={translate('StudioSearchPrefixHelpText')}
                 {...studioSearchPrefix}
+                onChange={onInputChange}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <FormLabel>{translate('StudioSiteripSuffix')}</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.TEXT}
+                name="studioSiteripSuffix"
+                helpText={translate('StudioSiteripSuffixHelpText')}
+                {...studioSiteripSuffix}
                 onChange={onInputChange}
               />
             </FormGroup>

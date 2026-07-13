@@ -11,6 +11,7 @@ import QueueAppState from './QueueAppState';
 import RootFolderAppState from './RootFolderAppState';
 import SeriesAppState, { SeriesIndexAppState } from './SeriesAppState';
 import SettingsAppState from './SettingsAppState';
+import SiteRipAppState from './SiteRipAppState';
 import SystemAppState from './SystemAppState';
 import TagsAppState from './TagsAppState';
 import WantedAppState from './WantedAppState';
@@ -84,6 +85,7 @@ interface AppState {
     };
   };
   seriesIndex: SeriesIndexAppState;
+  siteRip: SiteRipAppState;
   settings: SettingsAppState;
   system: SystemAppState;
   tags: TagsAppState;

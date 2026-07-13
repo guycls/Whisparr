@@ -70,6 +70,7 @@ namespace NzbDrone.Core.Indexers
 
         public abstract Task<IList<ReleaseInfo>> FetchRecent();
         public abstract Task<IList<ReleaseInfo>> Fetch(SeasonSearchCriteria searchCriteria);
+        public abstract Task<IList<ReleaseInfo>> Fetch(SiteRipSearchCriteria searchCriteria);
         public abstract Task<IList<ReleaseInfo>> Fetch(SingleEpisodeSearchCriteria searchCriteria);
         public abstract HttpRequest GetDownloadRequest(string link);
 

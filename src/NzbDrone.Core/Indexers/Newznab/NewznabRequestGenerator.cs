@@ -206,6 +206,30 @@ namespace NzbDrone.Core.Indexers.Newznab
             return pageableRequests;
         }
 
+        public virtual IndexerPageableRequestChain GetSearchRequests(SiteRipSearchCriteria searchCriteria)
+        {
+            var pageableRequests = new IndexerPageableRequestChain();
+
+            if (SupportsSearch)
+            {
+                var queryTitles = TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
+
+                foreach (var queryTitle in queryTitles)
+                {
+                    var normalizedQueryTitle = NewsnabifyTitle(queryTitle);
+                    var suffix = SiteRipSearchCriteria.GetSearchSuffix(searchCriteria.Series);
+                    var searchQuery = $"&q={normalizedQueryTitle}+{suffix}";
+
+                    pageableRequests.Add(GetPagedRequests(MaxPages,
+                        Settings.Categories,
+                        "search",
+                        searchQuery));
+                }
+            }
+
+            return pageableRequests;
+        }
+
         private IEnumerable<IndexerRequest> GetPagedRequests(int maxPages, IEnumerable<int> categories, string searchType, string parameters)
         {
             if (categories.Empty())

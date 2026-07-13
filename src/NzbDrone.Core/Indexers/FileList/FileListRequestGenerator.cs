@@ -54,6 +54,20 @@ namespace NzbDrone.Core.Indexers.FileList
             return pageableRequests;
         }
 
+        public IndexerPageableRequestChain GetSearchRequests(SiteRipSearchCriteria searchCriteria)
+        {
+            var pageableRequests = new IndexerPageableRequestChain();
+
+            foreach (var sceneTitle in searchCriteria.SceneTitles)
+            {
+                var suffix = SiteRipSearchCriteria.GetSearchSuffix(searchCriteria.Series);
+                var query = $"{sceneTitle.Trim()} {suffix}";
+                pageableRequests.Add(GetRequest("search-torrents", Settings.Categories, string.Format("&type=name&query={0}", Uri.EscapeDataString(query))));
+            }
+
+            return pageableRequests;
+        }
+
         private IEnumerable<IndexerRequest> GetRequest(string searchType, IEnumerable<int> categories, string parameters)
         {
             var categoriesQuery = string.Join(",", categories.Distinct());

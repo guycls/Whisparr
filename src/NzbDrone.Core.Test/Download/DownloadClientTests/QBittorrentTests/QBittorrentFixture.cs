@@ -948,5 +948,53 @@ namespace NzbDrone.Core.Test.Download.DownloadClientTests.QBittorrentTests
             Mocker.GetMock<IQBittorrentProxySelector>()
                   .Verify(v => v.GetProxy(It.IsAny<QBittorrentSettings>(), true), Times.Once());
         }
+
+        [Test]
+        public void ApplySiteRipFileSelection_should_set_wanted_file_indices()
+        {
+            var torrent = new QBittorrentTorrent
+            {
+                Hash = "CBC2F069FE8BB2F544EAE707D75BCD3DE9DCF951",
+                Name = _title,
+                Size = 1000,
+                Progress = 0.5,
+                Eta = 8640000,
+                State = "downloading",
+                Label = "",
+                SavePath = ""
+            };
+            GivenTorrents(new List<QBittorrentTorrent> { torrent });
+
+            Subject.ApplySiteRipFileSelection(torrent.Hash, new[] { 1, 2, 3 });
+
+            Mocker.GetMock<IQBittorrentProxy>()
+                  .Verify(v => v.SetFilesWanted(torrent.Hash.ToLower(), new[] { 1, 2, 3 }, It.IsAny<QBittorrentSettings>()), Times.Once());
+        }
+
+        [Test]
+        public async Task EnsureSiteRipTorrentAdded_should_use_existing_torrent_when_add_rejected()
+        {
+            Mocker.GetMock<IQBittorrentProxy>()
+                  .Setup(s => s.AddTorrentFromFile(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<TorrentSeedConfiguration>(), It.IsAny<QBittorrentSettings>()))
+                  .Throws(new DownloadClientException("Download client failed to add torrent"));
+
+            var torrent = new QBittorrentTorrent
+            {
+                Hash = "CBC2F069FE8BB2F544EAE707D75BCD3DE9DCF951",
+                Name = _title,
+                Size = 1000,
+                Progress = 0.5,
+                Eta = 8640000,
+                State = "downloading",
+                Label = "",
+                SavePath = ""
+            };
+            GivenTorrents(new List<QBittorrentTorrent> { torrent });
+
+            var remoteEpisode = CreateRemoteEpisode();
+            var result = await Subject.EnsureSiteRipTorrentAdded(remoteEpisode, CreateIndexer());
+
+            result.Should().Be("CBC2F069FE8BB2F544EAE707D75BCD3DE9DCF951");
+        }
     }
 }

@@ -182,6 +182,12 @@ namespace NzbDrone.Core.IndexerSearch
                 return string.Format(template, indexerCount, seasonCriteria.Year);
             }
 
+            if (criteria is SiteRipSearchCriteria)
+            {
+                var template = _localizationService.GetLocalizedString("SiteRipSearchStatusSearching");
+                return string.Format(template, indexerCount, criteria.Series?.Title);
+            }
+
             var fallbackTemplate = _localizationService.GetLocalizedString("InteractiveSearchStatusSearchingEpisode");
             return string.Format(fallbackTemplate, indexerCount, criteria.Series?.Title);
         }

@@ -73,6 +73,23 @@ namespace NzbDrone.Core.Indexers.HDBits
             return pageableRequests;
         }
 
+        public virtual IndexerPageableRequestChain GetSearchRequests(SiteRipSearchCriteria searchCriteria)
+        {
+            var pageableRequests = new IndexerPageableRequestChain();
+
+            var queryBase = new TorrentQuery();
+            var searchTerm = SiteRipSearchCriteria.GetSearchTerm(searchCriteria.Series);
+
+            if (searchTerm.IsNotNullOrWhiteSpace())
+            {
+                var suffix = SiteRipSearchCriteria.GetSearchSuffix(searchCriteria.Series);
+                queryBase.Search = $"{searchTerm} {suffix}";
+                pageableRequests.Add(GetRequest(queryBase));
+            }
+
+            return pageableRequests;
+        }
+
         private bool TryAddSearchParameters(TorrentQuery query, SearchCriteriaBase searchCriteria)
         {
             if (searchCriteria.Series.StudioSearchTitle.IsNotNullOrWhiteSpace())
