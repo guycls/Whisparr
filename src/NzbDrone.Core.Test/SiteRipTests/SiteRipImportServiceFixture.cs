@@ -82,8 +82,12 @@ namespace NzbDrone.Core.Test.SiteRipTests
                   .Returns(new Series { Id = 1, Title = "Test Series" });
 
             Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisode(42))
+                  .Returns(new Episode { Id = 42, SeriesId = 1, EpisodeFileId = 0 });
+
+            Mocker.GetMock<IEpisodeService>()
                   .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
-                  .Returns(new List<Episode> { new Episode { Id = 42, EpisodeFileId = 0 } });
+                  .Returns(new List<Episode> { new Episode { Id = 42, SeriesId = 1, EpisodeFileId = 0 } });
 
             Mocker.GetMock<IDiskProvider>()
                   .Setup(d => d.FileExists(It.IsAny<string>()))
@@ -166,8 +170,12 @@ namespace NzbDrone.Core.Test.SiteRipTests
                   });
 
             Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisode(42))
+                  .Returns(new Episode { Id = 42, SeriesId = 1, EpisodeFileId = 0 });
+
+            Mocker.GetMock<IEpisodeService>()
                   .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
-                  .Returns(new List<Episode> { new Episode { Id = 42, EpisodeFileId = 0 } });
+                  .Returns(new List<Episode> { new Episode { Id = 42, SeriesId = 1, EpisodeFileId = 0 } });
 
             var trackedDownload = CreateTrackedDownload(outputPath: string.Empty);
 
@@ -175,6 +183,49 @@ namespace NzbDrone.Core.Test.SiteRipTests
 
             Mocker.GetMock<IDownloadedEpisodesImportService>()
                   .Verify(s => s.ProcessPath(_resolvedFilePath, ImportMode.Auto, It.IsAny<Series>(), trackedDownload.DownloadItem, new List<int> { 42 }), Times.Once);
+        }
+
+        [Test]
+        public void should_import_using_episode_series_not_site_rip_download_series()
+        {
+            const int episodeSeriesId = 99;
+            var episodeSeries = new Series { Id = episodeSeriesId, Title = "Episode Series" };
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisode(42))
+                  .Returns(new Episode { Id = 42, SeriesId = episodeSeriesId, EpisodeFileId = 0 });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode> { new Episode { Id = 42, SeriesId = episodeSeriesId, EpisodeFileId = 0 } });
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetSeries(episodeSeriesId))
+                  .Returns(episodeSeries);
+
+            var trackedDownload = CreateTrackedDownload(outputPath: string.Empty);
+
+            Subject.ProcessActiveDownloads(new[] { trackedDownload });
+
+            Mocker.GetMock<IDownloadedEpisodesImportService>()
+                  .Verify(
+                      s => s.ProcessPath(
+                          _resolvedFilePath,
+                          ImportMode.Auto,
+                          It.Is<Series>(series => series.Id == episodeSeriesId),
+                          trackedDownload.DownloadItem,
+                          new List<int> { 42 }),
+                      Times.Once);
+
+            Mocker.GetMock<IDownloadedEpisodesImportService>()
+                  .Verify(
+                      s => s.ProcessPath(
+                          It.IsAny<string>(),
+                          It.IsAny<ImportMode>(),
+                          It.Is<Series>(series => series.Id == 1),
+                          It.IsAny<DownloadClientItem>(),
+                          It.IsAny<List<int>>()),
+                      Times.Never);
         }
 
         [Test]

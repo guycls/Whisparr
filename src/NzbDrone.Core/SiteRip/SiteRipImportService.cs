@@ -24,6 +24,7 @@ namespace NzbDrone.Core.SiteRip
         private readonly ISiteRipDownloadFileRepository _siteRipDownloadFileRepository;
         private readonly ISiteRipPendingFileService _siteRipPendingFileService;
         private readonly IDownloadClientFactory _downloadClientFactory;
+        private readonly IEpisodeService _episodeService;
         private readonly ISeriesService _seriesService;
         private readonly IDownloadedEpisodesImportService _downloadedEpisodesImportService;
         private readonly IDiskProvider _diskProvider;
@@ -33,6 +34,7 @@ namespace NzbDrone.Core.SiteRip
                                     ISiteRipDownloadFileRepository siteRipDownloadFileRepository,
                                     ISiteRipPendingFileService siteRipPendingFileService,
                                     IDownloadClientFactory downloadClientFactory,
+                                    IEpisodeService episodeService,
                                     ISeriesService seriesService,
                                     IDownloadedEpisodesImportService downloadedEpisodesImportService,
                                     IDiskProvider diskProvider,
@@ -42,6 +44,7 @@ namespace NzbDrone.Core.SiteRip
             _siteRipDownloadFileRepository = siteRipDownloadFileRepository;
             _siteRipPendingFileService = siteRipPendingFileService;
             _downloadClientFactory = downloadClientFactory;
+            _episodeService = episodeService;
             _seriesService = seriesService;
             _downloadedEpisodesImportService = downloadedEpisodesImportService;
             _diskProvider = diskProvider;
@@ -106,7 +109,31 @@ namespace NzbDrone.Core.SiteRip
                     continue;
                 }
 
-                var series = _seriesService.GetSeries(siteRipDownload.SeriesId);
+                var episode = _episodeService.GetEpisode(episodeGroup.Key);
+
+                if (episode == null)
+                {
+                    _logger.Debug("SiteRIP import skipped for episode {0} from {1}: episode not found", episodeGroup.Key, trackedDownload.DownloadItem.Title);
+                    continue;
+                }
+
+                var series = _seriesService.GetSeries(episode.SeriesId);
+
+                if (series == null)
+                {
+                    _logger.Debug("SiteRIP import skipped for episode {0} from {1}: series {2} not found", episodeGroup.Key, trackedDownload.DownloadItem.Title, episode.SeriesId);
+                    continue;
+                }
+
+                if (episode.SeriesId != siteRipDownload.SeriesId)
+                {
+                    _logger.Debug(
+                        "SiteRIP import for episode {0} using episode series {1} instead of torrent series {2}",
+                        episodeGroup.Key,
+                        episode.SeriesId,
+                        siteRipDownload.SeriesId);
+                }
+
                 var importedIndices = new HashSet<int>();
 
                 foreach (var torrentFile in torrentFiles.Where(f => episodeFileIndices.Contains(f.Index)))
