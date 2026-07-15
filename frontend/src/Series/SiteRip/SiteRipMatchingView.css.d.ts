@@ -2,6 +2,8 @@
 // Please do not change this file!
 interface CssExports {
   'checkboxColumn': string;
+  'checkboxContainer': string;
+  'checkboxInput': string;
   'downloadedCell': string;
   'downloadedSummary': string;
   'emptyCell': string;
@@ -25,6 +27,7 @@ interface CssExports {
   'loadingContainer': string;
   'matchingTable': string;
   'matchingView': string;
+  'matchFilterSelect': string;
   'metadataEpisodeNumber': string;
   'metadataLabel': string;
   'metadataOverview': string;
@@ -52,6 +55,7 @@ interface CssExports {
   'statusMessage': string;
   'studioLabel': string;
   'titleFilter': string;
+  'titleColumn': string;
   'yearFilter': string;
 }
 export const cssExports: CssExports;

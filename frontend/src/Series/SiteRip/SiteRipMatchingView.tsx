@@ -18,6 +18,7 @@ import { getEpisodeDownloadedSummary } from './getEpisodeDownloadedSummary';
 import SiteRipMatchingFileList, { SiteRipFileListItem, SiteRipFileSortKey } from './SiteRipMatchingFileList';
 import SiteRipSceneDetails from './SiteRipSceneDetails';
 import SiteRipScenePicker from './SiteRipScenePicker';
+import { matchesSiteRipFileFilter, SiteRipFileMatchFilter } from './siteRipFileMatchFilter';
 import styles from './SiteRipMatchingView.css';
 
 interface SiteRipMatchingViewProps {
@@ -29,6 +30,7 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
   const dispatch = useDispatch();
 
   const [filter, setFilter] = useState('');
+  const [matchFilter, setMatchFilter] = useState<SiteRipFileMatchFilter>('');
   const [sortKey, setSortKey] = useState<SiteRipFileSortKey>('displayName');
   const [sortDirection, setSortDirection] = useState<SortDirection>(ASCENDING);
   const [activeFileIndex, setActiveFileIndex] = useState<number | null>(null);
@@ -123,7 +125,14 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
         return match.displayName.toLowerCase().includes(normalizedFilter) ||
           match.filePaths.some((path) => path.toLowerCase().includes(normalizedFilter));
-      });
+      })
+      .filter((item) => matchesSiteRipFileFilter(
+        item,
+        matchFilter,
+        selections,
+        episodeMap,
+        episodeFiles
+      ));
 
     return items.sort((a, b) => {
       const aValue = getSortValue(a, sortKey);
@@ -136,10 +145,14 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
       return ((aValue as number) - (bValue as number)) * direction;
     });
-  }, [matches, filter, sortKey, sortDirection, getSortValue]);
+  }, [matches, filter, matchFilter, sortKey, sortDirection, getSortValue, selections, episodeMap, episodeFiles]);
 
   const onFilterChange = useCallback((value: string) => {
     setFilter(value);
+  }, []);
+
+  const onMatchFilterChange = useCallback((value: SiteRipFileMatchFilter) => {
+    setMatchFilter(value);
   }, []);
 
   const onSortPress = useCallback((name: string, nextSortDirection?: string) => {
@@ -232,10 +245,12 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
               episodes={seriesEpisodes}
               episodeFiles={episodeFiles}
               filter={filter}
+              matchFilter={matchFilter}
               sortKey={sortKey}
               sortDirection={sortDirection}
               activeFileIndex={activeFileIndex}
               onFilterChange={onFilterChange}
+              onMatchFilterChange={onMatchFilterChange}
               onSortPress={onSortPress}
               onSelectAllChange={onSelectAllChange}
               onRowPress={onRowPress}

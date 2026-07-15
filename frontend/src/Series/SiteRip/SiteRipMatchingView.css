@@ -44,7 +44,7 @@
 
 .fileToolbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   margin-bottom: 12px;
@@ -55,6 +55,10 @@
 .performerFilter,
 .yearFilter {
   width: 100%;
+}
+
+.matchFilterSelect {
+  min-width: 140px;
 }
 
 .fileTable {
@@ -69,13 +73,14 @@
 }
 
 .fileListScroller {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
-  max-height: 420px;
+  height: 100%;
 }
 
 .matchingTable {
   width: 100%;
+  table-layout: fixed;
 }
 
 .fileRow {
@@ -106,31 +111,60 @@
 .checkboxColumn {
   width: 40px;
   text-align: center;
+  vertical-align: middle;
 }
 
+.checkboxContainer {
+  composes: container from '~Components/Form/CheckInput.css';
+
+  flex: none;
+  justify-content: center;
+}
+
+.checkboxContainer label {
+  justify-content: center;
+  align-items: center;
+}
+
+.checkboxInput {
+  composes: input from '~Components/Form/CheckInput.css';
+
+  margin: 0;
+  flex: none;
+}
+
+.matchingTable thead tr > :first-child {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+}
+
+.titleColumn,
 .fileNameCell {
-  min-width: 180px;
+  width: 60%;
+  max-width: 60%;
 }
 
 .fileName {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .filePath {
   color: var(--helpTextColor);
   font-size: 12px;
   margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .partLabel {
   color: var(--helpTextColor);
   font-size: 12px;
   margin-top: 2px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .sizeCell {

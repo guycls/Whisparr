@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React, { useCallback, useMemo } from 'react';
 import CheckInput from 'Components/Form/CheckInput';
+import SelectInput from 'Components/Form/SelectInput';
 import TextInput from 'Components/Form/TextInput';
 import Label from 'Components/Label';
 import Scroller from 'Components/Scroller/Scroller';
@@ -20,6 +21,7 @@ import translate from 'Utilities/String/translate';
 import { formatTorrentFilePaths } from './formatTorrentFilePaths';
 import { getEpisodeDownloadedSummary } from './getEpisodeDownloadedSummary';
 import { getSiteRipFileRowState } from './getSiteRipFileRowState';
+import { SiteRipFileMatchFilter } from './siteRipFileMatchFilter';
 import styles from './SiteRipMatchingView.css';
 
 export type SiteRipFileSortKey =
@@ -37,6 +39,7 @@ const columns = [
   {
     name: 'displayName',
     label: () => translate('Title'),
+    className: styles.titleColumn,
     isSortable: true,
     isVisible: true
   },
@@ -60,16 +63,27 @@ const columns = [
   }
 ];
 
+const matchFilterOptions = [
+  { key: '', value: () => translate('All') },
+  { key: 'matched', value: () => translate('SiteRipFilterMatched') },
+  { key: 'unmatched', value: () => translate('SiteRipFilterUnmatched') },
+  { key: 'monitored', value: () => translate('Monitored') },
+  { key: 'missing', value: () => translate('Missing') },
+  { key: 'toGrab', value: () => translate('SiteRipFilterToGrab') }
+];
+
 interface SiteRipMatchingFileListProps {
   items: SiteRipFileListItem[];
   selections: Record<number, SiteRipSelection>;
   episodes: Episode[];
   episodeFiles: EpisodeFile[];
   filter: string;
+  matchFilter: SiteRipFileMatchFilter;
   sortKey: SiteRipFileSortKey;
   sortDirection: SortDirection;
   activeFileIndex: number | null;
   onFilterChange(value: string): void;
+  onMatchFilterChange(value: SiteRipFileMatchFilter): void;
   onSortPress(sortKey: string, sortDirection?: string): void;
   onSelectAllChange(change: CheckInputChanged): void;
   onRowPress(index: number): void;
@@ -83,10 +97,12 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
     episodes,
     episodeFiles,
     filter,
+    matchFilter,
     sortKey,
     sortDirection,
     activeFileIndex,
     onFilterChange,
+    onMatchFilterChange,
     onSortPress,
     onSelectAllChange,
     onRowPress,
@@ -117,6 +133,10 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
     onFilterChange(value);
   }, [onFilterChange]);
 
+  const handleMatchFilterChange = useCallback(({ value }: { name: string; value: string | number }) => {
+    onMatchFilterChange(String(value) as SiteRipFileMatchFilter);
+  }, [onMatchFilterChange]);
+
   const stopCheckboxPropagation = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
   }, []);
@@ -130,6 +150,14 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
           name="fileFilter"
           value={filter}
           onChange={handleFilterChange}
+        />
+
+        <SelectInput
+          className={styles.matchFilterSelect}
+          name="fileMatchFilter"
+          value={matchFilter}
+          values={matchFilterOptions}
+          onChange={handleMatchFilterChange}
         />
       </div>
 
@@ -177,6 +205,8 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
                       onClick={stopCheckboxPropagation}
                     >
                       <CheckInput
+                        containerClassName={styles.checkboxContainer}
+                        className={styles.checkboxInput}
                         name={`file-${index}`}
                         value={selection?.selected ?? false}
                         onChange={(change: CheckInputChanged) => onSelectionChange(index, change.value)}
