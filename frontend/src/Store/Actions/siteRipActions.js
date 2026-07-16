@@ -14,8 +14,14 @@ export const section = 'siteRip';
 
 let abortCurrentRequest = null;
 let progressPollInterval = null;
+let matchProgressPollTimeout = null;
+let matchProgressPollCancelled = false;
 
 function generateSearchId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+function generateMatchId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
@@ -54,6 +60,129 @@ function startProgressPolling(searchId, dispatch) {
 
   poll();
   progressPollInterval = setInterval(poll, 500);
+}
+
+function cancelMatchProgressPolling() {
+  matchProgressPollCancelled = true;
+
+  if (matchProgressPollTimeout) {
+    clearTimeout(matchProgressPollTimeout);
+    matchProgressPollTimeout = null;
+  }
+}
+
+function stopMatchProgressPolling(dispatch, clearState = true) {
+  cancelMatchProgressPolling();
+
+  if (!clearState) {
+    return;
+  }
+
+  dispatch(set({
+    section,
+    matchStatusMessage: null,
+    matchPhase: null,
+    matchCompletedFiles: 0,
+    matchTotalFiles: 0,
+    matchId: null
+  }));
+}
+
+function startMatchProgressPolling(matchId, dispatch) {
+  cancelMatchProgressPolling();
+  matchProgressPollCancelled = false;
+
+  const schedulePoll = () => {
+    if (matchProgressPollCancelled) {
+      return;
+    }
+
+    matchProgressPollTimeout = setTimeout(poll, 500);
+  };
+
+  const poll = () => {
+    if (matchProgressPollCancelled) {
+      return;
+    }
+
+    createAjaxRequest({
+      url: `/siterip/match/progress/${matchId}`
+    }).request.done((data) => {
+      if (matchProgressPollCancelled) {
+        return;
+      }
+
+      if (data.error) {
+        stopMatchProgressPolling(dispatch);
+
+        dispatch(set({
+          section,
+          isMatching: false,
+          isFilesFetching: false,
+          matchError: data.error
+        }));
+
+        return;
+      }
+
+      dispatch(set({
+        section,
+        matchStatusMessage: data.message,
+        matchPhase: data.phase,
+        matchCompletedFiles: data.completedFiles || 0,
+        matchTotalFiles: data.totalFiles || 0,
+        matchId
+      }));
+
+      if (data.isComplete) {
+        stopMatchProgressPolling(dispatch);
+
+        const matches = data.matches || [];
+        const selections = {};
+
+        matches.forEach((match, index) => {
+          selections[index] = {
+            selected: match.selectedByDefault,
+            episodeId: match.matchedEpisodeId
+          };
+        });
+
+        dispatch(set({
+          section,
+          isMatching: false,
+          isFilesFetching: false,
+          matches,
+          torrentFiles: data.torrentFiles || [],
+          selections,
+          matchError: null
+        }));
+
+        return;
+      }
+
+      schedulePoll();
+    }).fail((xhr) => {
+      if (matchProgressPollCancelled) {
+        return;
+      }
+
+      if (xhr.status === 404 || xhr.status === 0) {
+        schedulePoll();
+        return;
+      }
+
+      stopMatchProgressPolling(dispatch);
+
+      dispatch(set({
+        section,
+        isMatching: false,
+        isFilesFetching: false,
+        matchError: xhr.responseJSON && xhr.responseJSON.message || xhr
+      }));
+    });
+  };
+
+  poll();
 }
 
 //
@@ -110,6 +239,11 @@ export const defaultState = {
   matches: [],
   isMatching: false,
   matchError: null,
+  matchId: null,
+  matchStatusMessage: null,
+  matchPhase: null,
+  matchCompletedFiles: 0,
+  matchTotalFiles: 0,
   selections: {},
   isGrabbing: false,
   isGrabbed: false,
@@ -126,6 +260,7 @@ export const SET_SITE_RIP_VIEW = 'siteRip/setSiteRipView';
 export const SET_SITE_RIP_RELEASE = 'siteRip/setSiteRipRelease';
 export const FETCH_TORRENT_FILES = 'siteRip/fetchTorrentFiles';
 export const MATCH_SITE_RIP_FILES = 'siteRip/matchSiteRipFiles';
+export const START_SITE_RIP_MATCHING = 'siteRip/startSiteRipMatching';
 export const SET_SITE_RIP_SELECTION = 'siteRip/setSiteRipSelection';
 export const SET_SITE_RIP_EPISODE = 'siteRip/setSiteRipEpisode';
 export const SET_SITE_RIP_SORT = 'siteRip/setSiteRipSort';
@@ -136,11 +271,12 @@ export const GRAB_SITE_RIP = 'siteRip/grabSiteRip';
 
 export const fetchSiteRipReleases = createThunk(FETCH_SITE_RIP_RELEASES);
 export const cancelFetchSiteRipReleases = createThunk(CANCEL_FETCH_SITE_RIP_RELEASES);
-export const clearSiteRip = createAction(CLEAR_SITE_RIP);
+export const clearSiteRip = createThunk(CLEAR_SITE_RIP);
 export const setSiteRipView = createAction(SET_SITE_RIP_VIEW);
 export const setSiteRipRelease = createAction(SET_SITE_RIP_RELEASE);
 export const fetchTorrentFiles = createThunk(FETCH_TORRENT_FILES);
 export const matchSiteRipFiles = createThunk(MATCH_SITE_RIP_FILES);
+export const startSiteRipMatching = createThunk(START_SITE_RIP_MATCHING);
 export const setSiteRipSelection = createAction(SET_SITE_RIP_SELECTION);
 export const setSiteRipEpisode = createAction(SET_SITE_RIP_EPISODE);
 export const setSiteRipSort = createAction(SET_SITE_RIP_SORT);
@@ -202,10 +338,20 @@ export const actionHandlers = handleThunks({
 
   [CANCEL_FETCH_SITE_RIP_RELEASES]: function(getState, payload, dispatch) {
     stopProgressPolling(dispatch);
+    stopMatchProgressPolling(dispatch);
 
     if (abortCurrentRequest) {
       abortCurrentRequest();
     }
+  },
+
+  [CLEAR_SITE_RIP]: function(getState, payload, dispatch) {
+    stopMatchProgressPolling(dispatch);
+
+    dispatch(set({
+      section,
+      ...defaultState
+    }));
   },
 
   [FETCH_TORRENT_FILES]: function(getState, payload, dispatch) {
@@ -288,6 +434,57 @@ export const actionHandlers = handleThunks({
     });
   },
 
+  [START_SITE_RIP_MATCHING]: function(getState, payload, dispatch) {
+    const matchId = generateMatchId();
+
+    cancelMatchProgressPolling();
+
+    dispatch(set({
+      section,
+      isMatching: true,
+      isFilesFetching: true,
+      filesError: null,
+      matchError: null,
+      torrentFiles: [],
+      matches: [],
+      selections: {},
+      matchStatusMessage: null,
+      matchPhase: 'starting',
+      matchCompletedFiles: 0,
+      matchTotalFiles: 0,
+      matchId
+    }));
+
+    startMatchProgressPolling(matchId, dispatch);
+
+    const promise = createAjaxRequest({
+      url: '/siterip/match/start',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        matchId,
+        seriesId: payload.seriesId,
+        guid: payload.guid,
+        indexerId: payload.indexerId
+      })
+    }).request;
+
+    promise.fail((xhr) => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        return;
+      }
+
+      stopMatchProgressPolling(dispatch);
+
+      dispatch(set({
+        section,
+        isMatching: false,
+        isFilesFetching: false,
+        matchError: xhr.responseJSON && xhr.responseJSON.message || xhr
+      }));
+    });
+  },
+
   [GRAB_SITE_RIP]: function(getState, payload, dispatch) {
     dispatch(set({
       section,
@@ -326,10 +523,6 @@ export const actionHandlers = handleThunks({
 // Reducers
 
 export const reducers = createHandleActions({
-
-  [CLEAR_SITE_RIP]: (state) => {
-    return Object.assign({}, state, defaultState);
-  },
 
   [SET_SITE_RIP_VIEW]: (state, { payload }) => {
     return Object.assign({}, state, {

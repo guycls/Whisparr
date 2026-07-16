@@ -25,9 +25,9 @@ interface CssExports {
   'grabError': string;
   'leftPane': string;
   'loadingContainer': string;
+  'matchFilterSelect': string;
   'matchingTable': string;
   'matchingView': string;
-  'matchFilterSelect': string;
   'metadataEpisodeNumber': string;
   'metadataLabel': string;
   'metadataOverview': string;
@@ -39,6 +39,8 @@ interface CssExports {
   'partCount': string;
   'partLabel': string;
   'performerFilter': string;
+  'progressBarContainer': string;
+  'progressBarFill': string;
   'rightPane': string;
   'sceneDetails': string;
   'sceneDetailsBody': string;
@@ -54,8 +56,8 @@ interface CssExports {
   'splitPane': string;
   'statusMessage': string;
   'studioLabel': string;
-  'titleFilter': string;
   'titleColumn': string;
+  'titleFilter': string;
   'yearFilter': string;
 }
 export const cssExports: CssExports;

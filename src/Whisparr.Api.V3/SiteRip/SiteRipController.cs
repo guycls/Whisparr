@@ -27,6 +27,8 @@ namespace Whisparr.Api.V3.SiteRip
         private readonly ISearchProgressService _searchProgressService;
         private readonly ITorrentMetadataService _torrentMetadataService;
         private readonly ISiteRipMatchingService _siteRipMatchingService;
+        private readonly ISiteRipMatchOrchestrator _siteRipMatchOrchestrator;
+        private readonly ISiteRipMatchProgressService _siteRipMatchProgressService;
         private readonly ISiteRipDownloadService _siteRipDownloadService;
         private readonly IIndexerFactory _indexerFactory;
         private readonly Logger _logger;
@@ -38,6 +40,8 @@ namespace Whisparr.Api.V3.SiteRip
                                  ISearchProgressService searchProgressService,
                                  ITorrentMetadataService torrentMetadataService,
                                  ISiteRipMatchingService siteRipMatchingService,
+                                 ISiteRipMatchOrchestrator siteRipMatchOrchestrator,
+                                 ISiteRipMatchProgressService siteRipMatchProgressService,
                                  ISiteRipDownloadService siteRipDownloadService,
                                  IIndexerFactory indexerFactory,
                                  ICacheManager cacheManager,
@@ -50,6 +54,8 @@ namespace Whisparr.Api.V3.SiteRip
             _searchProgressService = searchProgressService;
             _torrentMetadataService = torrentMetadataService;
             _siteRipMatchingService = siteRipMatchingService;
+            _siteRipMatchOrchestrator = siteRipMatchOrchestrator;
+            _siteRipMatchProgressService = siteRipMatchProgressService;
             _siteRipDownloadService = siteRipDownloadService;
             _indexerFactory = indexerFactory;
             _logger = logger;
@@ -115,6 +121,41 @@ namespace Whisparr.Api.V3.SiteRip
                 Name = f.Name,
                 Size = f.Size
             }).ToList();
+        }
+
+        [HttpPost("match/start")]
+        public IActionResult StartMatch([FromBody] SiteRipMatchStartResource request)
+        {
+            if (request.MatchId.IsNullOrWhiteSpace())
+            {
+                throw new NzbDroneClientException(HttpStatusCode.BadRequest, "matchId is required");
+            }
+
+            var remoteEpisode = GetCachedRelease(request.Guid, request.IndexerId);
+            var indexer = _indexerFactory.GetInstance(_indexerFactory.Get(request.IndexerId));
+
+            _siteRipMatchProgressService.Start(request.MatchId);
+
+            _ = Task.Run(() => _siteRipMatchOrchestrator.RunAsync(
+                request.MatchId,
+                request.SeriesId,
+                remoteEpisode,
+                indexer));
+
+            return Accepted(new { matchId = request.MatchId });
+        }
+
+        [HttpGet("match/progress/{matchId}")]
+        public ActionResult<SiteRipMatchProgressResource> GetMatchProgress(string matchId)
+        {
+            var progress = _siteRipMatchProgressService.Get(matchId);
+
+            if (progress == null)
+            {
+                return NotFound();
+            }
+
+            return SiteRipMatchProgressResourceMapper.ToResource(progress);
         }
 
         [HttpPost("match")]

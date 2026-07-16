@@ -171,5 +171,81 @@ namespace NzbDrone.Core.Test.SiteRipTests
             results[0].MatchConfidence.Should().Be("none");
             results[0].SelectedByDefault.Should().BeFalse();
         }
+
+        [Test]
+        public void should_report_progress_when_match_id_provided()
+        {
+            const string matchId = "match-1";
+            var files = new List<TorrentFileMetadata>
+            {
+                new TorrentFileMetadata
+                {
+                    Index = 0,
+                    Path = "site/My.Scene.Title.1080p.mp4",
+                    Name = "My.Scene.Title.1080p.mp4",
+                    Size = 1000
+                },
+                new TorrentFileMetadata
+                {
+                    Index = 1,
+                    Path = "site/Unknown.File.mp4",
+                    Name = "Unknown.File.mp4",
+                    Size = 2000
+                }
+            };
+
+            var results = Subject.MatchFiles(1, files, matchId);
+
+            results.Should().HaveCount(2);
+
+            Mocker.GetMock<ISiteRipMatchProgressService>()
+                  .Verify(s => s.ReportMatching(matchId, 0, 2), Times.Once);
+
+            Mocker.GetMock<ISiteRipMatchProgressService>()
+                  .Verify(s => s.ReportMatching(matchId, 1, 2), Times.Once);
+
+            Mocker.GetMock<ISiteRipMatchProgressService>()
+                  .Verify(s => s.ReportMatching(matchId, 2, 2), Times.Once);
+        }
+
+        [Test]
+        public void should_preserve_path_order_when_matching_many_files_in_parallel()
+        {
+            var files = new List<TorrentFileMetadata>();
+
+            for (var i = 0; i < 20; i++)
+            {
+                files.Add(new TorrentFileMetadata
+                {
+                    Index = i,
+                    Path = $"site/file-{i:D2}.mp4",
+                    Name = $"file-{i:D2}.mp4",
+                    Size = 1000 + i
+                });
+            }
+
+            files.Add(new TorrentFileMetadata
+            {
+                Index = 20,
+                Path = "site/[01/02] - My Scene Title.mp4",
+                Name = "[01/02] - My Scene Title.mp4",
+                Size = 5000
+            });
+
+            files.Add(new TorrentFileMetadata
+            {
+                Index = 21,
+                Path = "site/[02/02] - My Scene Title.mp4",
+                Name = "[02/02] - My Scene Title.mp4",
+                Size = 6000
+            });
+
+            var results = Subject.MatchFiles(1, files);
+
+            results.Should().HaveCount(21);
+            results.Last().FileIndices.Should().BeEquivalentTo(new[] { 20, 21 });
+            results.Last().MatchedEpisodeId.Should().Be(1);
+            results.Last().TotalSize.Should().Be(11000);
+        }
     }
 }

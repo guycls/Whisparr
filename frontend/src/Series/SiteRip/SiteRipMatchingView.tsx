@@ -7,7 +7,7 @@ import { kinds } from 'Helpers/Props';
 import { ASCENDING, DESCENDING, SortDirection } from 'Helpers/Props/sortDirections';
 import { fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import {
-  fetchTorrentFiles,
+  startSiteRipMatching,
   setSiteRipEpisode,
   setSiteRipSelection
 } from 'Store/Actions/siteRipActions';
@@ -40,11 +40,16 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
   const {
     selectedRelease,
-    isFilesFetching,
     filesError,
     matches,
     isMatching,
+    isFilesFetching,
     matchError,
+    matchId,
+    matchStatusMessage,
+    matchPhase,
+    matchCompletedFiles,
+    matchTotalFiles,
     selections
   } = useSelector((state: AppState) => state.siteRip);
 
@@ -69,7 +74,7 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
   useEffect(() => {
     if (selectedRelease) {
-      dispatch(fetchTorrentFiles({
+      dispatch(startSiteRipMatching({
         guid: selectedRelease.guid,
         indexerId: selectedRelease.indexerId,
         seriesId
@@ -201,7 +206,28 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
   const filesErrorMessage = typeof filesError === 'string' ? filesError : getErrorMessage(filesError as never);
   const matchErrorMessage = typeof matchError === 'string' ? matchError : getErrorMessage(matchError as never);
-  const isLoading = isFilesFetching || isMatching;
+  const isLoading = isMatching || isFilesFetching || !!matchId;
+  const showMatchProgressBar = matchPhase === 'matching' && matchTotalFiles > 0;
+  const matchProgressPercent = showMatchProgressBar ?
+    Math.round((matchCompletedFiles / matchTotalFiles) * 100) :
+    0;
+
+  const getMatchPhaseLabel = () => {
+    switch (matchPhase) {
+      case 'starting':
+        return translate('SiteRipMatchingScenes');
+      case 'fetching_metadata':
+        return translate('SiteRipDownloadingTorrentMetadata');
+      case 'parsing_files':
+        return translate('SiteRipParsingFiles');
+      case 'matching':
+        return translate('SiteRipMatchingScenes');
+      case 'completed':
+        return translate('SiteRipMatchingComplete');
+      default:
+        return translate('SiteRipMatchingScenes');
+    }
+  };
 
   const seriesEpisodes = useMemo(() => {
     return episodes.filter((episode) => episode.seriesId === seriesId);
@@ -214,12 +240,18 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
           <div className={styles.loadingContainer}>
             <LoadingIndicator />
             <div className={styles.statusMessage}>
-              {
-                isFilesFetching ?
-                  translate('SiteRipDownloadingTorrentMetadata') :
-                  translate('SiteRipMatchingScenes')
-              }
+              {matchStatusMessage || getMatchPhaseLabel()}
             </div>
+            {
+              showMatchProgressBar ?
+                <div className={styles.progressBarContainer}>
+                  <div
+                    className={styles.progressBarFill}
+                    style={{ width: `${matchProgressPercent}%` }}
+                  />
+                </div> :
+                null
+            }
           </div> :
           null
       }

@@ -48,6 +48,11 @@ export default interface SiteRipAppState {
   matches: SiteRipMatch[];
   isMatching: boolean;
   matchError: object | null;
+  matchId: string | null;
+  matchStatusMessage: string | null;
+  matchPhase: string | null;
+  matchCompletedFiles: number;
+  matchTotalFiles: number;
   selections: Record<number, SiteRipSelection>;
   isGrabbing: boolean;
   isGrabbed: boolean;

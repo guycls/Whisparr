@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using NzbDrone.Core.SiteRip;
 using Whisparr.Http.REST;
 
 namespace Whisparr.Api.V3.SiteRip
@@ -43,5 +45,65 @@ namespace Whisparr.Api.V3.SiteRip
         public int IndexerId { get; set; }
         public int SeriesId { get; set; }
         public List<SiteRipGrabSelectionResource> Selections { get; set; }
+    }
+
+    public class SiteRipMatchStartResource
+    {
+        public string MatchId { get; set; }
+        public int SeriesId { get; set; }
+        public string Guid { get; set; }
+        public int IndexerId { get; set; }
+    }
+
+    public class SiteRipMatchProgressResource
+    {
+        public string Phase { get; set; }
+        public string Message { get; set; }
+        public int TotalFiles { get; set; }
+        public int CompletedFiles { get; set; }
+        public bool IsComplete { get; set; }
+        public string Error { get; set; }
+        public List<SiteRipTorrentFileResource> TorrentFiles { get; set; }
+        public List<SiteRipMatchResource> Matches { get; set; }
+    }
+
+    public static class SiteRipMatchProgressResourceMapper
+    {
+        public static SiteRipMatchProgressResource ToResource(SiteRipMatchProgress model)
+        {
+            if (model == null)
+            {
+                return null;
+            }
+
+            return new SiteRipMatchProgressResource
+            {
+                Phase = model.Phase,
+                Message = model.Message,
+                TotalFiles = model.TotalFiles,
+                CompletedFiles = model.CompletedFiles,
+                IsComplete = model.IsComplete,
+                Error = model.Error,
+                TorrentFiles = model.TorrentFiles?.Select(f => new SiteRipTorrentFileResource
+                {
+                    Index = f.Index,
+                    Path = f.Path,
+                    Name = f.Name,
+                    Size = f.Size
+                }).ToList(),
+                Matches = model.Matches?.Select(m => new SiteRipMatchResource
+                {
+                    FileIndices = m.FileIndices,
+                    FilePaths = m.FilePaths,
+                    TotalSize = m.TotalSize,
+                    PartNumber = m.PartNumber,
+                    PartTotal = m.PartTotal,
+                    MatchedEpisodeId = m.MatchedEpisodeId,
+                    MatchConfidence = m.MatchConfidence,
+                    SelectedByDefault = m.SelectedByDefault,
+                    DisplayName = m.DisplayName
+                }).ToList()
+            };
+        }
     }
 }
