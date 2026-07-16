@@ -30,17 +30,33 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                 return false;
             }
 
-            var allEpisodesImportedInHistory = trackedDownload.RemoteEpisode.Episodes.All(e =>
+            var expectedEpisodeIds = trackedDownload.RemoteEpisode?.Episodes?.Select(e => e.Id).ToList()
+                ?? historyItems
+                    .Where(h => h.EventType == EpisodeHistoryEventType.Grabbed)
+                    .Select(h => h.EpisodeId)
+                    .Distinct()
+                    .ToList();
+
+            if (expectedEpisodeIds.Empty())
             {
-                var lastHistoryItem = historyItems.FirstOrDefault(h => h.EpisodeId == e.Id);
+                _logger.Trace("No expected episodes for {0}", trackedDownload.DownloadItem.Title);
+                return false;
+            }
+
+            var allEpisodesImportedInHistory = expectedEpisodeIds.All(episodeId =>
+            {
+                var lastHistoryItem = historyItems
+                    .Where(h => h.EpisodeId == episodeId)
+                    .OrderByDescending(h => h.Date)
+                    .FirstOrDefault();
 
                 if (lastHistoryItem == null)
                 {
-                    _logger.Trace("No history for episode: {0}]", e.ToString());
+                    _logger.Trace("No history for episode id: {0}", episodeId);
                     return false;
                 }
 
-                _logger.Trace("Last event for episode: {0} is: {1}", e.ToString(), lastHistoryItem.EventType);
+                _logger.Trace("Last event for episode id: {0} is: {1}", episodeId, lastHistoryItem.EventType);
 
                 return lastHistoryItem.EventType == EpisodeHistoryEventType.DownloadFolderImported;
             });

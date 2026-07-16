@@ -450,6 +450,13 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                 return true;
             }
 
+            var existing = Find(downloadId);
+
+            if (existing?.State == TrackedDownloadState.Imported)
+            {
+                return false;
+            }
+
             var siteRipDownload = _siteRipDownloadRepository.FindByDownloadId(downloadId);
 
             if (siteRipDownload == null)

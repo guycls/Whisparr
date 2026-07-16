@@ -6,6 +6,7 @@ using NUnit.Framework;
 using NzbDrone.Common.Disk;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
+using NzbDrone.Core.Download.History;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.History;
 using NzbDrone.Core.MediaFiles;
@@ -13,6 +14,7 @@ using NzbDrone.Core.MediaFiles.EpisodeImport;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
+using NzbDrone.Core.SiteRip;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Test.Common;
@@ -75,6 +77,10 @@ namespace NzbDrone.Core.Test.Download.CompletedDownloadServiceTests
             Mocker.GetMock<IEpisodeService>()
                 .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
                 .Returns(new List<Episode>());
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.DownloadAlreadyImported(It.IsAny<string>()))
+                  .Returns(false);
         }
 
         private RemoteEpisode BuildRemoteEpisode()
@@ -363,6 +369,101 @@ namespace NzbDrone.Core.Test.Download.CompletedDownloadServiceTests
             Subject.Import(_trackedDownload);
 
             AssertImported();
+        }
+
+        [Test]
+        public void should_mark_as_imported_when_remote_episode_is_null_but_history_shows_imported()
+        {
+            const string downloadId = "51BB4A283478B29E3281C22C251A0A21D53E4D6A";
+
+            _trackedDownload.DownloadItem.DownloadId = downloadId;
+            _trackedDownload.RemoteEpisode = null;
+            _trackedDownload.State = TrackedDownloadState.ImportPending;
+
+            var episode = new Episode { Id = 1, EpisodeFileId = 10, SeriesId = 5 };
+            var history = new List<EpisodeHistory>
+            {
+                new EpisodeHistory { EpisodeId = 1, EventType = EpisodeHistoryEventType.DownloadFolderImported, Date = System.DateTime.UtcNow, SeriesId = 5, DownloadId = downloadId },
+                new EpisodeHistory { EpisodeId = 1, EventType = EpisodeHistoryEventType.Grabbed, Date = System.DateTime.UtcNow.AddMinutes(-5), SeriesId = 5, DownloadId = downloadId }
+            };
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(downloadId))
+                  .Returns((SiteRipDownload)null);
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(history);
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode> { episode });
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetFiles(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<EpisodeFile>());
+
+            Mocker.GetMock<ITrackedDownloadAlreadyImported>()
+                  .Setup(s => s.IsImported(It.IsAny<TrackedDownload>(), It.IsAny<List<EpisodeHistory>>()))
+                  .Returns(true);
+
+            Subject.Import(_trackedDownload);
+
+            Mocker.GetMock<IDownloadedEpisodesImportService>()
+                  .Verify(v => v.ProcessPath(It.IsAny<string>(), It.IsAny<ImportMode>(), It.IsAny<Series>(), It.IsAny<DownloadClientItem>(), It.IsAny<List<int>>()), Times.Never());
+
+            Mocker.GetMock<IEventAggregator>()
+                  .Verify(v => v.PublishEvent(It.IsAny<DownloadCompletedEvent>()), Times.Once());
+
+            _trackedDownload.State.Should().Be(TrackedDownloadState.Imported);
+        }
+
+        [Test]
+        public void should_not_publish_download_completed_when_remote_episode_is_null_and_download_already_imported()
+        {
+            const string downloadId = "51BB4A283478B29E3281C22C251A0A21D53E4D6A";
+
+            _trackedDownload.DownloadItem.DownloadId = downloadId;
+            _trackedDownload.RemoteEpisode = null;
+            _trackedDownload.State = TrackedDownloadState.ImportPending;
+
+            var episode = new Episode { Id = 1, EpisodeFileId = 10, SeriesId = 5 };
+            var history = new List<EpisodeHistory>
+            {
+                new EpisodeHistory { EpisodeId = 1, EventType = EpisodeHistoryEventType.DownloadFolderImported, Date = System.DateTime.UtcNow, SeriesId = 5, DownloadId = downloadId },
+                new EpisodeHistory { EpisodeId = 1, EventType = EpisodeHistoryEventType.Grabbed, Date = System.DateTime.UtcNow.AddMinutes(-5), SeriesId = 5, DownloadId = downloadId }
+            };
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(downloadId))
+                  .Returns((SiteRipDownload)null);
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(history);
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode> { episode });
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetFiles(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<EpisodeFile>());
+
+            Mocker.GetMock<ITrackedDownloadAlreadyImported>()
+                  .Setup(s => s.IsImported(It.IsAny<TrackedDownload>(), It.IsAny<List<EpisodeHistory>>()))
+                  .Returns(true);
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.DownloadAlreadyImported(downloadId))
+                  .Returns(true);
+
+            Subject.Import(_trackedDownload);
+
+            Mocker.GetMock<IEventAggregator>()
+                  .Verify(v => v.PublishEvent(It.IsAny<DownloadCompletedEvent>()), Times.Never());
+
+            _trackedDownload.State.Should().Be(TrackedDownloadState.Imported);
         }
 
         private void AssertNotImported()

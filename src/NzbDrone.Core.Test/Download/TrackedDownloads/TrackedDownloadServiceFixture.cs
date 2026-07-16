@@ -477,6 +477,62 @@ namespace NzbDrone.Core.Test.Download.TrackedDownloads
         }
 
         [Test]
+        public void should_preserve_import_pending_when_file_imported_in_download_history()
+        {
+            const string downloadId = "FILEIMPORTED123";
+
+            var client = new DownloadClientDefinition
+            {
+                Id = 1,
+                Protocol = DownloadProtocol.Torrent
+            };
+
+            var item = new DownloadClientItem
+            {
+                Title = "Unparseable release",
+                DownloadId = downloadId,
+                DownloadClientInfo = new DownloadClientItemClientInfo
+                {
+                    Protocol = client.Protocol,
+                    Id = client.Id,
+                    Name = "qBittorrent"
+                }
+            };
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(It.IsAny<string>()))
+                  .Returns(new List<EpisodeHistory>());
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(It.IsAny<string>()))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadGrabbed });
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.DownloadAlreadyImported(It.IsAny<string>()))
+                  .Returns(true);
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(It.IsAny<string>()))
+                  .Returns((SiteRipDownload)null);
+
+            Mocker.GetMock<ICustomFormatCalculationService>()
+                  .Setup(s => s.ParseCustomFormat(It.IsAny<RemoteEpisode>(), It.IsAny<long>()))
+                  .Returns(new List<CustomFormat>());
+
+            var trackedDownload = Subject.TrackDownload(client, item);
+            trackedDownload.State = TrackedDownloadState.ImportPending;
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.DownloadAlreadyImported(It.IsAny<string>()))
+                  .Returns(true);
+
+            var refreshed = Subject.TrackDownload(client, item);
+
+            refreshed.State.Should().Be(TrackedDownloadState.ImportPending);
+            refreshed.Should().BeSameAs(trackedDownload);
+        }
+
+        [Test]
         public void should_build_siterip_remote_episode_when_site_rip_download_exists_without_should_override()
         {
             const string downloadId = "GHI789";

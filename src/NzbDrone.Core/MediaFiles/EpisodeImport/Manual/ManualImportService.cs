@@ -10,6 +10,7 @@ using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.Download;
 using NzbDrone.Core.Download.TrackedDownloads;
+using NzbDrone.Core.History;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Aggregation;
 using NzbDrone.Core.Messaging.Commands;
@@ -39,6 +40,8 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
         private readonly IImportApprovedEpisodes _importApprovedEpisodes;
         private readonly IAggregationService _aggregationService;
         private readonly ITrackedDownloadService _trackedDownloadService;
+        private readonly ITrackedDownloadAlreadyImported _trackedDownloadAlreadyImported;
+        private readonly IHistoryService _historyService;
         private readonly IDownloadedEpisodesImportService _downloadedEpisodesImportService;
         private readonly IMediaFileService _mediaFileService;
         private readonly ICustomFormatCalculationService _formatCalculator;
@@ -54,6 +57,8 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
                                    IAggregationService aggregationService,
                                    IImportApprovedEpisodes importApprovedEpisodes,
                                    ITrackedDownloadService trackedDownloadService,
+                                   ITrackedDownloadAlreadyImported trackedDownloadAlreadyImported,
+                                   IHistoryService historyService,
                                    IDownloadedEpisodesImportService downloadedEpisodesImportService,
                                    IMediaFileService mediaFileService,
                                    ICustomFormatCalculationService formatCalculator,
@@ -69,6 +74,8 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
             _aggregationService = aggregationService;
             _importApprovedEpisodes = importApprovedEpisodes;
             _trackedDownloadService = trackedDownloadService;
+            _trackedDownloadAlreadyImported = trackedDownloadAlreadyImported;
+            _historyService = historyService;
             _downloadedEpisodesImportService = downloadedEpisodesImportService;
             _mediaFileService = mediaFileService;
             _formatCalculator = formatCalculator;
@@ -624,9 +631,11 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
 
             foreach (var groupedTrackedDownload in importedTrackedDownload.GroupBy(i => i.TrackedDownload.DownloadItem.DownloadId).ToList())
             {
-                var trackedDownload = groupedTrackedDownload.First().TrackedDownload;
-                var importedSeries = imported.First().ImportDecision.LocalEpisode.Series;
-                var outputPath = trackedDownload.ImportItem.OutputPath.FullPath;
+                var downloadId = groupedTrackedDownload.Key;
+                var trackedDownload = _trackedDownloadService.Find(downloadId)
+                    ?? groupedTrackedDownload.First().TrackedDownload;
+                var importedSeries = groupedTrackedDownload.First().ImportResult.ImportDecision.LocalEpisode.Series;
+                var outputPath = (trackedDownload.ImportItem ?? trackedDownload.DownloadItem).OutputPath.FullPath;
 
                 if (_diskProvider.FolderExists(outputPath))
                 {
@@ -642,9 +651,21 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport.Manual
                     .Where(c => c.Result == ImportResultType.Imported)
                     .ToList();
 
-                var allEpisodesImported = importedResults
-                                                                .SelectMany(c => c.ImportDecision.LocalEpisode.Episodes).Count() >=
-                                                                    Math.Max(1, trackedDownload.RemoteEpisode?.Episodes?.Count ?? 1);
+                var expectedEpisodeCount = Math.Max(1, trackedDownload.RemoteEpisode?.Episodes?.Count ?? 1);
+                var importedEpisodeCount = importedResults
+                    .SelectMany(c => c.ImportDecision.LocalEpisode.Episodes)
+                    .Count();
+
+                var allEpisodesImported = importedEpisodeCount >= expectedEpisodeCount;
+
+                if (!allEpisodesImported && trackedDownload.RemoteEpisode == null)
+                {
+                    var historyItems = _historyService.FindByDownloadId(downloadId)
+                        .OrderByDescending(h => h.Date)
+                        .ToList();
+
+                    allEpisodesImported = _trackedDownloadAlreadyImported.IsImported(trackedDownload, historyItems);
+                }
 
                 if (allEpisodesImported)
                 {

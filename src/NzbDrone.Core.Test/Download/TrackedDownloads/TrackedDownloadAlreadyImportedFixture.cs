@@ -128,5 +128,73 @@ namespace NzbDrone.Core.Test.Download.TrackedDownloads
                    .Should()
                    .BeTrue();
         }
+
+        [Test]
+        public void should_return_true_for_null_remote_episode_when_grab_history_shows_imported()
+        {
+            _trackedDownload.RemoteEpisode = null;
+
+            var episode = Builder<Episode>.CreateNew()
+                                          .With(e => e.Id = 42)
+                                          .Build();
+
+            _historyItems.Add(Builder<EpisodeHistory>.CreateNew()
+                                                      .With(h => h.EpisodeId = episode.Id)
+                                                      .With(h => h.EventType = EpisodeHistoryEventType.DownloadFolderImported)
+                                                      .Build());
+
+            _historyItems.Add(Builder<EpisodeHistory>.CreateNew()
+                                                      .With(h => h.EpisodeId = episode.Id)
+                                                      .With(h => h.EventType = EpisodeHistoryEventType.Grabbed)
+                                                      .Build());
+
+            Subject.IsImported(_trackedDownload, _historyItems)
+                   .Should()
+                   .BeTrue();
+        }
+
+        [Test]
+        public void should_return_false_for_null_remote_episode_when_grab_history_not_imported()
+        {
+            _trackedDownload.RemoteEpisode = null;
+
+            var episode = Builder<Episode>.CreateNew()
+                                          .With(e => e.Id = 42)
+                                          .Build();
+
+            _historyItems.Add(Builder<EpisodeHistory>.CreateNew()
+                                                      .With(h => h.EpisodeId = episode.Id)
+                                                      .With(h => h.EventType = EpisodeHistoryEventType.Grabbed)
+                                                      .Build());
+
+            Subject.IsImported(_trackedDownload, _historyItems)
+                   .Should()
+                   .BeFalse();
+        }
+
+        [Test]
+        public void should_return_false_for_null_remote_episode_when_only_one_of_multi_episode_download_is_imported()
+        {
+            _trackedDownload.RemoteEpisode = null;
+
+            _historyItems.Add(Builder<EpisodeHistory>.CreateNew()
+                                                      .With(h => h.EpisodeId = 1)
+                                                      .With(h => h.EventType = EpisodeHistoryEventType.DownloadFolderImported)
+                                                      .Build());
+
+            _historyItems.Add(Builder<EpisodeHistory>.CreateNew()
+                                                      .With(h => h.EpisodeId = 1)
+                                                      .With(h => h.EventType = EpisodeHistoryEventType.Grabbed)
+                                                      .Build());
+
+            _historyItems.Add(Builder<EpisodeHistory>.CreateNew()
+                                                      .With(h => h.EpisodeId = 2)
+                                                      .With(h => h.EventType = EpisodeHistoryEventType.Grabbed)
+                                                      .Build());
+
+            Subject.IsImported(_trackedDownload, _historyItems)
+                   .Should()
+                   .BeFalse();
+        }
     }
 }

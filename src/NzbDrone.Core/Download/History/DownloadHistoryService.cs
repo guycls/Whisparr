@@ -46,7 +46,8 @@ namespace NzbDrone.Core.Download.History
                     return false;
                 }
 
-                if (e.EventType == DownloadHistoryEventType.DownloadImported)
+                if (e.EventType == DownloadHistoryEventType.FileImported ||
+                    e.EventType == DownloadHistoryEventType.DownloadImported)
                 {
                     return true;
                 }

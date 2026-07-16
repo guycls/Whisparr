@@ -7,6 +7,7 @@ using NLog.Fluent;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Instrumentation.Extensions;
+using NzbDrone.Core.Download.History;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.History;
 using NzbDrone.Core.MediaFiles;
@@ -37,6 +38,7 @@ namespace NzbDrone.Core.Download
         private readonly ISeriesService _seriesService;
         private readonly IEpisodeService _episodeService;
         private readonly ITrackedDownloadAlreadyImported _trackedDownloadAlreadyImported;
+        private readonly IDownloadHistoryService _downloadHistoryService;
         private readonly IMediaFileService _mediaFileService;
         private readonly ISiteRipDownloadRepository _siteRipDownloadRepository;
         private readonly Logger _logger;
@@ -49,6 +51,7 @@ namespace NzbDrone.Core.Download
                                         ISeriesService seriesService,
                                         IEpisodeService episodeService,
                                         ITrackedDownloadAlreadyImported trackedDownloadAlreadyImported,
+                                        IDownloadHistoryService downloadHistoryService,
                                         IMediaFileService mediaFileService,
                                         ISiteRipDownloadRepository siteRipDownloadRepository,
                                         Logger logger)
@@ -61,6 +64,7 @@ namespace NzbDrone.Core.Download
             _seriesService = seriesService;
             _episodeService = episodeService;
             _trackedDownloadAlreadyImported = trackedDownloadAlreadyImported;
+            _downloadHistoryService = downloadHistoryService;
             _mediaFileService = mediaFileService;
             _siteRipDownloadRepository = siteRipDownloadRepository;
             _logger = logger;
@@ -177,6 +181,11 @@ namespace NzbDrone.Core.Download
 
             if (trackedDownload.RemoteEpisode == null)
             {
+                if (TryCompleteFromEpisodeHistory(trackedDownload))
+                {
+                    return;
+                }
+
                 trackedDownload.Warn("Unable to parse download, automatic import is not possible.");
                 SendManualInteractionRequiredNotification(trackedDownload);
 
@@ -323,6 +332,47 @@ namespace NzbDrone.Core.Download
 
             _logger.Debug("Not all episodes have been imported for the release '{0}'", trackedDownload.DownloadItem.Title);
             return false;
+        }
+
+        private bool TryCompleteFromEpisodeHistory(TrackedDownload trackedDownload)
+        {
+            var downloadId = trackedDownload.DownloadItem.DownloadId;
+            var historyItems = _historyService.FindByDownloadId(downloadId)
+                .OrderByDescending(h => h.Date)
+                .ToList();
+
+            if (!_trackedDownloadAlreadyImported.IsImported(trackedDownload, historyItems))
+            {
+                return false;
+            }
+
+            var grabbedEpisodeIds = historyItems
+                .Where(h => h.EventType == EpisodeHistoryEventType.Grabbed)
+                .Select(h => h.EpisodeId)
+                .Distinct()
+                .ToList();
+
+            if (grabbedEpisodeIds.Empty())
+            {
+                return false;
+            }
+
+            var episodes = _episodeService.GetEpisodes(grabbedEpisodeIds);
+            var files = _mediaFileService.GetFiles(episodes.Select(e => e.EpisodeFileId).Where(id => id > 0).Distinct());
+            var grabbedHistory = historyItems.Where(h => h.EventType == EpisodeHistoryEventType.Grabbed).ToList();
+            var releaseInfo = grabbedHistory.Count > 0 ? new GrabbedReleaseInfo(grabbedHistory) : null;
+            var seriesId = grabbedHistory.First().SeriesId;
+
+            _logger.Debug("All episodes were imported in history for {0}", trackedDownload.DownloadItem.Title);
+
+            trackedDownload.State = TrackedDownloadState.Imported;
+
+            if (!_downloadHistoryService.DownloadAlreadyImported(downloadId))
+            {
+                _eventAggregator.PublishEvent(new DownloadCompletedEvent(trackedDownload, seriesId, files, releaseInfo));
+            }
+
+            return true;
         }
 
         private void TryCompleteSiteRipDownload(TrackedDownload trackedDownload)
