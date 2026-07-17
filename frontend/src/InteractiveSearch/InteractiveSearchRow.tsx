@@ -190,12 +190,42 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
   const onGrabConfirm = useCallback(() => {
     setIsConfirmGrabModalOpen(false);
 
+    let episodeIds: number[] = [];
+    let seriesId = mappedSeriesId;
+
+    if (mappedEpisodeInfo && mappedEpisodeInfo.length > 0) {
+      episodeIds = mappedEpisodeInfo.map(
+        (episode: { id: number }) => episode.id
+      );
+    } else if (searchPayload?.episodeId) {
+      episodeIds = [searchPayload.episodeId];
+    }
+
+    if (!seriesId && searchPayload?.seriesId) {
+      seriesId = searchPayload.seriesId;
+    }
+
     onGrabPress({
       guid,
       indexerId,
       ...searchPayload,
+      shouldOverride: true,
+      seriesId,
+      episodeIds,
+      quality,
+      languages,
     });
-  }, [guid, indexerId, searchPayload, onGrabPress, setIsConfirmGrabModalOpen]);
+  }, [
+    guid,
+    indexerId,
+    searchPayload,
+    onGrabPress,
+    setIsConfirmGrabModalOpen,
+    mappedSeriesId,
+    mappedEpisodeInfo,
+    quality,
+    languages,
+  ]);
 
   const onGrabCancel = useCallback(() => {
     setIsConfirmGrabModalOpen(false);

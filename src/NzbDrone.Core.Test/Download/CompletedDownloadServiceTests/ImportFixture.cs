@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
 using Moq;
@@ -368,6 +369,77 @@ namespace NzbDrone.Core.Test.Download.CompletedDownloadServiceTests
 
             Subject.Import(_trackedDownload);
 
+            AssertImported();
+        }
+
+        [Test]
+        public void should_import_when_remote_episode_is_null_but_grab_history_exists()
+        {
+            const string downloadId = "60F906260C523946645C95610D80EDC33786F815";
+            const int seriesId = 14;
+            const int episodeId = 15101;
+
+            _trackedDownload.DownloadItem.DownloadId = downloadId;
+            _trackedDownload.DownloadItem.Title = "[Clips4Sale.com] Cory Chase - Son Cums of Age 1080p.mp4";
+            _trackedDownload.RemoteEpisode = null;
+            _trackedDownload.State = TrackedDownloadState.ImportPending;
+
+            var episode = new Episode { Id = episodeId, SeriesId = seriesId };
+            var series = new Series { Id = seriesId, Title = "Bare Back Studios" };
+            var history = new List<EpisodeHistory>
+            {
+                new EpisodeHistory
+                {
+                    EpisodeId = episodeId,
+                    EventType = EpisodeHistoryEventType.Grabbed,
+                    Date = System.DateTime.UtcNow,
+                    SeriesId = seriesId,
+                    DownloadId = downloadId,
+                    Data = new Dictionary<string, string>
+                    {
+                        [HistoryDataKeys.ReleaseSource] = ReleaseSourceType.InteractiveSearch.ToString()
+                    }
+                }
+            };
+
+            Mocker.GetMock<ISiteRipDownloadRepository>()
+                  .Setup(r => r.FindByDownloadId(downloadId))
+                  .Returns((SiteRipDownload)null);
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(history);
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetSeries(seriesId))
+                  .Returns(series);
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode> { episode });
+
+            Mocker.GetMock<ITrackedDownloadAlreadyImported>()
+                  .Setup(s => s.IsImported(It.IsAny<TrackedDownload>(), It.IsAny<List<EpisodeHistory>>()))
+                  .Returns(false);
+
+            Mocker.GetMock<IDownloadedEpisodesImportService>()
+                  .Setup(v => v.ProcessPath(It.IsAny<string>(), It.IsAny<ImportMode>(), It.IsAny<Series>(), It.IsAny<DownloadClientItem>(), It.IsAny<List<int>>()))
+                  .Returns(new List<ImportResult>
+                  {
+                      new ImportResult(new ImportDecision(new LocalEpisode
+                      {
+                          Path = @"C:\DropFolder\MyDownload\Cory.Chase.mp4".AsOsAgnostic(),
+                          Episodes = new List<Episode> { episode }
+                      }))
+                  });
+
+            Subject.Import(_trackedDownload);
+
+            Mocker.GetMock<IDownloadedEpisodesImportService>()
+                  .Verify(v => v.ProcessPath(It.IsAny<string>(), It.IsAny<ImportMode>(), series, It.IsAny<DownloadClientItem>(), It.IsAny<List<int>>()), Times.Once());
+
+            _trackedDownload.RemoteEpisode.Should().NotBeNull();
+            _trackedDownload.RemoteEpisode.Episodes.First().Id.Should().Be(episodeId);
             AssertImported();
         }
 

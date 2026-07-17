@@ -186,10 +186,13 @@ namespace NzbDrone.Core.Download
                     return;
                 }
 
-                trackedDownload.Warn("Unable to parse download, automatic import is not possible.");
-                SendManualInteractionRequiredNotification(trackedDownload);
+                if (!TryBuildRemoteEpisodeFromGrabHistory(trackedDownload))
+                {
+                    trackedDownload.Warn("Unable to parse download, automatic import is not possible.");
+                    SendManualInteractionRequiredNotification(trackedDownload);
 
-                return;
+                    return;
+                }
             }
 
             trackedDownload.State = TrackedDownloadState.Importing;
@@ -332,6 +335,49 @@ namespace NzbDrone.Core.Download
 
             _logger.Debug("Not all episodes have been imported for the release '{0}'", trackedDownload.DownloadItem.Title);
             return false;
+        }
+
+        private bool TryBuildRemoteEpisodeFromGrabHistory(TrackedDownload trackedDownload)
+        {
+            var downloadId = trackedDownload.DownloadItem.DownloadId;
+            var historyItems = _historyService.FindByDownloadId(downloadId)
+                .OrderByDescending(h => h.Date)
+                .ToList();
+
+            var grabbedHistory = historyItems
+                .Where(h => h.EventType == EpisodeHistoryEventType.Grabbed)
+                .ToList();
+
+            if (grabbedHistory.Empty())
+            {
+                return false;
+            }
+
+            var grabbedEvent = grabbedHistory.MaxBy(h => h.Date);
+            var episodeIds = grabbedHistory.Select(h => h.EpisodeId).Distinct().ToList();
+            var series = _seriesService.GetSeries(grabbedEvent.SeriesId);
+            var episodes = _episodeService.GetEpisodes(episodeIds);
+
+            if (series == null || episodes.Empty())
+            {
+                return false;
+            }
+
+            Enum.TryParse(grabbedEvent.Data.GetValueOrDefault(HistoryDataKeys.ReleaseSource, ReleaseSourceType.Unknown.ToString()), out ReleaseSourceType releaseSource);
+
+            trackedDownload.RemoteEpisode = new RemoteEpisode
+            {
+                Series = series,
+                Episodes = episodes,
+                Languages = grabbedEvent.Languages,
+                ParsedEpisodeInfo = new ParsedEpisodeInfo { Quality = grabbedEvent.Quality },
+                ShouldOverride = true,
+                ReleaseSource = releaseSource
+            };
+
+            _logger.Debug("Rebuilt RemoteEpisode from grab history for {0}", trackedDownload.DownloadItem.Title);
+
+            return true;
         }
 
         private bool TryCompleteFromEpisodeHistory(TrackedDownload trackedDownload)

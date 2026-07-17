@@ -157,9 +157,11 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                 var parsedEpisodeInfo = Parser.Parser.ParseTitle(trackedDownload.DownloadItem.Title);
 
                 var isForceDownload = IsForceDownload(historyItems) || isSiteRipDownload;
+                var isInteractiveSearchGrab = IsInteractiveSearchGrab(grabbedEvent);
+                var useGrabHistoryForRemoteEpisode = isForceDownload || isInteractiveSearchGrab;
 
                 // Only do normal parsing if this is NOT a force download
-                if (!isForceDownload && parsedEpisodeInfo != null)
+                if (!useGrabHistoryForRemoteEpisode && parsedEpisodeInfo != null)
                 {
                     trackedDownload.RemoteEpisode = _parsingService.Map(parsedEpisodeInfo, 0);
                     _aggregationService.Augment(trackedDownload.RemoteEpisode);
@@ -177,28 +179,10 @@ namespace NzbDrone.Core.Download.TrackedDownloads
                     trackedDownload.Indexer = grabbedEvent?.Data?.GetValueOrDefault("indexer");
                     trackedDownload.Added = grabbedEvent?.Date;
 
-                    if (isForceDownload &&
+                    if (useGrabHistoryForRemoteEpisode &&
                         (trackedDownload.RemoteEpisode?.Series == null || trackedDownload.RemoteEpisode.Episodes.Empty()))
                     {
-                        // For forced downloads, recreate RemoteEpisode from history data
-                        var series = _seriesService.GetSeries(grabbedEvent?.SeriesId ?? firstHistoryItem.SeriesId);
-                        var episodeIds = historyItems.Where(h => h.EventType == EpisodeHistoryEventType.Grabbed)
-                                                    .Select(h => h.EpisodeId)
-                                                    .Distinct()
-                                                    .ToList();
-                        var episodes = _episodeService.GetEpisodes(episodeIds);
-
-                        if (series != null && episodes.Any())
-                        {
-                            trackedDownload.RemoteEpisode = new RemoteEpisode
-                            {
-                                Series = series,
-                                Episodes = episodes,
-                                Languages = grabbedEvent?.Languages ?? firstHistoryItem.Languages,
-                                ParsedEpisodeInfo = parsedEpisodeInfo ?? new ParsedEpisodeInfo { Quality = grabbedEvent?.Quality ?? firstHistoryItem.Quality },
-                                ShouldOverride = true
-                            };
-                        }
+                        TryBuildRemoteEpisodeFromGrabHistory(trackedDownload, historyItems, grabbedEvent, firstHistoryItem, parsedEpisodeInfo);
                     }
 
                     if (!isSiteRipDownload &&
@@ -420,6 +404,48 @@ namespace NzbDrone.Core.Download.TrackedDownloads
             var grabbedEvent = historyItems.FirstOrDefault(v => v.EventType == EpisodeHistoryEventType.Grabbed);
             return grabbedEvent?.Data.GetShouldOverride() == true ||
                    grabbedEvent?.Data.GetIsSiteRip() == true;
+        }
+
+        private static bool IsInteractiveSearchGrab(EpisodeHistory grabbedHistoryItem)
+        {
+            if (grabbedHistoryItem?.Data == null)
+            {
+                return false;
+            }
+
+            Enum.TryParse(grabbedHistoryItem.Data.GetValueOrDefault(HistoryDataKeys.ReleaseSource, ReleaseSourceType.Unknown.ToString()), out ReleaseSourceType releaseSource);
+            return releaseSource == ReleaseSourceType.InteractiveSearch;
+        }
+
+        private void TryBuildRemoteEpisodeFromGrabHistory(TrackedDownload trackedDownload,
+                                                          List<EpisodeHistory> historyItems,
+                                                          EpisodeHistory grabbedEvent,
+                                                          EpisodeHistory firstHistoryItem,
+                                                          ParsedEpisodeInfo parsedEpisodeInfo)
+        {
+            var series = _seriesService.GetSeries(grabbedEvent?.SeriesId ?? firstHistoryItem.SeriesId);
+            var episodeIds = historyItems.Where(h => h.EventType == EpisodeHistoryEventType.Grabbed)
+                                        .Select(h => h.EpisodeId)
+                                        .Distinct()
+                                        .ToList();
+            var episodes = _episodeService.GetEpisodes(episodeIds);
+
+            if (series == null || episodes.Empty())
+            {
+                return;
+            }
+
+            Enum.TryParse(grabbedEvent?.Data?.GetValueOrDefault(HistoryDataKeys.ReleaseSource, ReleaseSourceType.Unknown.ToString()), out ReleaseSourceType releaseSource);
+
+            trackedDownload.RemoteEpisode = new RemoteEpisode
+            {
+                Series = series,
+                Episodes = episodes,
+                Languages = grabbedEvent?.Languages ?? firstHistoryItem.Languages,
+                ParsedEpisodeInfo = parsedEpisodeInfo ?? new ParsedEpisodeInfo { Quality = grabbedEvent?.Quality ?? firstHistoryItem.Quality },
+                ShouldOverride = true,
+                ReleaseSource = releaseSource
+            };
         }
 
         private List<EpisodeHistory> FindHistoryByDownloadId(string downloadId)

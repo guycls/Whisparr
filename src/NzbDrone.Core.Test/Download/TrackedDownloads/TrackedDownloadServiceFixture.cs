@@ -316,6 +316,75 @@ namespace NzbDrone.Core.Test.Download.TrackedDownloads
         }
 
         [Test]
+        public void should_build_remote_episode_from_grab_history_for_interactive_search_grab_when_title_unparseable()
+        {
+            const string downloadId = "60F906260C523946645C95610D80EDC33786F815";
+            const int seriesId = 14;
+            const int episodeId = 15101;
+
+            var client = new DownloadClientDefinition
+            {
+                Id = 1,
+                Protocol = DownloadProtocol.Torrent
+            };
+
+            var item = new DownloadClientItem
+            {
+                Title = "[Clips4Sale.com] Cory Chase - Son Cums of Age 1080p.mp4",
+                DownloadId = downloadId,
+                DownloadClientInfo = new DownloadClientItemClientInfo
+                {
+                    Protocol = client.Protocol,
+                    Id = client.Id,
+                    Name = "qBittorrent"
+                }
+            };
+
+            Mocker.GetMock<IHistoryService>()
+                  .Setup(s => s.FindByDownloadId(downloadId))
+                  .Returns(new List<EpisodeHistory>
+                  {
+                      new EpisodeHistory
+                      {
+                          DownloadId = downloadId,
+                          SourceTitle = "[Clips4Sale.com] Cory Chase - Son Cums of Age",
+                          SeriesId = seriesId,
+                          EpisodeId = episodeId,
+                          EventType = EpisodeHistoryEventType.Grabbed,
+                          Date = DateTime.UtcNow,
+                          Data = new Dictionary<string, string>
+                          {
+                              [HistoryDataKeys.ReleaseSource] = ReleaseSourceType.InteractiveSearch.ToString()
+                          }
+                      }
+                  });
+
+            Mocker.GetMock<IDownloadHistoryService>()
+                  .Setup(s => s.GetLatestDownloadHistoryItem(downloadId))
+                  .Returns(new DownloadHistory { EventType = DownloadHistoryEventType.DownloadGrabbed });
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetSeries(seriesId))
+                  .Returns(new Series { Id = seriesId, Title = "Bare Back Studios" });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode> { new Episode { Id = episodeId, SeriesId = seriesId } });
+
+            Mocker.GetMock<ICustomFormatCalculationService>()
+                  .Setup(s => s.ParseCustomFormat(It.IsAny<RemoteEpisode>(), It.IsAny<long>()))
+                  .Returns(new List<CustomFormat>());
+
+            var trackedDownload = Subject.TrackDownload(client, item);
+
+            trackedDownload.RemoteEpisode.Should().NotBeNull();
+            trackedDownload.RemoteEpisode.Series.Id.Should().Be(seriesId);
+            trackedDownload.RemoteEpisode.Episodes.Single().Id.Should().Be(episodeId);
+            trackedDownload.RemoteEpisode.ShouldOverride.Should().BeTrue();
+            trackedDownload.RemoteEpisode.ReleaseSource.Should().Be(ReleaseSourceType.InteractiveSearch);
+        }
+
+        [Test]
         public void should_retrack_after_siterip_regrab_when_download_already_imported_returns_false()
         {
             const string downloadId = "ABC123";
