@@ -17,8 +17,8 @@ namespace NzbDrone.Core.IndexerSearch
 {
     public interface ISearchForReleases
     {
-        Task<List<DownloadDecision>> EpisodeSearch(int episodeId, bool userInvokedSearch, bool interactiveSearch, string searchId = null);
-        Task<List<DownloadDecision>> EpisodeSearch(Episode episode, bool userInvokedSearch, bool interactiveSearch, string searchId = null);
+        Task<List<DownloadDecision>> EpisodeSearch(int episodeId, bool userInvokedSearch, bool interactiveSearch, string searchId = null, string searchTerm = null);
+        Task<List<DownloadDecision>> EpisodeSearch(Episode episode, bool userInvokedSearch, bool interactiveSearch, string searchId = null, string searchTerm = null);
         Task<List<DownloadDecision>> SeasonSearch(int seriesId, int seasonNumber, bool missingOnly, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch, string searchId = null);
         Task<List<DownloadDecision>> SeasonSearch(int seriesId, int seasonNumber, List<Episode> episodes, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch, string searchId = null);
         Task<List<DownloadDecision>> SiteRipSearch(int seriesId, bool userInvokedSearch, bool interactiveSearch, string searchId = null);
@@ -51,18 +51,18 @@ namespace NzbDrone.Core.IndexerSearch
             _logger = logger;
         }
 
-        public async Task<List<DownloadDecision>> EpisodeSearch(int episodeId, bool userInvokedSearch, bool interactiveSearch, string searchId = null)
+        public async Task<List<DownloadDecision>> EpisodeSearch(int episodeId, bool userInvokedSearch, bool interactiveSearch, string searchId = null, string searchTerm = null)
         {
             var episode = _episodeService.GetEpisode(episodeId);
 
-            return await EpisodeSearch(episode, userInvokedSearch, interactiveSearch, searchId);
+            return await EpisodeSearch(episode, userInvokedSearch, interactiveSearch, searchId, searchTerm);
         }
 
-        public async Task<List<DownloadDecision>> EpisodeSearch(Episode episode, bool userInvokedSearch, bool interactiveSearch, string searchId = null)
+        public async Task<List<DownloadDecision>> EpisodeSearch(Episode episode, bool userInvokedSearch, bool interactiveSearch, string searchId = null, string searchTerm = null)
         {
             var series = _seriesService.GetSeries(episode.SeriesId);
 
-            return await SearchSingle(series, episode, false, userInvokedSearch, interactiveSearch, searchId);
+            return await SearchSingle(series, episode, false, userInvokedSearch, interactiveSearch, searchId, searchTerm);
         }
 
         public async Task<List<DownloadDecision>> SeasonSearch(int seriesId, int seasonNumber, bool missingOnly, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch, string searchId = null)
@@ -128,7 +128,7 @@ namespace NzbDrone.Core.IndexerSearch
             return DeDupeDecisions(decisions);
         }
 
-        private async Task<List<DownloadDecision>> SearchSingle(Series series, Episode episode, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch, string searchId)
+        private async Task<List<DownloadDecision>> SearchSingle(Series series, Episode episode, bool monitoredOnly, bool userInvokedSearch, bool interactiveSearch, string searchId, string searchTerm = null)
         {
             var downloadDecisions = new List<DownloadDecision>();
 
@@ -137,6 +137,11 @@ namespace NzbDrone.Core.IndexerSearch
             searchSpec.Performer = episode.Actors.Select(p => p.Name).FirstOrDefault();
             searchSpec.EpisodeTitle = episode.Title;
             searchSpec.ExternalId = episode.ExternalId;
+
+            if (searchTerm.IsNotNullOrWhiteSpace())
+            {
+                searchSpec.QueryOverride = EpisodeSearchQueryBuilder.NormalizeForIndexer(searchTerm);
+            }
 
             var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec, searchId);
             downloadDecisions.AddRange(decisions);
@@ -282,4 +287,3 @@ namespace NzbDrone.Core.IndexerSearch
         }
     }
 }
-

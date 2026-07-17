@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Tv;

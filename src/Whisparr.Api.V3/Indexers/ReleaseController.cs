@@ -153,11 +153,11 @@ namespace Whisparr.Api.V3.Indexers
 
         [HttpGet]
         [Produces("application/json")]
-        public async Task<List<ReleaseResource>> GetReleases(int? seriesId, int? episodeId, int? seasonNumber, string searchId)
+        public async Task<List<ReleaseResource>> GetReleases(int? seriesId, int? episodeId, int? seasonNumber, string searchId, string searchTerm)
         {
             if (episodeId.HasValue)
             {
-                return await GetEpisodeReleases(episodeId.Value, searchId);
+                return await GetEpisodeReleases(episodeId.Value, searchId, searchTerm);
             }
 
             if (seriesId.HasValue && seasonNumber.HasValue)
@@ -182,11 +182,11 @@ namespace Whisparr.Api.V3.Indexers
             return SearchProgressResourceMapper.ToResource(progress);
         }
 
-        private async Task<List<ReleaseResource>> GetEpisodeReleases(int episodeId, string searchId)
+        private async Task<List<ReleaseResource>> GetEpisodeReleases(int episodeId, string searchId, string searchTerm)
         {
             try
             {
-                var decisions = await _releaseSearchService.EpisodeSearch(episodeId, true, true, searchId);
+                var decisions = await _releaseSearchService.EpisodeSearch(episodeId, true, true, searchId, searchTerm);
                 var prioritizedDecisions = _prioritizeDownloadDecision.PrioritizeDecisions(decisions);
 
                 return MapDecisions(prioritizedDecisions);

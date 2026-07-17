@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types';
-import React, { Fragment, useCallback, useMemo, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
+import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
 import PageMenuButton from 'Components/Menu/PageMenuButton';
@@ -118,6 +119,8 @@ function InteractiveSearch(props) {
     longDateFormat,
     timeFormat,
     stackedTitleLayout = false,
+    indexerSearchTerm = '',
+    onIndexerSearchSubmit,
     onSortPress,
     onFilterSelect,
     onGrabPress,
@@ -126,10 +129,31 @@ function InteractiveSearch(props) {
   } = props;
 
   const [filter, setFilter] = useState('');
+  const [indexerSearchInput, setIndexerSearchInput] = useState(indexerSearchTerm);
+
+  useEffect(() => {
+    setIndexerSearchInput(indexerSearchTerm);
+  }, [indexerSearchTerm]);
 
   const onFilterChange = useCallback(({ value }) => {
     setFilter(value.toLowerCase());
   }, []);
+
+  const onIndexerSearchChange = useCallback(({ value }) => {
+    setIndexerSearchInput(value);
+  }, []);
+
+  const onIndexerSearchPress = useCallback(() => {
+    if (onIndexerSearchSubmit) {
+      onIndexerSearchSubmit(indexerSearchInput.trim());
+    }
+  }, [indexerSearchInput, onIndexerSearchSubmit]);
+
+  const onIndexerSearchKeyDown = useCallback((event) => {
+    if (event.key === 'Enter') {
+      onIndexerSearchPress();
+    }
+  }, [onIndexerSearchPress]);
 
   const textFilteredItems = useMemo(() => {
     if (!filter) {
@@ -150,26 +174,68 @@ function InteractiveSearch(props) {
 
   return (
     <div>
-      <div className={styles.filterMenuContainer}>
-        <TextInput
-          className={styles.filterInput}
-          placeholder={translate('FilterReleasesPlaceholder')}
-          name="filter"
-          value={filter}
-          onChange={onFilterChange}
-        />
+      {
+        stackedTitleLayout ?
+          <div className={styles.filterMenuContainerEpisode}>
+            <TextInput
+              className={styles.filterInput}
+              placeholder={translate('FilterReleasesPlaceholder')}
+              name="filter"
+              value={filter}
+              onChange={onFilterChange}
+            />
 
-        <FilterMenu
-          alignMenu={align.RIGHT}
-          selectedFilterKey={selectedFilterKey}
-          filters={filters}
-          customFilters={customFilters}
-          buttonComponent={PageMenuButton}
-          filterModalConnectorComponent={InteractiveSearchFilterModalConnector}
-          filterModalConnectorComponentProps={{ type }}
-          onFilterSelect={onFilterSelect}
-        />
-      </div>
+            <div onKeyDown={onIndexerSearchKeyDown}>
+              <TextInput
+                className={styles.indexerSearchInput}
+                placeholder={translate('IndexerSearch')}
+                name="indexerSearch"
+                value={indexerSearchInput}
+                onChange={onIndexerSearchChange}
+              />
+            </div>
+
+            <SpinnerIconButton
+              className={styles.indexerSearchButton}
+              name={icons.SEARCH}
+              isSpinning={isFetching}
+              onPress={onIndexerSearchPress}
+            />
+
+            <div className={styles.filterMenuColumn}>
+              <FilterMenu
+                alignMenu={align.RIGHT}
+                selectedFilterKey={selectedFilterKey}
+                filters={filters}
+                customFilters={customFilters}
+                buttonComponent={PageMenuButton}
+                filterModalConnectorComponent={InteractiveSearchFilterModalConnector}
+                filterModalConnectorComponentProps={{ type }}
+                onFilterSelect={onFilterSelect}
+              />
+            </div>
+          </div> :
+          <div className={styles.filterMenuContainer}>
+            <TextInput
+              className={styles.filterInput}
+              placeholder={translate('FilterReleasesPlaceholder')}
+              name="filter"
+              value={filter}
+              onChange={onFilterChange}
+            />
+
+            <FilterMenu
+              alignMenu={align.RIGHT}
+              selectedFilterKey={selectedFilterKey}
+              filters={filters}
+              customFilters={customFilters}
+              buttonComponent={PageMenuButton}
+              filterModalConnectorComponent={InteractiveSearchFilterModalConnector}
+              filterModalConnectorComponentProps={{ type }}
+              onFilterSelect={onFilterSelect}
+            />
+          </div>
+      }
 
       {
         isFetching ? (
@@ -288,6 +354,8 @@ InteractiveSearch.propTypes = {
   longDateFormat: PropTypes.string.isRequired,
   timeFormat: PropTypes.string.isRequired,
   stackedTitleLayout: PropTypes.bool,
+  indexerSearchTerm: PropTypes.string,
+  onIndexerSearchSubmit: PropTypes.func,
   onSortPress: PropTypes.func.isRequired,
   onFilterSelect: PropTypes.func.isRequired,
   onGrabPress: PropTypes.func.isRequired,

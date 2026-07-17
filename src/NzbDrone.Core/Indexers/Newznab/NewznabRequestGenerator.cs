@@ -80,6 +80,19 @@ namespace NzbDrone.Core.Indexers.Newznab
 
             if (SupportsSearch)
             {
+                if (searchCriteria.QueryOverride.IsNotNullOrWhiteSpace())
+                {
+                    var queryParts = searchCriteria.QueryOverride
+                        .Replace("+", " ")
+                        .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(NewsnabifyTitle);
+
+                    var searchQuery = $"&q={string.Join("+", queryParts)}";
+                    pageableRequests.Add(GetPagedRequests(MaxPages, Settings.Categories, "search", searchQuery));
+
+                    return pageableRequests;
+                }
+
                 var queryTitles = TextSearchEngine == "raw" ? searchCriteria.AllSceneTitles : searchCriteria.CleanSceneTitles;
 
                 // Pre-calculate commonly used values to avoid repeated processing

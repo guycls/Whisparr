@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Common.Crypto;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Download.TrackedDownloads;
 using NzbDrone.Core.Languages;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Qualities;
-using NzbDrone.Common.Extensions;
-using NzbDrone.Core.History;
 using NzbDrone.Core.SiteRip;
 using NzbDrone.Core.Tv;
 

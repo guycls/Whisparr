@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MonoTorrent;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
-using NzbDrone.Core.Download;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Parser.Model;
@@ -47,7 +44,7 @@ namespace NzbDrone.Core.SiteRip
             {
                 var file = torrent.Files[i];
                 var path = file.Path;
-                var extension = Path.GetExtension(path);
+                var extension = System.IO.Path.GetExtension(path);
 
                 if (!MediaFileExtensions.Extensions.Contains(extension))
                 {
@@ -58,7 +55,7 @@ namespace NzbDrone.Core.SiteRip
                 {
                     Index = i,
                     Path = path,
-                    Name = Path.GetFileName(path),
+                    Name = System.IO.Path.GetFileName(path),
                     Size = file.Length
                 });
             }

@@ -11,8 +11,8 @@ using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.EpisodeImport;
 using NzbDrone.Core.MediaFiles.EpisodeImport.Manual;
-using NzbDrone.Core.MetadataSource.ThePornDb;
 using NzbDrone.Core.Messaging.Commands;
+using NzbDrone.Core.MetadataSource.ThePornDb;
 using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Tv;
 
@@ -87,8 +87,12 @@ namespace NzbDrone.Core.Notifications.Stash
             ImportFromStash(settings, result);
             ScanUntrackedFiles(settings, result);
 
-            _logger.ProgressInfo("Stash sync completed: {0} imported, {1} scanned, {2} skipped, {3} failed",
-                result.Imported, result.Scanned, result.Skipped, result.Failed);
+            _logger.ProgressInfo(
+                "Stash sync completed: {0} imported, {1} scanned, {2} skipped, {3} failed",
+                result.Imported,
+                result.Scanned,
+                result.Skipped,
+                result.Failed);
 
             return result;
         }

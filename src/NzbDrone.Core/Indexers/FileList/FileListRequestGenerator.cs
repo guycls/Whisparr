@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.IndexerSearch.Definitions;
 
@@ -22,6 +23,14 @@ namespace NzbDrone.Core.Indexers.FileList
         public IndexerPageableRequestChain GetSearchRequests(SingleEpisodeSearchCriteria searchCriteria)
         {
             var pageableRequests = new IndexerPageableRequestChain();
+
+            if (searchCriteria.QueryOverride.IsNotNullOrWhiteSpace())
+            {
+                var query = searchCriteria.QueryOverride.Trim();
+                pageableRequests.Add(GetRequest("search-torrents", Settings.Categories, string.Format("&type=name&query={0}", Uri.EscapeDataString(query))));
+
+                return pageableRequests;
+            }
 
             foreach (var sceneTitle in searchCriteria.SceneTitles)
             {

@@ -6,11 +6,34 @@
   margin-bottom: 10px;
 }
 
-.filterInput {
+.filterMenuContainerEpisode {
+  composes: filterMenuContainer;
+
+  display: grid;
+  grid-template-columns: 40% 40% 5% 15%;
+  justify-content: initial;
+}
+
+.filterInput,
+.indexerSearchInput {
   composes: input from '~Components/Form/TextInput.css';
 
+  width: 100%;
+  min-width: 0;
+}
+
+.filterMenuContainer .filterInput {
   flex: 1 1 auto;
   max-width: 400px;
+}
+
+.filterMenuColumn {
+  width: 100%;
+  min-width: 0;
+}
+
+.indexerSearchButton {
+  justify-self: center;
 }
 
 .loadingContainer {

@@ -4,8 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
-using NzbDrone.Core.IndexerSearch;
 using NzbDrone.Core.Indexers;
+using NzbDrone.Core.IndexerSearch;
 using NzbDrone.Core.Messaging.Commands;
 
 namespace NzbDrone.Core.Test.Messaging.Commands

@@ -46,6 +46,18 @@ namespace NzbDrone.Core.Indexers.HDBits
         {
             var pageableRequests = new IndexerPageableRequestChain();
 
+            if (searchCriteria.QueryOverride.IsNotNullOrWhiteSpace())
+            {
+                var overrideQuery = new TorrentQuery
+                {
+                    Search = searchCriteria.QueryOverride.Trim()
+                };
+
+                pageableRequests.Add(GetRequest(overrideQuery));
+
+                return pageableRequests;
+            }
+
             var queryBase = new TorrentQuery();
             if (TryAddSearchParameters(queryBase, searchCriteria))
             {

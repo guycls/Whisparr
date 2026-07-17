@@ -15,7 +15,6 @@ using NzbDrone.Core.Notifications;
 using NzbDrone.Core.Notifications.Stash;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
-using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.NotificationTests.Stash
 {

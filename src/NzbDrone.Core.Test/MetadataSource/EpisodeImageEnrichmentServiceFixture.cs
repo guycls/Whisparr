@@ -4,9 +4,9 @@ using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaCover;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.MetadataSource;
 using NzbDrone.Core.MetadataSource.ThePornDb;
-using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 

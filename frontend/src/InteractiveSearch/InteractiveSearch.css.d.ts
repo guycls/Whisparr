@@ -2,8 +2,12 @@
 // Please do not change this file!
 interface CssExports {
   'filterInput': string;
+  'filterMenuColumn': string;
   'filterMenuContainer': string;
+  'filterMenuContainerEpisode': string;
   'filteredMessage': string;
+  'indexerSearchButton': string;
+  'indexerSearchInput': string;
   'loadingContainer': string;
   'statusMessage': string;
 }

@@ -779,6 +779,7 @@
   "InteractiveImportNoYear": "Year must be chosen for each selected file",
   "InteractiveImportNoSite": "Site must be chosen for each selected file",
   "InteractiveSearch": "Interactive Search",
+  "IndexerSearch": "Indexer Search",
   "InteractiveSearchModalHeader": "Interactive Search",
   "InteractiveSearchModalHeaderSeason": "Interactive Search - {season}",
   "InteractiveSearchResultsFailedErrorMessage": "Search failed because its {message}. Try refreshing the site info and verify the necessary information is present before searching again.",

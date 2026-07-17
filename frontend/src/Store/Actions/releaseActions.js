@@ -71,6 +71,7 @@ export const defaultState = {
   items: [],
   searchStatusMessage: null,
   searchId: null,
+  searchTerm: null,
   sortKey: 'releaseWeight',
   sortDirection: sortDirections.ASCENDING,
   sortPredicates: {
@@ -361,12 +362,14 @@ export const actionHandlers = handleThunks({
 
   [FETCH_RELEASES]: function(getState, payload, dispatch) {
     const searchId = generateSearchId();
+    const { searchTerm, ...requestPayload } = payload;
 
     dispatch(set({
       section,
       isFetching: true,
       searchStatusMessage: null,
-      searchId
+      searchId,
+      searchTerm: searchTerm ?? getState().releases.searchTerm
     }));
 
     startProgressPolling(searchId, dispatch);
@@ -374,8 +377,9 @@ export const actionHandlers = handleThunks({
     const { request, abortRequest } = createAjaxRequest({
       url: '/release',
       data: {
-        ...payload,
-        searchId
+        ...requestPayload,
+        searchId,
+        searchTerm
       },
       traditional: true
     });

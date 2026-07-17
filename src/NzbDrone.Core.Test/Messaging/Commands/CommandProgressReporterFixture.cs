@@ -2,7 +2,6 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Core.Messaging.Commands;
-using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.ProgressMessaging;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv.Commands;

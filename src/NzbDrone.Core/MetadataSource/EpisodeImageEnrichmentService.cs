@@ -5,8 +5,8 @@ using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaCover;
-using NzbDrone.Core.MetadataSource.ThePornDb;
 using NzbDrone.Core.Messaging.Commands;
+using NzbDrone.Core.MetadataSource.ThePornDb;
 using NzbDrone.Core.Tv;
 
 namespace NzbDrone.Core.MetadataSource
