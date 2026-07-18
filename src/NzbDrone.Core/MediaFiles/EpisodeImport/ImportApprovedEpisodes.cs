@@ -118,6 +118,9 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
                         episodeFile.IndexerFlags = localEpisode.IndexerFlags;
                     }
 
+                    var isOutsideSeriesFolder = !localEpisode.Series.Path.IsParentPath(localEpisode.Path);
+                    var treatAsNewDownload = newDownload || isOutsideSeriesFolder;
+
                     bool copyOnly;
                     switch (importMode)
                     {
@@ -133,7 +136,12 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
                             break;
                     }
 
-                    if (newDownload)
+                    if (isOutsideSeriesFolder && importMode == ImportMode.Auto)
+                    {
+                        copyOnly = true;
+                    }
+
+                    if (treatAsNewDownload)
                     {
                         episodeFile.SceneName = localEpisode.SceneName;
                         episodeFile.OriginalFilePath = GetOriginalFilePath(downloadClientItem, localEpisode);
@@ -156,7 +164,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
                     episodeFile = _mediaFileService.Add(episodeFile);
                     importResults.Add(new ImportResult(importDecision, episodeFile));
 
-                    if (newDownload)
+                    if (treatAsNewDownload)
                     {
                         if (localEpisode.ScriptImported)
                         {
@@ -174,7 +182,7 @@ namespace NzbDrone.Core.MediaFiles.EpisodeImport
                         }
                     }
 
-                    _eventAggregator.PublishEvent(new EpisodeImportedEvent(localEpisode, episodeFile, oldFiles, newDownload, downloadClientItem));
+                    _eventAggregator.PublishEvent(new EpisodeImportedEvent(localEpisode, episodeFile, oldFiles, treatAsNewDownload, downloadClientItem));
                 }
                 catch (RootFolderNotFoundException e)
                 {

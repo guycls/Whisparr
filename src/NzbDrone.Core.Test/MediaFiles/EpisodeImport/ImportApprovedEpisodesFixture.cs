@@ -373,6 +373,32 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport
         }
 
         [Test]
+        public void should_copy_external_path_when_new_download_is_false()
+        {
+            var decision = _approvedDecisions.First();
+            decision.LocalEpisode.Path = @"C:\Test\External\foo.mp4".AsOsAgnostic();
+
+            Subject.Import(new List<ImportDecision> { decision }, false);
+
+            Mocker.GetMock<IUpgradeMediaFiles>()
+                  .Verify(v => v.UpgradeEpisodeFile(It.IsAny<EpisodeFile>(), decision.LocalEpisode, true),
+                          Times.Once());
+        }
+
+        [Test]
+        public void should_move_external_path_when_import_mode_is_move()
+        {
+            var decision = _approvedDecisions.First();
+            decision.LocalEpisode.Path = @"C:\Test\External\foo.mp4".AsOsAgnostic();
+
+            Subject.Import(new List<ImportDecision> { decision }, false, null, ImportMode.Move);
+
+            Mocker.GetMock<IUpgradeMediaFiles>()
+                  .Verify(v => v.UpgradeEpisodeFile(It.IsAny<EpisodeFile>(), decision.LocalEpisode, false),
+                          Times.Once());
+        }
+
+        [Test]
         public void should_include_scene_name_with_new_downloads()
         {
             var firstDecision = _approvedDecisions.First();
