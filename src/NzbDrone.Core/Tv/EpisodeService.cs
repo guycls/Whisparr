@@ -17,6 +17,7 @@ namespace NzbDrone.Core.Tv
     {
         Episode GetEpisode(int id);
         List<Episode> GetEpisodes(IEnumerable<int> ids);
+        List<Episode> FindEpisodes(IEnumerable<int> ids);
         Episode FindEpisode(int seriesId, int absoluteEpisodeNumber);
         Episode FindEpisodeByTitle(int seriesId, int seasonNumber, string releaseTitle);
         Episode MatchEpisodeByReleaseTokens(IEnumerable<Episode> candidates, string releaseTokens);
@@ -64,6 +65,18 @@ namespace NzbDrone.Core.Tv
         public List<Episode> GetEpisodes(IEnumerable<int> ids)
         {
             return _episodeRepository.Get(ids).ToList();
+        }
+
+        public List<Episode> FindEpisodes(IEnumerable<int> ids)
+        {
+            var idList = ids.Distinct().ToList();
+
+            if (idList.Empty())
+            {
+                return new List<Episode>();
+            }
+
+            return _episodeRepository.FindByIds(ids);
         }
 
         public Episode FindEpisode(int seriesId, int absoluteEpisodeNumber)

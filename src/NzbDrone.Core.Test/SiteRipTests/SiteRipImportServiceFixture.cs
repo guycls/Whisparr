@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using Moq;
+using NLog;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.Extensions;
@@ -73,7 +74,8 @@ namespace NzbDrone.Core.Test.SiteRipTests
 
             Mocker.SetConstant<ISiteRipPendingFileService>(new SiteRipPendingFileService(
                 Mocker.Resolve<ISiteRipDownloadFileRepository>(),
-                Mocker.Resolve<IEpisodeService>()));
+                Mocker.Resolve<IEpisodeService>(),
+                Mocker.Resolve<Logger>()));
 
             Mocker.GetMock<ISeriesService>()
                   .Setup(s => s.GetSeries(1))
@@ -84,7 +86,7 @@ namespace NzbDrone.Core.Test.SiteRipTests
                   .Returns(new Episode { Id = 42, SeriesId = 1, EpisodeFileId = 0 });
 
             Mocker.GetMock<IEpisodeService>()
-                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Setup(s => s.FindEpisodes(It.IsAny<IEnumerable<int>>()))
                   .Returns(new List<Episode> { new Episode { Id = 42, SeriesId = 1, EpisodeFileId = 0 } });
 
             Mocker.GetMock<IDiskProvider>()
@@ -172,7 +174,7 @@ namespace NzbDrone.Core.Test.SiteRipTests
                   .Returns(new Episode { Id = 42, SeriesId = 1, EpisodeFileId = 0 });
 
             Mocker.GetMock<IEpisodeService>()
-                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Setup(s => s.FindEpisodes(It.IsAny<IEnumerable<int>>()))
                   .Returns(new List<Episode> { new Episode { Id = 42, SeriesId = 1, EpisodeFileId = 0 } });
 
             var trackedDownload = CreateTrackedDownload(outputPath: string.Empty);
@@ -194,7 +196,7 @@ namespace NzbDrone.Core.Test.SiteRipTests
                   .Returns(new Episode { Id = 42, SeriesId = episodeSeriesId, EpisodeFileId = 0 });
 
             Mocker.GetMock<IEpisodeService>()
-                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Setup(s => s.FindEpisodes(It.IsAny<IEnumerable<int>>()))
                   .Returns(new List<Episode> { new Episode { Id = 42, SeriesId = episodeSeriesId, EpisodeFileId = 0 } });
 
             Mocker.GetMock<ISeriesService>()

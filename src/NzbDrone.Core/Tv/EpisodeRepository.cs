@@ -15,6 +15,7 @@ namespace NzbDrone.Core.Tv
     {
         Episode Find(int seriesId, int absoluteEpisodeNumber);
         List<Episode> Find(int seriesId, string date);
+        List<Episode> FindByIds(IEnumerable<int> ids);
         Episode FindByExternalId(string externalId);
         List<Episode> GetEpisodes(int seriesId);
         List<Episode> GetEpisodes(int seriesId, int seasonNumber);
@@ -57,6 +58,18 @@ namespace NzbDrone.Core.Tv
         public List<Episode> Find(int seriesId, string date)
         {
             return Query(s => s.SeriesId == seriesId && s.AirDate == date).ToList();
+        }
+
+        public List<Episode> FindByIds(IEnumerable<int> ids)
+        {
+            var idList = ids.Distinct().ToList();
+
+            if (!idList.Any())
+            {
+                return new List<Episode>();
+            }
+
+            return Query(e => idList.Contains(e.Id));
         }
 
         public Episode FindByExternalId(string externalId)

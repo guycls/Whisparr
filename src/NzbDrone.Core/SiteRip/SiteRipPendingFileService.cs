@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Tv;
 
@@ -15,12 +16,15 @@ namespace NzbDrone.Core.SiteRip
     {
         private readonly ISiteRipDownloadFileRepository _siteRipDownloadFileRepository;
         private readonly IEpisodeService _episodeService;
+        private readonly Logger _logger;
 
         public SiteRipPendingFileService(ISiteRipDownloadFileRepository siteRipDownloadFileRepository,
-                                         IEpisodeService episodeService)
+                                         IEpisodeService episodeService,
+                                         Logger logger)
         {
             _siteRipDownloadFileRepository = siteRipDownloadFileRepository;
             _episodeService = episodeService;
+            _logger = logger;
         }
 
         public List<SiteRipDownloadFile> GetPendingFiles(int siteRipDownloadId)
@@ -32,14 +36,28 @@ namespace NzbDrone.Core.SiteRip
                 return files;
             }
 
-            var episodes = _episodeService.GetEpisodes(files.Select(f => f.EpisodeId).Distinct())
+            var episodeIds = files.Select(f => f.EpisodeId).Distinct().ToList();
+            var episodes = _episodeService.FindEpisodes(episodeIds)
                                           .ToDictionary(e => e.Id);
+
+            var orphanedEpisodeIds = episodeIds.Where(id => !episodes.ContainsKey(id)).ToList();
+
+            if (orphanedEpisodeIds.Any())
+            {
+                _logger.Warn(
+                    "SiteRIP download {0} has {1} pending file(s) referencing deleted episode(s): [{2}]. Removing stale records.",
+                    siteRipDownloadId,
+                    files.Count(f => orphanedEpisodeIds.Contains(f.EpisodeId)),
+                    string.Join(", ", orphanedEpisodeIds));
+
+                _siteRipDownloadFileRepository.DeleteForEpisodes(siteRipDownloadId, orphanedEpisodeIds);
+            }
 
             return files.Where(f =>
             {
                 if (!episodes.TryGetValue(f.EpisodeId, out var episode))
                 {
-                    return true;
+                    return false;
                 }
 
                 return !episode.HasFile;

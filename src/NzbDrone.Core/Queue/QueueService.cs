@@ -104,7 +104,7 @@ namespace NzbDrone.Core.Queue
             }
 
             var episodeIds = pendingFiles.Select(f => f.EpisodeId).Distinct().ToList();
-            episodes = _episodeService.GetEpisodes(episodeIds);
+            episodes = _episodeService.FindEpisodes(episodeIds);
             series = trackedDownload.RemoteEpisode?.Series ?? _seriesService.GetSeries(siteRipDownload.SeriesId);
 
             return episodes.Any() && series != null;

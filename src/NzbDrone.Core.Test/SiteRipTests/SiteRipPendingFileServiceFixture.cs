@@ -26,7 +26,7 @@ namespace NzbDrone.Core.Test.SiteRipTests
                   });
 
             Mocker.GetMock<IEpisodeService>()
-                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Setup(s => s.FindEpisodes(It.IsAny<IEnumerable<int>>()))
                   .Returns(new List<Episode>
                   {
                       new Episode { Id = 100, EpisodeFileId = 0 },
@@ -51,7 +51,7 @@ namespace NzbDrone.Core.Test.SiteRipTests
                   });
 
             Mocker.GetMock<IEpisodeService>()
-                  .Setup(s => s.GetEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Setup(s => s.FindEpisodes(It.IsAny<IEnumerable<int>>()))
                   .Returns(new List<Episode>
                   {
                       new Episode { Id = 100, EpisodeFileId = 0 },
@@ -62,6 +62,74 @@ namespace NzbDrone.Core.Test.SiteRipTests
 
             pending.Should().ContainSingle();
             pending[0].EpisodeId.Should().Be(100);
+        }
+
+        [Test]
+        public void should_exclude_files_when_episode_no_longer_exists()
+        {
+            Mocker.GetMock<ISiteRipDownloadFileRepository>()
+                  .Setup(r => r.GetByDownloadId(SiteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false },
+                      new SiteRipDownloadFile { EpisodeId = 999, FileIndex = 2, Imported = false }
+                  });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.FindEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode>
+                  {
+                      new Episode { Id = 100, EpisodeFileId = 0 }
+                  });
+
+            var pending = Subject.GetPendingFiles(SiteRipDownloadId);
+
+            pending.Should().ContainSingle();
+            pending[0].EpisodeId.Should().Be(100);
+        }
+
+        [Test]
+        public void should_delete_orphaned_site_rip_file_records()
+        {
+            Mocker.GetMock<ISiteRipDownloadFileRepository>()
+                  .Setup(r => r.GetByDownloadId(SiteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 100, FileIndex = 1, Imported = false },
+                      new SiteRipDownloadFile { EpisodeId = 999, FileIndex = 2, Imported = false }
+                  });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.FindEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode>
+                  {
+                      new Episode { Id = 100, EpisodeFileId = 0 }
+                  });
+
+            Subject.GetPendingFiles(SiteRipDownloadId);
+
+            Mocker.GetMock<ISiteRipDownloadFileRepository>()
+                  .Verify(r => r.DeleteForEpisodes(SiteRipDownloadId, It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 999 }))), Times.Once());
+        }
+
+        [Test]
+        public void should_not_throw_when_all_episodes_missing()
+        {
+            Mocker.GetMock<ISiteRipDownloadFileRepository>()
+                  .Setup(r => r.GetByDownloadId(SiteRipDownloadId))
+                  .Returns(new List<SiteRipDownloadFile>
+                  {
+                      new SiteRipDownloadFile { EpisodeId = 999, FileIndex = 1, Imported = false }
+                  });
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Setup(s => s.FindEpisodes(It.IsAny<IEnumerable<int>>()))
+                  .Returns(new List<Episode>());
+
+            var pending = Subject.GetPendingFiles(SiteRipDownloadId);
+
+            pending.Should().BeEmpty();
+            Subject.HasPendingFiles(SiteRipDownloadId).Should().BeFalse();
         }
     }
 }
