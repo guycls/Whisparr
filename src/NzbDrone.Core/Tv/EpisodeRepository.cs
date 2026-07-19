@@ -127,6 +127,17 @@ namespace NzbDrone.Core.Tv
 
         public PagingSpec<Episode> GetEpisodesPaged(PagingSpec<Episode> pagingSpec, int seriesId, EpisodePagedFilter filter)
         {
+            var countBuilder = BuildEpisodesPagedBuilder(seriesId, filter);
+            pagingSpec.TotalRecords = GetPagedRecordCount(countBuilder.SelectCountDistinct<Episode>(x => x.Id), pagingSpec);
+
+            var recordsBuilder = BuildEpisodesPagedBuilder(seriesId, filter);
+            pagingSpec.Records = GetPagedRecords(recordsBuilder, pagingSpec, Query);
+
+            return pagingSpec;
+        }
+
+        private SqlBuilder BuildEpisodesPagedBuilder(int seriesId, EpisodePagedFilter filter)
+        {
             var builder = Builder()
                 .Where<Episode>(e => e.SeriesId == seriesId);
 
@@ -152,10 +163,7 @@ namespace NzbDrone.Core.Tv
                 builder = builder.Where(qualityClause);
             }
 
-            pagingSpec.Records = GetPagedRecords(builder, pagingSpec, Query);
-            pagingSpec.TotalRecords = GetPagedRecordCount(builder.SelectCountDistinct<Episode>(x => x.Id), pagingSpec);
-
-            return pagingSpec;
+            return builder;
         }
 
         public int GetMaxEpisodeRuntime(int seriesId)
@@ -180,16 +188,18 @@ namespace NzbDrone.Core.Tv
             switch (monitorStatus?.ToLowerInvariant())
             {
                 case "monitored":
-                    builder.Where<Episode>(e => e.Monitored);
+                    builder.Where("\"Episodes\".\"Monitored\" = @monitored", new { monitored = true });
                     break;
                 case "unmonitored":
-                    builder.Where<Episode>(e => !e.Monitored);
+                    builder.Where("\"Episodes\".\"Monitored\" = @monitored", new { monitored = false });
                     break;
                 case "downloaded":
-                    builder.Where<Episode>(e => e.EpisodeFileId != 0);
+                    builder.Where("\"Episodes\".\"EpisodeFileId\" != 0");
                     break;
                 case "missing":
-                    builder.Where<Episode>(e => e.Monitored && e.EpisodeFileId == 0);
+                    builder.Where(
+                        "\"Episodes\".\"Monitored\" = @monitored AND \"Episodes\".\"EpisodeFileId\" = 0",
+                        new { monitored = true });
                     break;
             }
         }

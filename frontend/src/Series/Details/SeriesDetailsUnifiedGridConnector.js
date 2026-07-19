@@ -6,7 +6,6 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { toggleEpisodesMonitored } from 'Store/Actions/episodeActions';
 import {
   fetchMoreSeriesDetailsUnifiedGrid,
-  fetchSeriesDetailsUnifiedGrid,
 } from 'Store/Actions/seriesDetailsActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
@@ -27,7 +26,6 @@ function createMapStateToProps() {
 }
 
 const mapDispatchToProps = {
-  fetchSeriesDetailsUnifiedGrid,
   fetchMoreSeriesDetailsUnifiedGrid,
   toggleEpisodesMonitored,
 };
@@ -39,24 +37,28 @@ function SeriesDetailsUnifiedGridConnector(props) {
     page,
     totalPages,
     totalRecords,
+    lastPageSize,
     isFetching,
     isPopulated,
     error,
     isSmallScreen,
-    fetchSeriesDetailsUnifiedGrid: fetchInitial,
     fetchMoreSeriesDetailsUnifiedGrid: fetchMore,
     toggleEpisodesMonitored: toggleMonitored,
   } = props;
 
   useEffect(() => {
-    fetchInitial({ seriesId });
-  }, [seriesId, fetchInitial]);
-
-  useEffect(() => {
-    if (isPopulated && !isFetching && !error && page < totalPages) {
+    if (
+      isPopulated &&
+      !isFetching &&
+      !error &&
+      totalRecords > 0 &&
+      items.length < totalRecords &&
+      page < totalPages &&
+      lastPageSize > 0
+    ) {
       fetchMore({ seriesId });
     }
-  }, [isPopulated, isFetching, error, page, totalPages, seriesId, fetchMore]);
+  }, [isPopulated, isFetching, error, totalRecords, items.length, page, totalPages, lastPageSize, seriesId, fetchMore]);
 
   const onMonitorEpisodePress = useCallback((episodeId, monitored) => {
     toggleMonitored({
@@ -121,11 +123,11 @@ SeriesDetailsUnifiedGridConnector.propTypes = {
   page: PropTypes.number,
   totalPages: PropTypes.number,
   totalRecords: PropTypes.number,
+  lastPageSize: PropTypes.number,
   isFetching: PropTypes.bool.isRequired,
   isPopulated: PropTypes.bool.isRequired,
   error: PropTypes.object,
   isSmallScreen: PropTypes.bool.isRequired,
-  fetchSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
   fetchMoreSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
   toggleEpisodesMonitored: PropTypes.func.isRequired,
 };

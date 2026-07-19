@@ -5,14 +5,19 @@ import findSelectedFilters from 'Utilities/Filter/findSelectedFilters';
 import getSectionState from 'Utilities/State/getSectionState';
 import { set, updateServerSideCollection } from '../baseActions';
 
-function createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter) {
+function createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter, processFetchResponse) {
   const [baseSection] = section.split('.');
 
   return function(getState, payload, dispatch) {
-    dispatch(set({ section, isFetching: true }));
-
     const sectionState = getSectionState(getState(), section, true);
     const page = payload.page || sectionState.page || 1;
+    const fetchState = { isFetching: true };
+
+    if (processFetchResponse && page === 1 && payload.append !== true) {
+      fetchState.lastPageSize = 0;
+    }
+
+    dispatch(set({ section, ...fetchState }));
 
     const data = Object.assign({ page },
       _.pick(sectionState, [
@@ -47,10 +52,19 @@ function createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter
     }).request;
 
     promise.done((response) => {
+      let responseData = response;
+      let extraSetState = {};
+
+      if (processFetchResponse) {
+        const processed = processFetchResponse(getState, payload, response, sectionState);
+        responseData = processed.data;
+        extraSetState = processed.extraSetState || {};
+      }
+
       dispatch(batchActions([
         updateServerSideCollection({
           section,
-          data: response,
+          data: responseData,
           append: payload.append === true
         }),
 
@@ -58,7 +72,8 @@ function createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter
           section,
           isFetching: false,
           isPopulated: true,
-          error: null
+          error: null,
+          ...extraSetState
         })
       ]));
     });

@@ -161,15 +161,82 @@ namespace NzbDrone.Core.Test.TvTests.EpisodeRepositoryTests
                 SortDirection = SortDirection.Ascending
             };
 
-            var filter = new EpisodePagedFilter
+            var unmonitoredFilter = new EpisodePagedFilter
             {
                 MonitorStatus = "unmonitored"
             };
 
+            var unmonitoredResult = Subject.GetEpisodesPaged(pagingSpec, _series.Id, unmonitoredFilter);
+
+            unmonitoredResult.TotalRecords.Should().Be(1);
+            unmonitoredResult.Records.Single().Monitored.Should().BeFalse();
+
+            var monitoredFilter = new EpisodePagedFilter
+            {
+                MonitorStatus = "monitored"
+            };
+
+            var monitoredResult = Subject.GetEpisodesPaged(pagingSpec, _series.Id, monitoredFilter);
+
+            monitoredResult.TotalRecords.Should().Be(3);
+            monitoredResult.Records.Should().OnlyContain(e => e.Monitored);
+        }
+
+        [Test]
+        public void should_return_accurate_total_records_for_monitored_filter()
+        {
+            var pagingSpec = new PagingSpec<Episode>
+            {
+                Page = 1,
+                PageSize = 100,
+                SortKey = "AirDateUtc",
+                SortDirection = SortDirection.Ascending
+            };
+
+            var filter = new EpisodePagedFilter
+            {
+                MonitorStatus = "monitored"
+            };
+
             var result = Subject.GetEpisodesPaged(pagingSpec, _series.Id, filter);
 
-            result.TotalRecords.Should().Be(1);
-            result.Records.Single().Monitored.Should().BeFalse();
+            result.TotalRecords.Should().Be(3);
+            result.Records.Should().HaveCount(3);
+            result.TotalRecords.Should().Be(result.Records.Count);
+        }
+
+        [Test]
+        public void should_match_total_records_across_paged_fetches()
+        {
+            var filter = new EpisodePagedFilter
+            {
+                MonitorStatus = "monitored"
+            };
+
+            var pageOneSpec = new PagingSpec<Episode>
+            {
+                Page = 1,
+                PageSize = 2,
+                SortKey = "AirDateUtc",
+                SortDirection = SortDirection.Ascending
+            };
+
+            var pageTwoSpec = new PagingSpec<Episode>
+            {
+                Page = 2,
+                PageSize = 2,
+                SortKey = "AirDateUtc",
+                SortDirection = SortDirection.Ascending
+            };
+
+            var pageOne = Subject.GetEpisodesPaged(pageOneSpec, _series.Id, filter);
+            var pageTwo = Subject.GetEpisodesPaged(pageTwoSpec, _series.Id, filter);
+
+            pageOne.TotalRecords.Should().Be(3);
+            pageTwo.TotalRecords.Should().Be(3);
+            pageOne.Records.Should().HaveCount(2);
+            pageTwo.Records.Should().HaveCount(1);
+            (pageOne.Records.Count + pageTwo.Records.Count).Should().Be(pageOne.TotalRecords);
         }
 
         [Test]

@@ -92,6 +92,7 @@ interface AppState {
     activeSeriesId: number;
     unifiedGrid: {
       items: Episode[];
+      lastPageSize: number;
     };
   };
   seriesIndex: SeriesIndexAppState;

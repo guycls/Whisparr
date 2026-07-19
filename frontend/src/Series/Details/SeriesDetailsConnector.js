@@ -276,7 +276,7 @@ class SeriesDetailsConnector extends Component {
         !_.isEqual(prevProps.rawRuntimeFilter, rawRuntimeFilter)
       )
     ) {
-      this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: id });
+      this.refetchUnifiedGrid();
     }
   }
 
@@ -296,6 +296,11 @@ class SeriesDetailsConnector extends Component {
     this.props.fetchQueueDetails({ seriesId });
   };
 
+  refetchUnifiedGrid = () => {
+    this.props.clearSeriesDetailsUnifiedGrid();
+    this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: this.props.id });
+  };
+
   populateForView = (view) => {
     const seriesId = this.props.id;
 
@@ -304,6 +309,7 @@ class SeriesDetailsConnector extends Component {
     if (view === 'unifiedGrid') {
       this.props.clearEpisodes();
       this.props.clearEpisodeFiles();
+      this.props.clearSeriesDetailsUnifiedGrid();
       this.props.fetchSeriesDetailsUnifiedGrid({ seriesId });
       return;
     }
@@ -350,26 +356,14 @@ class SeriesDetailsConnector extends Component {
 
   onStatusSelect = (monitorStatusFilter) => {
     this.props.setSeriesDetailsMonitorStatusFilter({ monitorStatusFilter });
-
-    if (this.props.view === 'unifiedGrid') {
-      this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: this.props.id });
-    }
   };
 
   onQualityFilterChange = (qualityFilter) => {
     this.props.setSeriesDetailsQualityFilter({ qualityFilter });
-
-    if (this.props.view === 'unifiedGrid') {
-      this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: this.props.id });
-    }
   };
 
   onRuntimeFilterChange = (runtimeFilter) => {
     this.props.setSeriesDetailsRuntimeFilter({ runtimeFilter });
-
-    if (this.props.view === 'unifiedGrid') {
-      this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: this.props.id });
-    }
   };
 
   //

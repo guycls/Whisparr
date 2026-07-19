@@ -50,6 +50,7 @@ export const defaultState = {
     sortDirection: sortDirections.DESCENDING,
     totalRecords: 0,
     totalPages: 0,
+    lastPageSize: 0,
     error: null,
     items: [],
   },
@@ -137,10 +138,32 @@ function unifiedGridFetchDataAugmenter(getState, payload, data) {
   }
 }
 
+function processUnifiedGridFetchResponse(getState, payload, response, sectionState) {
+  const append = payload.append === true;
+  const lastPageSize = response.records?.length ?? 0;
+  let data = response;
+  const extraSetState = { lastPageSize };
+
+  if (lastPageSize === 0 && response.page > 1) {
+    const existingItems = append ? (sectionState.items || []) : [];
+    const pageSize = response.pageSize || sectionState.pageSize || 25;
+    const totalRecords = existingItems.length;
+
+    data = {
+      ...response,
+      totalRecords,
+      totalPages: Math.max(Math.ceil(totalRecords / pageSize), 1)
+    };
+  }
+
+  return { data, extraSetState };
+}
+
 const unifiedGridFetchHandler = createFetchServerSideCollectionHandler(
   'seriesDetails.unifiedGrid',
   '/episode/paged',
-  unifiedGridFetchDataAugmenter
+  unifiedGridFetchDataAugmenter,
+  processUnifiedGridFetchResponse
 );
 
 //
@@ -180,16 +203,22 @@ export const actionHandlers = handleThunks({
     });
   },
 
-  ...createServerSideCollectionHandlers(
-    'seriesDetails.unifiedGrid',
-    '/episode/paged',
-    fetchSeriesDetailsUnifiedGrid,
-    {
-      [serverSideCollectionHandlers.FETCH]: FETCH_SERIES_DETAILS_UNIFIED_GRID,
-      [serverSideCollectionHandlers.FIRST_PAGE]: GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE,
-    },
-    unifiedGridFetchDataAugmenter
-  ),
+  ...(() => {
+    const serverSideHandlers = createServerSideCollectionHandlers(
+      'seriesDetails.unifiedGrid',
+      '/episode/paged',
+      fetchSeriesDetailsUnifiedGrid,
+      {
+        [serverSideCollectionHandlers.FETCH]: FETCH_SERIES_DETAILS_UNIFIED_GRID,
+        [serverSideCollectionHandlers.FIRST_PAGE]: GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE,
+      },
+      unifiedGridFetchDataAugmenter
+    );
+
+    serverSideHandlers[FETCH_SERIES_DETAILS_UNIFIED_GRID] = unifiedGridFetchHandler;
+
+    return serverSideHandlers;
+  })(),
 
   [FETCH_MORE_SERIES_DETAILS_UNIFIED_GRID]: function(getState, payload, dispatch) {
     const { activeSeriesId } = getState().seriesDetails;
@@ -199,7 +228,9 @@ export const actionHandlers = handleThunks({
     if (
       unifiedGrid.isFetching ||
       !unifiedGrid.isPopulated ||
+      !unifiedGrid.totalRecords ||
       unifiedGrid.page >= unifiedGrid.totalPages ||
+      (unifiedGrid.lastPageSize === 0 && unifiedGrid.page > 1) ||
       !seriesId
     ) {
       return;
@@ -247,6 +278,7 @@ export const reducers = createHandleActions({
       items: [],
       totalPages: 0,
       totalRecords: 0,
+      lastPageSize: 0,
       page: 1,
     }
   ),
