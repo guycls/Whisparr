@@ -37,10 +37,12 @@ import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
 import SeriesDetailsStatusMenu from './Menus/SeriesDetailsStatusMenu';
 import SeriesDetailsQualityFilterMenu from './Menus/SeriesDetailsQualityFilterMenu';
+import SeriesDetailsRuntimeFilterMenu from './Menus/SeriesDetailsRuntimeFilterMenu';
 import SeriesDetailsViewMenu from './Menus/SeriesDetailsViewMenu';
 import SeriesAlternateTitles from './SeriesAlternateTitles';
 import SeriesDetailsLinks from './SeriesDetailsLinks';
 import SeriesDetailsSeasonConnector from './SeriesDetailsSeasonConnector';
+import SeriesDetailsUnifiedGridConnector from './SeriesDetailsUnifiedGridConnector';
 import SeriesGenres from './SeriesGenres';
 import SeriesTagsConnector from './SeriesTagsConnector';
 import styles from './SeriesDetails.css';
@@ -222,9 +224,12 @@ class SeriesDetails extends Component {
       view,
       monitorStatusFilter,
       qualityFilter,
+      runtimeFilter,
+      maxEpisodeRuntime,
       onViewSelect,
       onStatusSelect,
-      onQualityFilterChange
+      onQualityFilterChange,
+      onRuntimeFilterChange
     } = this.props;
 
     const {
@@ -270,6 +275,8 @@ class SeriesDetails extends Component {
     } else if (allCollapsed) {
       expandIcon = icons.EXPAND;
     }
+
+    const isUnifiedGridView = view === 'unifiedGrid';
 
     const fanartUrl = getFanartUrl(images);
 
@@ -351,6 +358,14 @@ class SeriesDetails extends Component {
           </PageToolbarSection>
 
           <PageToolbarSection alignContent={align.RIGHT}>
+            <SeriesDetailsRuntimeFilterMenu
+              runtimeFilter={runtimeFilter}
+              seriesMaxRuntime={maxEpisodeRuntime}
+              onRuntimeFilterChange={onRuntimeFilterChange}
+            />
+
+            <PageToolbarSeparator />
+
             <SeriesDetailsQualityFilterMenu
               qualityFilter={qualityFilter}
               onQualityFilterChange={onQualityFilterChange}
@@ -372,11 +387,14 @@ class SeriesDetails extends Component {
 
             <PageToolbarSeparator />
 
-            <PageToolbarButton
-              label={allExpanded ? translate('CollapseAll') : translate('ExpandAll')}
-              iconName={expandIcon}
-              onPress={this.onExpandAllPress}
-            />
+            {
+              !isUnifiedGridView &&
+                <PageToolbarButton
+                  label={allExpanded ? translate('CollapseAll') : translate('ExpandAll')}
+                  iconName={expandIcon}
+                  onPress={this.onExpandAllPress}
+                />
+            }
           </PageToolbarSection>
         </PageToolbar>
 
@@ -691,22 +709,29 @@ class SeriesDetails extends Component {
 
           <div className={styles.contentContainer}>
             {
-              !isPopulated && !episodesError && !episodeFilesError &&
+              !isPopulated && !isUnifiedGridView && !episodesError && !episodeFilesError &&
                 <LoadingIndicator />
             }
 
             {
-              !isFetching && episodesError &&
+              !isFetching && !isUnifiedGridView && episodesError &&
                 <div>{translate('EpisodesLoadError')}</div>
             }
 
             {
-              !isFetching && episodeFilesError &&
+              !isFetching && !isUnifiedGridView && episodeFilesError &&
                 <div>{translate('EpisodeFilesLoadError')}</div>
             }
 
             {
-              isPopulated && !!seasons.length &&
+              isUnifiedGridView &&
+                <SeriesDetailsUnifiedGridConnector
+                  seriesId={id}
+                />
+            }
+
+            {
+              isPopulated && !isUnifiedGridView && !!seasons.length &&
                 <div>
                   {
                     seasons.slice(0).reverse().map((season) => {
@@ -717,6 +742,8 @@ class SeriesDetails extends Component {
                           view={view}
                           monitorStatusFilter={monitorStatusFilter}
                           qualityFilter={qualityFilter}
+                          runtimeFilter={runtimeFilter}
+                          maxEpisodeRuntime={maxEpisodeRuntime}
                           {...season}
                           isExpanded={expandedState[season.seasonNumber]}
                           onExpandPress={this.onExpandPress}
@@ -728,7 +755,7 @@ class SeriesDetails extends Component {
             }
 
             {
-              isPopulated && !seasons.length &&
+              isPopulated && !isUnifiedGridView && !seasons.length &&
                 <div>
                   {translate('NoEpisodeInformation')}
                 </div>
@@ -835,9 +862,12 @@ SeriesDetails.propTypes = {
   onViewSelect: PropTypes.func.isRequired,
   onStatusSelect: PropTypes.func.isRequired,
   onQualityFilterChange: PropTypes.func.isRequired,
+  onRuntimeFilterChange: PropTypes.func.isRequired,
   view: PropTypes.string.isRequired,
   monitorStatusFilter: PropTypes.string.isRequired,
   qualityFilter: PropTypes.object.isRequired,
+  runtimeFilter: PropTypes.object.isRequired,
+  maxEpisodeRuntime: PropTypes.number.isRequired,
   safeForWorkMode: PropTypes.bool
 };
 

@@ -22,11 +22,13 @@ interface EpisodeStatusProps {
 function EpisodeStatus(props: EpisodeStatusProps) {
   const { episodeId, episodeEntity = 'episodes', episodeFileId } = props;
 
-  const {
-    releaseDate,
-    monitored,
-    grabbed = false,
-  } = useEpisode(episodeId, episodeEntity) as Episode;
+  const episode = useEpisode(episodeId, episodeEntity) as Episode | undefined;
+
+  if (!episode) {
+    return null;
+  }
+
+  const { releaseDate, monitored, grabbed = false, hasFile = false } = episode;
 
   const queueItem = useSelector(createQueueItemSelectorForHook(episodeId));
   const episodeFile = useEpisodeFile(episodeFileId);
@@ -77,6 +79,17 @@ function EpisodeStatus(props: EpisodeStatusProps) {
           quality={quality}
           size={episodeFile.size}
           isCutoffNotMet={isCutoffNotMet}
+          title={translate('EpisodeDownloaded')}
+        />
+      </div>
+    );
+  }
+
+  if (hasFile) {
+    return (
+      <div className={styles.center}>
+        <Icon
+          name={icons.DOWNLOADED}
           title={translate('EpisodeDownloaded')}
         />
       </div>

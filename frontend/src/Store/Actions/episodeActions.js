@@ -229,13 +229,11 @@ export const actionHandlers = handleThunks({
       monitored
     } = payload;
 
-    const episodeSection = _.last(episodeEntity.split('.'));
-
     dispatch(batchActions(
       episodeIds.map((episodeId) => {
         return updateItem({
           id: episodeId,
-          section: episodeSection,
+          section: episodeEntity,
           isSaving: true
         });
       })
@@ -253,7 +251,7 @@ export const actionHandlers = handleThunks({
         episodeIds.map((episodeId) => {
           return updateItem({
             id: episodeId,
-            section: episodeSection,
+            section: episodeEntity,
             isSaving: false,
             monitored
           });
@@ -266,7 +264,7 @@ export const actionHandlers = handleThunks({
         episodeIds.map((episodeId) => {
           return updateItem({
             id: episodeId,
-            section: episodeSection,
+            section: episodeEntity,
             isSaving: false
           });
         })

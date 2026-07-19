@@ -22,6 +22,8 @@ namespace NzbDrone.Core.Tv
         List<Episode> GetEpisodesBySeriesIds(List<int> seriesIds);
         List<Episode> GetEpisodeByFileId(int fileId);
         List<Episode> EpisodesWithFiles(int seriesId);
+        PagingSpec<Episode> GetEpisodesPaged(PagingSpec<Episode> pagingSpec, int seriesId, EpisodePagedFilter filter);
+        int GetMaxEpisodeRuntime(int seriesId);
         PagingSpec<Episode> EpisodesWithoutFiles(PagingSpec<Episode> pagingSpec, bool includeSpecials);
         PagingSpec<Episode> EpisodesWhereCutoffUnmet(PagingSpec<Episode> pagingSpec, List<QualitiesBelowCutoff> qualitiesBelowCutoff, List<LanguagesBelowCutoff> languagesBelowCutoff, bool includeSpecials);
         List<Episode> EpisodesBetweenDates(DateTime startDate, DateTime endDate, bool includeUnmonitored);
@@ -121,6 +123,75 @@ namespace NzbDrone.Core.Tv
                     episode.EpisodeFile = episodeFile;
                     return episode;
                 }).ToList();
+        }
+
+        public PagingSpec<Episode> GetEpisodesPaged(PagingSpec<Episode> pagingSpec, int seriesId, EpisodePagedFilter filter)
+        {
+            var builder = Builder()
+                .Where<Episode>(e => e.SeriesId == seriesId);
+
+            if (filter.RequiresEpisodeFileJoin)
+            {
+                builder = builder.LeftJoin<Episode, EpisodeFile>((e, ef) => e.EpisodeFileId == ef.Id);
+            }
+
+            ApplyMonitorStatusFilter(builder, filter.MonitorStatus);
+
+            if (filter.RequiresRuntimeFilter)
+            {
+                var runtimeMax = filter.RuntimeMaxMinutes ?? int.MaxValue;
+                builder = builder.Where(
+                    "\"Episodes\".\"Runtime\" >= @runtimeMin AND \"Episodes\".\"Runtime\" <= @runtimeMax",
+                    new { runtimeMin = filter.RuntimeMinMinutes, runtimeMax });
+            }
+
+            var qualityClause = EpisodeQualityFilter.BuildWhereClause(filter.QualityMinIndex, filter.QualityMaxIndex);
+
+            if (qualityClause != null)
+            {
+                builder = builder.Where(qualityClause);
+            }
+
+            pagingSpec.Records = GetPagedRecords(builder, pagingSpec, Query);
+            pagingSpec.TotalRecords = GetPagedRecordCount(builder.SelectCountDistinct<Episode>(x => x.Id), pagingSpec);
+
+            return pagingSpec;
+        }
+
+        public int GetMaxEpisodeRuntime(int seriesId)
+        {
+            using (var conn = _database.OpenConnection())
+            {
+                if (_database.DatabaseType == DatabaseType.PostgreSQL)
+                {
+                    return conn.ExecuteScalar<int?>(
+                        "SELECT MAX(COALESCE(\"Runtime\", 0)) FROM \"Episodes\" WHERE \"SeriesId\" = @seriesId",
+                        new { seriesId }) ?? 0;
+                }
+
+                return conn.ExecuteScalar<int?>(
+                    "SELECT MAX(COALESCE(Runtime, 0)) FROM Episodes WHERE SeriesId = @seriesId",
+                    new { seriesId }) ?? 0;
+            }
+        }
+
+        private static void ApplyMonitorStatusFilter(SqlBuilder builder, string monitorStatus)
+        {
+            switch (monitorStatus?.ToLowerInvariant())
+            {
+                case "monitored":
+                    builder.Where<Episode>(e => e.Monitored);
+                    break;
+                case "unmonitored":
+                    builder.Where<Episode>(e => !e.Monitored);
+                    break;
+                case "downloaded":
+                    builder.Where<Episode>(e => e.EpisodeFileId != 0);
+                    break;
+                case "missing":
+                    builder.Where<Episode>(e => e.Monitored && e.EpisodeFileId == 0);
+                    break;
+            }
         }
 
         public PagingSpec<Episode> EpisodesWithoutFiles(PagingSpec<Episode> pagingSpec, bool includeSpecials)

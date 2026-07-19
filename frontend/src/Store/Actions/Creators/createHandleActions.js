@@ -148,13 +148,26 @@ export default function createHandleActions(handlers, defaultState, section) {
 
       if (section === baseSection) {
         const data = payload.data;
+        const append = payload.append === true;
         const newState = getSectionState(state, payloadSection);
 
         const serverState = _.omit(data, ['records']);
+        let items = data.records;
+
+        if (append) {
+          const existingItems = newState.items || [];
+          const existingIds = new Set(existingItems.map(({ id }) => id));
+
+          items = [
+            ...existingItems,
+            ...data.records.filter(({ id }) => !existingIds.has(id))
+          ];
+        }
+
         const calculatedState = {
           totalPages: Math.max(Math.ceil(data.totalRecords / data.pageSize), 1),
-          items: data.records,
-          itemMap: createItemMap(data.records)
+          items,
+          itemMap: createItemMap(items)
         };
 
         return updateSectionState(state, payloadSection, Object.assign(newState, serverState, calculatedState));

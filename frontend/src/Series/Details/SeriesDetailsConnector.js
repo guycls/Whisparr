@@ -3,17 +3,32 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { bindActionCreators } from 'redux';
 import * as commandNames from 'Commands/commandNames';
 import { executeCommand } from 'Store/Actions/commandActions';
+import { set } from 'Store/Actions/baseActions';
 import { clearEpisodes, fetchEpisodes } from 'Store/Actions/episodeActions';
 import { clearEpisodeFiles, fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { toggleSeriesMonitored } from 'Store/Actions/seriesActions';
-import { setSeriesDetailsView, setSeriesDetailsMonitorStatusFilter, setSeriesDetailsQualityFilter } from 'Store/Actions/seriesDetailsActions';
+import {
+  clearSeriesDetailsUnifiedGrid,
+  defaultRuntimeFilter,
+  fetchSeriesDetailsFilterBounds,
+  fetchSeriesDetailsUnifiedGrid,
+  gotoSeriesDetailsUnifiedGridFirstPage,
+  section as seriesDetailsSection,
+  setSeriesDetailsMonitorStatusFilter,
+  setSeriesDetailsQualityFilter,
+  setSeriesDetailsRuntimeFilter,
+  setSeriesDetailsActiveSeries,
+  setSeriesDetailsView,
+} from 'Store/Actions/seriesDetailsActions';
 import { fetchDownloadClients } from 'Store/Actions/settingsActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
 import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
+import { resolveRuntimeFilter } from 'Utilities/Number/runtimeFilterUtils';
 import { registerPagePopulator, unregisterPagePopulator } from 'Utilities/pagePopulator';
 import filterAlternateTitles from 'Utilities/Series/filterAlternateTitles';
 import SeriesDetails from './SeriesDetails';
@@ -73,9 +88,15 @@ function createMapStateToProps() {
     (state) => state.seriesDetails.view,
     (state) => state.seriesDetails.monitorStatusFilter,
     (state) => state.seriesDetails.qualityFilter,
+    (state) => state.seriesDetails.runtimeFilter,
+    (state) => state.seriesDetails.maxEpisodeRuntime,
     (state) => state.settings.downloadClients,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, downloadClients) => {
+    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, maxEpisodeRuntime, downloadClients) => {
       const resolvedQualityFilter = qualityFilter ?? { minIndex: 0, maxIndex: 6 };
+      const resolvedRuntimeFilter = resolveRuntimeFilter(
+        runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
+        maxEpisodeRuntime
+      );
       const sortedSeries = _.orderBy(allSeries, 'sortTitle');
       const seriesIndex = _.findIndex(sortedSeries, { titleSlug });
       const series = sortedSeries[seriesIndex];
@@ -116,6 +137,7 @@ function createMapStateToProps() {
         isRenamingSeriesCommand.body.seriesIds.indexOf(series.id) > -1
       );
 
+      const isUnifiedGridView = view === 'unifiedGrid';
       const isFetching = isEpisodesFetching || isEpisodeFilesFetching;
       const isPopulated = isEpisodesPopulated && isEpisodeFilesPopulated;
       const alternateTitles = filterAlternateTitles(series.alternateTitles, series.title, series.useSceneNumbering);
@@ -146,25 +168,50 @@ function createMapStateToProps() {
         safeForWorkMode,
         view,
         monitorStatusFilter,
-        qualityFilter: resolvedQualityFilter
+        qualityFilter: resolvedQualityFilter,
+        runtimeFilter: resolvedRuntimeFilter,
+        rawQualityFilter: qualityFilter ?? { minIndex: 0, maxIndex: 6 },
+        rawRuntimeFilter: runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
+        maxEpisodeRuntime
       };
     }
   );
 }
 
-const mapDispatchToProps = {
-  fetchEpisodes,
-  clearEpisodes,
-  fetchEpisodeFiles,
-  clearEpisodeFiles,
-  toggleSeriesMonitored,
-  fetchQueueDetails,
-  clearQueueDetails,
-  executeCommand,
-  setSeriesDetailsView,
-  setSeriesDetailsMonitorStatusFilter,
-  setSeriesDetailsQualityFilter,
-  fetchDownloadClients
+const mapDispatchToProps = (dispatch) => {
+  return {
+    ...bindActionCreators({
+      fetchEpisodes,
+      clearEpisodes,
+      fetchEpisodeFiles,
+      clearEpisodeFiles,
+      toggleSeriesMonitored,
+      fetchQueueDetails,
+      clearQueueDetails,
+      executeCommand,
+      setSeriesDetailsView,
+      setSeriesDetailsMonitorStatusFilter,
+      setSeriesDetailsQualityFilter,
+      setSeriesDetailsRuntimeFilter,
+      setSeriesDetailsActiveSeries,
+      fetchSeriesDetailsFilterBounds,
+      fetchSeriesDetailsUnifiedGrid,
+      gotoSeriesDetailsUnifiedGridFirstPage,
+      clearSeriesDetailsUnifiedGrid,
+      fetchDownloadClients
+    }, dispatch),
+
+    resetRuntimeFilterForSeriesLoad() {
+      dispatch(setSeriesDetailsRuntimeFilter({ runtimeFilter: defaultRuntimeFilter }));
+      dispatch(set({
+        section: seriesDetailsSection,
+        maxEpisodeRuntime: 0,
+        isFilterBoundsPopulated: false,
+        isFilterBoundsFetching: false,
+        filterBoundsError: null,
+      }));
+    },
+  };
 };
 
 class SeriesDetailsConnector extends Component {
@@ -174,6 +221,7 @@ class SeriesDetailsConnector extends Component {
 
   componentDidMount() {
     registerPagePopulator(this.populate, ['seriesUpdated']);
+    this.props.resetRuntimeFilterForSeriesLoad();
     this.populate();
 
     const {
@@ -189,6 +237,10 @@ class SeriesDetailsConnector extends Component {
   componentDidUpdate(prevProps) {
     const {
       id,
+      view,
+      monitorStatusFilter,
+      rawQualityFilter,
+      rawRuntimeFilter,
       isSeriesRefreshing,
       allSeriesRefreshing,
       isRenamingFiles,
@@ -204,12 +256,27 @@ class SeriesDetailsConnector extends Component {
       this.populate();
     }
 
-    // If the id has changed we need to clear the episodes/episode
-    // files and fetch from the server.
-
     if (prevProps.id !== id) {
       this.unpopulate();
+      this.props.resetRuntimeFilterForSeriesLoad();
       this.populate();
+      return;
+    }
+
+    if (prevProps.view !== view) {
+      this.populateForView(view);
+      return;
+    }
+
+    if (
+      view === 'unifiedGrid' &&
+      (
+        prevProps.monitorStatusFilter !== monitorStatusFilter ||
+        !_.isEqual(prevProps.rawQualityFilter, rawQualityFilter) ||
+        !_.isEqual(prevProps.rawRuntimeFilter, rawRuntimeFilter)
+      )
+    ) {
+      this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: id });
     }
   }
 
@@ -224,14 +291,32 @@ class SeriesDetailsConnector extends Component {
   populate = () => {
     const seriesId = this.props.id;
 
+    this.props.fetchSeriesDetailsFilterBounds({ seriesId });
+    this.populateForView(this.props.view);
+    this.props.fetchQueueDetails({ seriesId });
+  };
+
+  populateForView = (view) => {
+    const seriesId = this.props.id;
+
+    this.props.setSeriesDetailsActiveSeries({ seriesId });
+
+    if (view === 'unifiedGrid') {
+      this.props.clearEpisodes();
+      this.props.clearEpisodeFiles();
+      this.props.fetchSeriesDetailsUnifiedGrid({ seriesId });
+      return;
+    }
+
+    this.props.clearSeriesDetailsUnifiedGrid();
     this.props.fetchEpisodes({ seriesId, includeImages: true });
     this.props.fetchEpisodeFiles({ seriesId });
-    this.props.fetchQueueDetails({ seriesId });
   };
 
   unpopulate = () => {
     this.props.clearEpisodes();
     this.props.clearEpisodeFiles();
+    this.props.clearSeriesDetailsUnifiedGrid();
     this.props.clearQueueDetails();
   };
 
@@ -265,10 +350,26 @@ class SeriesDetailsConnector extends Component {
 
   onStatusSelect = (monitorStatusFilter) => {
     this.props.setSeriesDetailsMonitorStatusFilter({ monitorStatusFilter });
+
+    if (this.props.view === 'unifiedGrid') {
+      this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: this.props.id });
+    }
   };
 
   onQualityFilterChange = (qualityFilter) => {
     this.props.setSeriesDetailsQualityFilter({ qualityFilter });
+
+    if (this.props.view === 'unifiedGrid') {
+      this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: this.props.id });
+    }
+  };
+
+  onRuntimeFilterChange = (runtimeFilter) => {
+    this.props.setSeriesDetailsRuntimeFilter({ runtimeFilter });
+
+    if (this.props.view === 'unifiedGrid') {
+      this.props.gotoSeriesDetailsUnifiedGridFirstPage({ seriesId: this.props.id });
+    }
   };
 
   //
@@ -284,6 +385,7 @@ class SeriesDetailsConnector extends Component {
         onViewSelect={this.onViewSelect}
         onStatusSelect={this.onStatusSelect}
         onQualityFilterChange={this.onQualityFilterChange}
+        onRuntimeFilterChange={this.onRuntimeFilterChange}
       />
     );
   }
@@ -292,6 +394,11 @@ class SeriesDetailsConnector extends Component {
 SeriesDetailsConnector.propTypes = {
   id: PropTypes.number.isRequired,
   titleSlug: PropTypes.string.isRequired,
+  view: PropTypes.string.isRequired,
+  monitorStatusFilter: PropTypes.string.isRequired,
+  qualityFilter: PropTypes.object.isRequired,
+  runtimeFilter: PropTypes.object.isRequired,
+  maxEpisodeRuntime: PropTypes.number.isRequired,
   isSeriesRefreshing: PropTypes.bool.isRequired,
   allSeriesRefreshing: PropTypes.bool.isRequired,
   isRefreshing: PropTypes.bool.isRequired,
@@ -308,6 +415,13 @@ SeriesDetailsConnector.propTypes = {
   setSeriesDetailsView: PropTypes.func.isRequired,
   setSeriesDetailsMonitorStatusFilter: PropTypes.func.isRequired,
   setSeriesDetailsQualityFilter: PropTypes.func.isRequired,
+  setSeriesDetailsRuntimeFilter: PropTypes.func.isRequired,
+  setSeriesDetailsActiveSeries: PropTypes.func.isRequired,
+  fetchSeriesDetailsFilterBounds: PropTypes.func.isRequired,
+  fetchSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
+  gotoSeriesDetailsUnifiedGridFirstPage: PropTypes.func.isRequired,
+  clearSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
+  resetRuntimeFilterForSeriesLoad: PropTypes.func.isRequired,
   fetchDownloadClients: PropTypes.func.isRequired,
   isDownloadClientsPopulated: PropTypes.bool,
   isDownloadClientsFetching: PropTypes.bool

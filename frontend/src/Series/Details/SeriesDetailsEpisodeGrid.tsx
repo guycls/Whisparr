@@ -1,4 +1,5 @@
 import React from 'react';
+import { EpisodeEntities } from 'Episode/useEpisode';
 import EpisodeCardConnector from './EpisodeCardConnector';
 import styles from './SeriesDetailsEpisodeGrid.css';
 
@@ -9,6 +10,7 @@ interface EpisodeItem {
 interface SeriesDetailsEpisodeGridProps {
   items: EpisodeItem[];
   isSmallScreen: boolean;
+  episodeEntity?: EpisodeEntities;
   onMonitorEpisodePress(
     id: number,
     monitored: boolean,
@@ -17,7 +19,12 @@ interface SeriesDetailsEpisodeGridProps {
 }
 
 function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
-  const { items, isSmallScreen, onMonitorEpisodePress } = props;
+  const {
+    items,
+    isSmallScreen,
+    episodeEntity = 'episodes',
+    onMonitorEpisodePress,
+  } = props;
 
   return (
     <div className={styles.grid}>
@@ -27,6 +34,7 @@ function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
             key={item.id}
             {...item}
             isSmallScreen={isSmallScreen}
+            episodeEntity={episodeEntity}
             onMonitorEpisodePress={onMonitorEpisodePress}
           />
         );

@@ -1,0 +1,20 @@
+.gridContainer {
+  padding: 0 15px 15px;
+}
+
+.emptyMessage {
+  padding: 15px;
+}
+
+.loadingMore {
+  display: flex;
+  justify-content: center;
+  padding: 15px;
+}
+
+.loadedCount {
+  padding: 0 15px 15px;
+  color: var(--disabledColor);
+  font-size: $smallFontSize;
+  text-align: center;
+}

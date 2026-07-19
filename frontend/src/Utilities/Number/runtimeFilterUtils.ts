@@ -1,0 +1,85 @@
+import formatRuntime from 'Utilities/Number/formatRuntime';
+import translate from 'Utilities/String/translate';
+
+export interface RuntimeFilter {
+  minMinutes: number;
+  maxMinutes: number | null;
+}
+
+export function roundRuntimeMax(maxRuntime: number): number {
+  if (!maxRuntime || maxRuntime <= 0) {
+    return 0;
+  }
+
+  return Math.ceil(maxRuntime / 10) * 10;
+}
+
+export function getEpisodeRuntimeMinutes(episode: { runtime?: number }): number {
+  return episode.runtime || 0;
+}
+
+export function isFullRuntimeRange(
+  minMinutes: number,
+  maxMinutes: number | null,
+  seriesMaxRuntime: number
+): boolean {
+  const resolvedMax = maxMinutes ?? seriesMaxRuntime;
+
+  return minMinutes <= 0 && resolvedMax >= seriesMaxRuntime;
+}
+
+export function resolveRuntimeFilter(
+  runtimeFilter: RuntimeFilter,
+  seriesMaxRuntime: number
+): RuntimeFilter {
+  const resolvedMax = runtimeFilter.maxMinutes ?? seriesMaxRuntime;
+  const minMinutes = Math.max(0, Math.min(runtimeFilter.minMinutes, seriesMaxRuntime));
+  const maxMinutes = Math.max(minMinutes, Math.min(resolvedMax, seriesMaxRuntime));
+
+  return {
+    minMinutes,
+    maxMinutes: maxMinutes >= seriesMaxRuntime ? null : maxMinutes,
+  };
+}
+
+export function filterEpisodesByRuntimeRange<T extends { runtime?: number }>(
+  episodes: T[],
+  minMinutes: number,
+  maxMinutes: number | null,
+  seriesMaxRuntime: number
+): T[] {
+  if (isFullRuntimeRange(minMinutes, maxMinutes, seriesMaxRuntime)) {
+    return episodes;
+  }
+
+  if (seriesMaxRuntime <= 0) {
+    return episodes;
+  }
+
+  const resolvedMax = maxMinutes ?? seriesMaxRuntime;
+
+  return episodes.filter((episode) => {
+    const runtime = getEpisodeRuntimeMinutes(episode);
+
+    return runtime >= minMinutes && runtime <= resolvedMax;
+  });
+}
+
+export function formatRuntimeFilterLabel(minutes: number): string {
+  if (!minutes) {
+    return translate('SeriesDetailsRuntimeFilterUnknown');
+  }
+
+  return formatRuntime(minutes);
+}
+
+export function getResolvedRuntimeMaxMinutes(
+  maxMinutes: number | null,
+  seriesMaxRuntime: number
+): number | null {
+  if (maxMinutes == null || maxMinutes >= seriesMaxRuntime) {
+    return null;
+  }
+
+  return maxMinutes;
+}

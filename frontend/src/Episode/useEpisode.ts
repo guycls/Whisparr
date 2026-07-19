@@ -6,6 +6,7 @@ export type EpisodeEntities =
   | 'calendar'
   | 'episodes'
   | 'interactiveImport.episodes'
+  | 'seriesDetails.unifiedGrid'
   | 'wanted.cutoffUnmet'
   | 'wanted.missing';
 
@@ -45,6 +46,15 @@ function createWantedMissingEpisodeSelector(episodeId?: number) {
   );
 }
 
+function createUnifiedGridEpisodeSelector(episodeId?: number) {
+  return createSelector(
+    (state: AppState) => state.seriesDetails.unifiedGrid.items,
+    (episodes) => {
+      return episodes.find(({ id }) => id === episodeId);
+    }
+  );
+}
+
 function useEpisode(
   episodeId: number | undefined,
   episodeEntity: EpisodeEntities
@@ -60,6 +70,9 @@ function useEpisode(
       break;
     case 'wanted.missing':
       selector = createWantedMissingEpisodeSelector;
+      break;
+    case 'seriesDetails.unifiedGrid':
+      selector = createUnifiedGridEpisodeSelector;
       break;
     default:
       break;

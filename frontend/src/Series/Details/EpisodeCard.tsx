@@ -11,6 +11,7 @@ import EpisodeScreenshot from 'Episode/EpisodeScreenshot';
 import EpisodeSearchActions from 'Episode/EpisodeSearchActions';
 import EpisodeStatus from 'Episode/EpisodeStatus';
 import EpisodeTitleLink from 'Episode/EpisodeTitleLink';
+import { EpisodeEntities } from 'Episode/useEpisode';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { Image } from 'Series/Series';
 import formatRuntime from 'Utilities/Number/formatRuntime';
@@ -29,6 +30,7 @@ interface EpisodeCardProps {
   isSaving?: boolean;
   seriesMonitored: boolean;
   isSmallScreen: boolean;
+  episodeEntity?: EpisodeEntities;
   onMonitorEpisodePress(
     id: number,
     monitored: boolean,
@@ -50,6 +52,7 @@ function EpisodeCard(props: EpisodeCardProps) {
     isSaving,
     seriesMonitored,
     isSmallScreen,
+    episodeEntity = 'episodes',
     onMonitorEpisodePress,
   } = props;
 
@@ -84,7 +87,11 @@ function EpisodeCard(props: EpisodeCardProps) {
         </Link>
 
         <div className={styles.statusOverlay}>
-          <EpisodeStatus episodeId={id} episodeFileId={episodeFileId || 0} />
+          <EpisodeStatus
+            episodeId={id}
+            episodeEntity={episodeEntity}
+            episodeFileId={episodeFileId || 0}
+          />
         </div>
       </div>
 
@@ -95,7 +102,7 @@ function EpisodeCard(props: EpisodeCardProps) {
             episodeId={id}
             seriesId={seriesId}
             episodeTitle={title}
-            episodeEntity="episodes"
+            episodeEntity={episodeEntity}
             showOpenSeriesButton={false}
             renderModal={false}
             onModalOpen={openDetailsModal}
@@ -134,7 +141,7 @@ function EpisodeCard(props: EpisodeCardProps) {
         <EpisodeSearchActions
           className={styles.actions}
           episodeId={id}
-          episodeEntity="episodes"
+          episodeEntity={episodeEntity}
           seriesId={seriesId}
           episodeTitle={title}
           isSmallScreen={isSmallScreen}
@@ -144,7 +151,7 @@ function EpisodeCard(props: EpisodeCardProps) {
       <EpisodeDetailsModal
         isOpen={isDetailsModalOpen}
         episodeId={id}
-        episodeEntity="episodes"
+        episodeEntity={episodeEntity}
         seriesId={seriesId}
         episodeTitle={title}
         onModalClose={closeDetailsModal}

@@ -1,12 +1,15 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NzbDrone.Core.CustomFormats;
+using NzbDrone.Core.Datastore;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Tv;
 using NzbDrone.SignalR;
 using Whisparr.Http;
+using Whisparr.Http.Extensions;
 using Whisparr.Http.REST;
 using Whisparr.Http.REST.Attributes;
 
@@ -15,6 +18,15 @@ namespace Whisparr.Api.V3.Episodes
     [V3ApiController]
     public class EpisodeController : EpisodeControllerWithSignalR
     {
+        private static readonly HashSet<string> AllowedSortKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "episodes.airDateUtc",
+            "episodes.releaseDate",
+            "episodes.title",
+            "episodes.runtime",
+            "episodes.seasonNumber"
+        };
+
         public EpisodeController(ISeriesService seriesService,
                              IEpisodeService episodeService,
                              IUpgradableSpecification upgradableSpecification,
@@ -48,6 +60,86 @@ namespace Whisparr.Api.V3.Episodes
             }
 
             throw new BadRequestException("seriesId or episodeIds must be provided");
+        }
+
+        [HttpGet("paged")]
+        [Produces("application/json")]
+        public PagingResource<EpisodeResource> GetEpisodesPaged([FromQuery] EpisodePagedRequestResource request)
+        {
+            if (request.SeriesId <= 0)
+            {
+                throw new BadRequestException("seriesId must be provided");
+            }
+
+            var pagingResource = new PagingResource<EpisodeResource>(request);
+            var sortKey = NormalizeSortKey(pagingResource.SortKey);
+            pagingResource.SortKey = sortKey;
+
+            var pagingSpec = pagingResource.MapToPagingSpec<EpisodeResource, Episode>(
+                AllowedSortKeys,
+                "episodes.airDateUtc",
+                SortDirection.Descending);
+
+            var filter = new EpisodePagedFilter
+            {
+                MonitorStatus = request.MonitorStatus ?? "all",
+                QualityMinIndex = request.QualityMinIndex,
+                QualityMaxIndex = request.QualityMaxIndex,
+                RuntimeMinMinutes = request.RuntimeMinMinutes,
+                RuntimeMaxMinutes = request.RuntimeMaxMinutes
+            };
+
+            return pagingSpec.ApplyToPage(
+                spec => _episodeService.GetEpisodesPaged(spec, request.SeriesId, filter),
+                episode => MapToResource(episode, false, false, request.IncludeImages));
+        }
+
+        [HttpGet("filterBounds")]
+        [Produces("application/json")]
+        public EpisodeFilterBoundsResource GetFilterBounds(int seriesId)
+        {
+            if (seriesId <= 0)
+            {
+                throw new BadRequestException("seriesId must be provided");
+            }
+
+            var maxRuntime = _episodeService.GetMaxEpisodeRuntime(seriesId);
+
+            return new EpisodeFilterBoundsResource
+            {
+                MaxEpisodeRuntime = EpisodeRuntimeFilter.RoundRuntimeMax(maxRuntime)
+            };
+        }
+
+        private static string NormalizeSortKey(string sortKey)
+        {
+            if (string.IsNullOrWhiteSpace(sortKey))
+            {
+                return "episodes.airDateUtc";
+            }
+
+            if (sortKey.Equals("episodes.releaseDate", StringComparison.OrdinalIgnoreCase) ||
+                sortKey.Equals("releaseDate", StringComparison.OrdinalIgnoreCase))
+            {
+                return "episodes.airDateUtc";
+            }
+
+            if (sortKey.Equals("title", StringComparison.OrdinalIgnoreCase))
+            {
+                return "episodes.title";
+            }
+
+            if (sortKey.Equals("runtime", StringComparison.OrdinalIgnoreCase))
+            {
+                return "episodes.runtime";
+            }
+
+            if (sortKey.Equals("seasonNumber", StringComparison.OrdinalIgnoreCase))
+            {
+                return "episodes.seasonNumber";
+            }
+
+            return sortKey;
         }
 
         [RestPutById]

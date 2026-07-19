@@ -48,7 +48,11 @@ function createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter
 
     promise.done((response) => {
       dispatch(batchActions([
-        updateServerSideCollection({ section, data: response }),
+        updateServerSideCollection({
+          section,
+          data: response,
+          append: payload.append === true
+        }),
 
         set({
           section,
