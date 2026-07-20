@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import classNames from 'classnames';
-import AppState from 'App/State/AppState';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
@@ -12,9 +11,8 @@ import MonitorToggleButton from 'Components/MonitorToggleButton';
 import Episode from 'Episode/Episode';
 import EpisodeDetailsTab from 'Episode/EpisodeDetailsTab';
 import episodeEntities from 'Episode/episodeEntities';
-import EpisodeScreenshot, {
-  hasEpisodeScreenshot,
-} from 'Episode/EpisodeScreenshot';
+import EpisodeSceneDetails from 'Episode/EpisodeSceneDetails';
+import { hasEpisodeScreenshot } from 'Episode/EpisodeScreenshot';
 import useEpisode, { EpisodeEntities } from 'Episode/useEpisode';
 import Series from 'Series/Series';
 import useSeries from 'Series/useSeries';
@@ -27,10 +25,9 @@ import translate from 'Utilities/String/translate';
 import EpisodeHistoryConnector from './History/EpisodeHistoryConnector';
 import EpisodeSearchConnector from './Search/EpisodeSearchConnector';
 import SeasonEpisodeNumber from './SeasonEpisodeNumber';
-import EpisodeSummary from './Summary/EpisodeSummary';
 import styles from './EpisodeDetailsModalContent.css';
 
-const TABS: EpisodeDetailsTab[] = ['details', 'history', 'search'];
+const TABS: EpisodeDetailsTab[] = ['details', 'search', 'history'];
 
 export interface EpisodeDetailsModalContentProps {
   episodeId: number;
@@ -54,16 +51,12 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
     isSaving = false,
     showOpenSeriesButton = false,
     startInteractiveSearch = false,
-    selectedTab = 'details',
+    selectedTab = startInteractiveSearch ? 'search' : 'details',
     onTabChange,
     onModalClose,
   } = props;
 
   const dispatch = useDispatch();
-
-  const safeForWorkMode = useSelector(
-    (state: AppState) => state.settings.safeForWorkMode
-  );
 
   const [currentlySelectedTab, setCurrentlySelectedTab] = useState(selectedTab);
 
@@ -75,7 +68,6 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
   } = useSeries(seriesId) as Series;
 
   const {
-    episodeFileId,
     seasonNumber,
     episodeNumber,
     absoluteEpisodeNumber,
@@ -83,6 +75,10 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
     monitored,
     images,
   } = useEpisode(episodeId, episodeEntity) as Episode;
+
+  const hasScreenshot = hasEpisodeScreenshot(images);
+  const isDetailsTab = currentlySelectedTab === 'details';
+  const showLeftPane = !isDetailsTab || hasScreenshot;
 
   const handleTabSelect = useCallback(
     (selectedIndex: number) => {
@@ -116,7 +112,6 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
   }, [dispatch]);
 
   const seriesLink = `/site/${titleSlug}`;
-  const showScreenshot = hasEpisodeScreenshot(images);
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -147,14 +142,28 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
       </ModalHeader>
 
       <div
-        className={classNames(styles.bodyLayout, showScreenshot && styles.hasImage)}
+        className={classNames(
+          styles.bodyLayout,
+          showLeftPane && styles.hasLeftPane
+        )}
       >
-        {showScreenshot ? (
-          <div className={styles.episodeImage}>
-            <EpisodeScreenshot
-              className={styles.screenshot}
-              images={images}
-              blur={safeForWorkMode}
+        {showLeftPane ? (
+          <div
+            className={classNames(
+              styles.episodeDetailsPane,
+              isDetailsTab && styles.episodeDetailsPaneScreenshotOnly
+            )}
+          >
+            <EpisodeSceneDetails
+              seriesId={seriesId}
+              episodeId={episodeId}
+              episodeEntity={episodeEntity}
+              showHeader={false}
+              showScreenshot={true}
+              showMetadata={true}
+              centerScreenshot={isDetailsTab}
+              collapseMetadata={isDetailsTab}
+              fillHeight={isDetailsTab}
             />
           </div>
         ) : null}
@@ -169,44 +178,54 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
             onSelect={handleTabSelect}
           >
             <TabList className={styles.tabList}>
-              <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
+              <Tab
+                className={styles.tab}
+                selectedClassName={styles.selectedTab}
+              >
                 {translate('Details')}
               </Tab>
 
-              <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
-                {translate('History')}
+              <Tab
+                className={styles.tab}
+                selectedClassName={styles.selectedTab}
+              >
+                {translate('Search')}
               </Tab>
 
-              <Tab className={styles.tab} selectedClassName={styles.selectedTab}>
-                {translate('Search')}
+              <Tab
+                className={styles.tab}
+                selectedClassName={styles.selectedTab}
+              >
+                {translate('History')}
               </Tab>
             </TabList>
 
             <TabPanel>
               <div className={styles.tabContent}>
-                <EpisodeSummary
+                <EpisodeSceneDetails
+                  seriesId={seriesId}
                   episodeId={episodeId}
                   episodeEntity={episodeEntity}
-                  episodeFileId={episodeFileId}
-                  seriesId={seriesId}
+                  showHeader={false}
+                  showScreenshot={false}
+                  showMetadata={true}
                 />
               </div>
             </TabPanel>
 
             <TabPanel>
-              <div className={styles.tabContent}>
-                <EpisodeHistoryConnector episodeId={episodeId} />
-              </div>
-            </TabPanel>
-
-            <TabPanel>
-              {/* Don't wrap in tabContent so we not have a top margin */}
               <EpisodeSearchConnector
                 episodeId={episodeId}
                 seriesId={seriesId}
                 startInteractiveSearch={startInteractiveSearch}
                 onModalClose={onModalClose}
               />
+            </TabPanel>
+
+            <TabPanel>
+              <div className={styles.tabContent}>
+                <EpisodeHistoryConnector episodeId={episodeId} />
+              </div>
             </TabPanel>
           </Tabs>
         </ModalBody>

@@ -16,6 +16,7 @@ function createMapStateToProps(appState, { type, searchPayload }) {
     createUISettingsSelector(),
     (state) => state.releases.searchTerm,
     (state) => state.episodes.items,
+    (state) => state.seriesDetails.unifiedGrid.items,
     (state) => state.series.itemMap,
     (state) => state.series.items,
     (state) => state.settings.indexerOptions.isPopulated,
@@ -26,13 +27,15 @@ function createMapStateToProps(appState, { type, searchPayload }) {
       uiSettings,
       searchTerm,
       episodes,
+      unifiedGridEpisodes,
       itemMap,
       allSeries,
       isIndexerOptionsPopulated,
       indexerOptions
     ) => {
       const episode = searchPayload?.episodeId != null ?
-        episodes.find((item) => item.id === searchPayload.episodeId) :
+        episodes.find((item) => item.id === searchPayload.episodeId) ??
+        unifiedGridEpisodes.find((item) => item.id === searchPayload.episodeId) :
         undefined;
 
       const series = searchPayload?.seriesId != null ?

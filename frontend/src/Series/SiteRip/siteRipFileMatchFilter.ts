@@ -4,7 +4,13 @@ import { EpisodeFile } from 'EpisodeFile/EpisodeFile';
 import { getEpisodeDownloadedSummary } from './getEpisodeDownloadedSummary';
 import { SiteRipFileListItem } from './SiteRipMatchingFileList';
 
-export type SiteRipFileMatchFilter = '' | 'matched' | 'unmatched' | 'monitored' | 'missing' | 'toGrab';
+export type SiteRipFileMatchFilter =
+  | ''
+  | 'matched'
+  | 'unmatched'
+  | 'monitored'
+  | 'missing'
+  | 'toGrab';
 
 export function matchesSiteRipFileFilter(
   item: SiteRipFileListItem,
@@ -30,9 +36,11 @@ export function matchesSiteRipFileFilter(
     case 'monitored':
       return isMatched && episode?.monitored === true;
     case 'missing':
-      return isMatched &&
+      return (
+        isMatched &&
         episode?.monitored === true &&
-        getEpisodeDownloadedSummary(episode, episodeFiles) == null;
+        getEpisodeDownloadedSummary(episode, episodeFiles) == null
+      );
     case 'toGrab':
       return selection?.selected === true;
     default:

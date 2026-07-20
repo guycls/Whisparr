@@ -16,7 +16,11 @@ function SeriesDetailsViewMenu(props: SeriesDetailsViewMenuProps) {
   return (
     <ViewMenu alignMenu={align.RIGHT}>
       <MenuContent>
-        <ViewMenuItem name="unifiedGrid" selectedView={view} onPress={onViewSelect}>
+        <ViewMenuItem
+          name="unifiedGrid"
+          selectedView={view}
+          onPress={onViewSelect}
+        >
           {translate('UnifiedGrid')}
         </ViewMenuItem>
 

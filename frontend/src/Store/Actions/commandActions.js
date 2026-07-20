@@ -1,5 +1,5 @@
-import { batchActions } from 'redux-batched-actions';
 import $ from 'jquery';
+import { batchActions } from 'redux-batched-actions';
 import { messageTypes } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import { isSameCommand } from 'Utilities/Command';

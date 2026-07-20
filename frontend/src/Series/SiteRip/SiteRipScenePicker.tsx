@@ -5,12 +5,12 @@ import AppState from 'App/State/AppState';
 import SelectInput from 'Components/Form/SelectInput';
 import TextInput from 'Components/Form/TextInput';
 import Scroller from 'Components/Scroller/Scroller';
+import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableRowButton from 'Components/Table/TableRowButton';
-import TableRowCell from 'Components/Table/Cells/TableRowCell';
-import { scrollDirections } from 'Helpers/Props';
 import Episode from 'Episode/Episode';
+import { scrollDirections } from 'Helpers/Props';
 import useSeries from 'Series/useSeries';
 import translate from 'Utilities/String/translate';
 import styles from './SiteRipMatchingView.css';
@@ -19,18 +19,18 @@ const episodeColumns = [
   {
     name: 'title',
     label: () => translate('Title'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'actors',
     label: () => translate('Performers'),
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'releaseDate',
     label: () => translate('ReleaseDate'),
-    isVisible: true
-  }
+    isVisible: true,
+  },
 ];
 
 function formatPerformers(actors: Episode['actors']) {
@@ -65,7 +65,7 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
     onEpisodeFilterYearChange,
     onEpisodeFilterTitleChange,
     onEpisodeFilterPerformerChange,
-    onEpisodeSelect
+    onEpisodeSelect,
   } = props;
 
   const episodes = useSelector((state: AppState) => state.episodes.items);
@@ -76,23 +76,24 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
   }, [episodes, seriesId]);
 
   const yearOptions = useMemo(() => {
-    const years = [...new Set(seriesEpisodes.map((episode) => episode.seasonNumber))]
+    const years = [
+      ...new Set(seriesEpisodes.map((episode) => episode.seasonNumber)),
+    ]
       .sort((a, b) => b - a)
       .map((seasonNumber) => ({
         key: seasonNumber,
-        value: String(seasonNumber)
+        value: String(seasonNumber),
       }));
 
-    return [
-      { key: '', value: translate('SiteRipAllYears') },
-      ...years
-    ];
+    return [{ key: '', value: translate('SiteRipAllYears') }, ...years];
   }, [seriesEpisodes]);
 
   const filteredEpisodes = useMemo(() => {
     const titleFilter = episodeFilterTitle.toLowerCase();
     const performerFilter = episodeFilterPerformer.toLowerCase();
-    const yearFilter = episodeFilterYear ? parseInt(episodeFilterYear, 10) : null;
+    const yearFilter = episodeFilterYear
+      ? parseInt(episodeFilterYear, 10)
+      : null;
 
     return seriesEpisodes.filter((episode) => {
       if (yearFilter != null && episode.seasonNumber !== yearFilter) {
@@ -115,19 +116,33 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
 
       return true;
     });
-  }, [seriesEpisodes, episodeFilterTitle, episodeFilterPerformer, episodeFilterYear]);
+  }, [
+    seriesEpisodes,
+    episodeFilterTitle,
+    episodeFilterPerformer,
+    episodeFilterYear,
+  ]);
 
-  const handleYearChange = useCallback(({ value }: { name: string; value: string | number }) => {
-    onEpisodeFilterYearChange(String(value));
-  }, [onEpisodeFilterYearChange]);
+  const handleYearChange = useCallback(
+    ({ value }: { name: string; value: string | number }) => {
+      onEpisodeFilterYearChange(String(value));
+    },
+    [onEpisodeFilterYearChange]
+  );
 
-  const handleTitleChange = useCallback(({ value }: { value: string }) => {
-    onEpisodeFilterTitleChange(value);
-  }, [onEpisodeFilterTitleChange]);
+  const handleTitleChange = useCallback(
+    ({ value }: { value: string }) => {
+      onEpisodeFilterTitleChange(value);
+    },
+    [onEpisodeFilterTitleChange]
+  );
 
-  const handlePerformerChange = useCallback(({ value }: { value: string }) => {
-    onEpisodeFilterPerformerChange(value);
-  }, [onEpisodeFilterPerformerChange]);
+  const handlePerformerChange = useCallback(
+    ({ value }: { value: string }) => {
+      onEpisodeFilterPerformerChange(value);
+    },
+    [onEpisodeFilterPerformerChange]
+  );
 
   if (activeFileIndex == null) {
     return (
@@ -180,26 +195,26 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
       >
         <Table columns={episodeColumns}>
           <TableBody>
-            {
-              filteredEpisodes.map((episode) => {
-                const performers = formatPerformers(episode.actors);
-                const isSelected = selectedEpisodeId === episode.id;
+            {filteredEpisodes.map((episode) => {
+              const performers = formatPerformers(episode.actors);
+              const isSelected = selectedEpisodeId === episode.id;
 
-                return (
-                  <TableRowButton
-                    key={episode.id}
-                    className={classNames(isSelected && styles.episodeRowSelected)}
-                    onPress={() => onEpisodeSelect(episode.id)}
-                  >
-                    <TableRowCell>{episode.title}</TableRowCell>
-                    <TableRowCell>
-                      <span title={performers}>{performers}</span>
-                    </TableRowCell>
-                    <TableRowCell>{episode.releaseDate}</TableRowCell>
-                  </TableRowButton>
-                );
-              })
-            }
+              return (
+                <TableRowButton
+                  key={episode.id}
+                  className={classNames(
+                    isSelected && styles.episodeRowSelected
+                  )}
+                  onPress={() => onEpisodeSelect(episode.id)}
+                >
+                  <TableRowCell>{episode.title}</TableRowCell>
+                  <TableRowCell>
+                    <span title={performers}>{performers}</span>
+                  </TableRowCell>
+                  <TableRowCell>{episode.releaseDate}</TableRowCell>
+                </TableRowButton>
+              );
+            })}
           </TableBody>
         </Table>
       </Scroller>

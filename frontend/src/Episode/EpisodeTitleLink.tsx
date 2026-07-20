@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useCallback, useState, KeyboardEvent } from 'react';
+import React, { KeyboardEvent, useCallback, useState } from 'react';
 import Link from 'Components/Link/Link';
 import EpisodeDetailsModal from 'Episode/EpisodeDetailsModal';
 import { EpisodeEntities } from 'Episode/useEpisode';

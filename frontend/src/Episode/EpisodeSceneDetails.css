@@ -1,0 +1,200 @@
+.sceneDetails {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.sceneDetailsHeader {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.sceneDetailsScroller {
+  flex: 1;
+  min-height: 0;
+}
+
+.sceneDetailsContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.sceneDetailsFillHeight {
+  height: 100%;
+}
+
+.sceneDetailsFillHeight .sceneDetailsScroller {
+  height: 100%;
+}
+
+.sceneDetailsFillHeight .sceneDetailsContent {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.sceneDetailsBody {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 2em;
+  margin-top: 0;
+}
+
+.sceneDetailsFillHeight .sceneDetailsBody {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.sceneScreenshotRegion {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  transition: flex-grow 0.25s ease, flex-basis 0.25s ease, align-items 0.25s ease;
+}
+
+.sceneScreenshotRegionExpanded {
+  flex: 1 1 auto;
+  align-items: center;
+}
+
+.sceneScreenshot {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 12px;
+  transition: margin 0.25s ease;
+}
+
+.sceneScreenshotRegionExpanded .sceneScreenshot {
+  margin-bottom: 0;
+}
+
+.metadataSection {
+  flex: 0 0 auto;
+  overflow: hidden;
+  max-height: 3000px;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.25s ease,
+    margin 0.25s ease,
+    visibility 0.25s ease;
+}
+
+.metadataSectionCollapsed {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: auto;
+  bottom: 0;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.screenshot {
+  display: block;
+  width: 100%;
+  max-height: 240px;
+  border-radius: 4px;
+  object-fit: contain;
+  transition: max-height 0.25s ease;
+}
+
+.sceneScreenshotRegionExpanded .screenshot {
+  max-height: min(50vh, 480px);
+}
+
+.metadataTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.metadataSeries {
+  color: var(--helpTextColor);
+  margin-bottom: 6px;
+}
+
+.metadataEpisodeNumber {
+  margin-bottom: 8px;
+}
+
+.metadataRow {
+  margin-bottom: 8px;
+}
+
+.metadataLabel {
+  display: block;
+  color: var(--helpTextColor);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.metadataOverview {
+  color: var(--helpTextColor);
+  line-height: 1.4;
+  margin-top: 10px;
+}
+
+.metadataPlaceholder {
+  color: var(--helpTextColor);
+  padding: 8px 0;
+}
+
+.infoTitle {
+  display: inline-block;
+  width: 100px;
+  font-weight: bold;
+}
+
+.tpdbLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.tpdbLink {
+  border-radius: 2px;
+  text-decoration: none;
+  transition: opacity 200ms ease-in;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--linkColor);
+    outline-offset: 2px;
+    opacity: 0.92;
+  }
+}
+
+.overviewPanel {
+  margin-top: 12px;
+}
+
+.performers {
+  white-space: pre-wrap;
+}
+
+.overviewText {
+  white-space: pre-wrap;
+
+  &:not(:first-child) {
+    margin-top: 12px;
+  }
+}

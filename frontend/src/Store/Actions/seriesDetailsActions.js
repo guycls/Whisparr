@@ -5,15 +5,15 @@ import createAjaxRequest from 'Utilities/createAjaxRequest';
 import {
   getResolvedRuntimeMaxMinutes,
   isFullRuntimeRange,
-  resolveRuntimeFilter,
+  resolveRuntimeFilter
 } from 'Utilities/Number/runtimeFilterUtils';
 import {
-  QUALITY_FILTER_MAX_INDEX,
+  QUALITY_FILTER_MAX_INDEX
 } from 'Utilities/Quality/qualityFilterTiers';
 import serverSideCollectionHandlers from 'Utilities/State/serverSideCollectionHandlers';
 import { set } from './baseActions';
-import createHandleActions from './Creators/createHandleActions';
 import createFetchServerSideCollectionHandler from './Creators/createFetchServerSideCollectionHandler';
+import createHandleActions from './Creators/createHandleActions';
 import createServerSideCollectionHandlers from './Creators/createServerSideCollectionHandlers';
 import createClearReducer from './Creators/Reducers/createClearReducer';
 
@@ -30,11 +30,11 @@ export const defaultState = {
   monitorStatusFilter: 'all',
   qualityFilter: {
     minIndex: 0,
-    maxIndex: 6,
+    maxIndex: 6
   },
   runtimeFilter: {
     minMinutes: 0,
-    maxMinutes: null,
+    maxMinutes: null
   },
   maxEpisodeRuntime: 0,
   activeSeriesId: 0,
@@ -52,8 +52,8 @@ export const defaultState = {
     totalPages: 0,
     lastPageSize: 0,
     error: null,
-    items: [],
-  },
+    items: []
+  }
 };
 
 export const defaultRuntimeFilter = defaultState.runtimeFilter;
@@ -61,7 +61,7 @@ export const defaultRuntimeFilter = defaultState.runtimeFilter;
 export const persistState = [
   'seriesDetails.view',
   'seriesDetails.monitorStatusFilter',
-  'seriesDetails.qualityFilter',
+  'seriesDetails.qualityFilter'
 ];
 
 //
@@ -98,20 +98,20 @@ function unifiedGridFetchDataAugmenter(getState, payload, data) {
     qualityFilter,
     runtimeFilter,
     maxEpisodeRuntime,
-    activeSeriesId,
+    activeSeriesId
   } = getState().seriesDetails;
 
   const seriesId = payload.seriesId || activeSeriesId;
 
   const resolvedQualityFilter = qualityFilter ?? {
     minIndex: 0,
-    maxIndex: QUALITY_FILTER_MAX_INDEX,
+    maxIndex: QUALITY_FILTER_MAX_INDEX
   };
 
   const resolvedRuntimeFilter = resolveRuntimeFilter(
     runtimeFilter ?? {
       minMinutes: 0,
-      maxMinutes: null,
+      maxMinutes: null
     },
     maxEpisodeRuntime
   );
@@ -173,14 +173,14 @@ export const actionHandlers = handleThunks({
   [FETCH_SERIES_DETAILS_FILTER_BOUNDS]: function(getState, payload, dispatch) {
     dispatch(set({
       section,
-      isFilterBoundsFetching: true,
+      isFilterBoundsFetching: true
     }));
 
     const promise = createAjaxRequest({
       url: '/episode/filterBounds',
       data: {
-        seriesId: payload.seriesId,
-      },
+        seriesId: payload.seriesId
+      }
     }).request;
 
     promise.done((response) => {
@@ -189,7 +189,7 @@ export const actionHandlers = handleThunks({
         maxEpisodeRuntime: response.maxEpisodeRuntime,
         isFilterBoundsFetching: false,
         isFilterBoundsPopulated: true,
-        filterBoundsError: null,
+        filterBoundsError: null
       }));
     });
 
@@ -198,7 +198,7 @@ export const actionHandlers = handleThunks({
         section,
         isFilterBoundsFetching: false,
         isFilterBoundsPopulated: false,
-        filterBoundsError: xhr,
+        filterBoundsError: xhr
       }));
     });
   },
@@ -210,7 +210,7 @@ export const actionHandlers = handleThunks({
       fetchSeriesDetailsUnifiedGrid,
       {
         [serverSideCollectionHandlers.FETCH]: FETCH_SERIES_DETAILS_UNIFIED_GRID,
-        [serverSideCollectionHandlers.FIRST_PAGE]: GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE,
+        [serverSideCollectionHandlers.FIRST_PAGE]: GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE
       },
       unifiedGridFetchDataAugmenter
     );
@@ -239,9 +239,9 @@ export const actionHandlers = handleThunks({
     unifiedGridFetchHandler(getState, {
       page: unifiedGrid.page + 1,
       append: true,
-      seriesId,
+      seriesId
     }, dispatch);
-  },
+  }
 });
 
 //
@@ -279,8 +279,8 @@ export const reducers = createHandleActions({
       totalPages: 0,
       totalRecords: 0,
       lastPageSize: 0,
-      page: 1,
+      page: 1
     }
-  ),
+  )
 
 }, defaultState, section);

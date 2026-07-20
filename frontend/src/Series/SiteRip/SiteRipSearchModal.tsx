@@ -4,7 +4,7 @@ import Modal from 'Components/Modal/Modal';
 import { sizes } from 'Helpers/Props';
 import {
   cancelFetchSiteRipReleases,
-  clearSiteRip
+  clearSiteRip,
 } from 'Store/Actions/siteRipActions';
 import SiteRipSearchModalContent from './SiteRipSearchModalContent';
 

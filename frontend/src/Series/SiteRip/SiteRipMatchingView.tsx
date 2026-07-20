@@ -4,21 +4,31 @@ import AppState from 'App/State/AppState';
 import Alert from 'Components/Alert';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { kinds } from 'Helpers/Props';
-import { ASCENDING, DESCENDING, SortDirection } from 'Helpers/Props/sortDirections';
+import {
+  ASCENDING,
+  DESCENDING,
+  SortDirection,
+} from 'Helpers/Props/sortDirections';
 import { fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import {
-  startSiteRipMatching,
   setSiteRipEpisode,
-  setSiteRipSelection
+  setSiteRipSelection,
+  startSiteRipMatching,
 } from 'Store/Actions/siteRipActions';
 import { CheckInputChanged } from 'typings/inputs';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import { getEpisodeDownloadedSummary } from './getEpisodeDownloadedSummary';
-import SiteRipMatchingFileList, { SiteRipFileListItem, SiteRipFileSortKey } from './SiteRipMatchingFileList';
+import {
+  matchesSiteRipFileFilter,
+  SiteRipFileMatchFilter,
+} from './siteRipFileMatchFilter';
+import SiteRipMatchingFileList, {
+  SiteRipFileListItem,
+  SiteRipFileSortKey,
+} from './SiteRipMatchingFileList';
 import SiteRipSceneDetails from './SiteRipSceneDetails';
 import SiteRipScenePicker from './SiteRipScenePicker';
-import { matchesSiteRipFileFilter, SiteRipFileMatchFilter } from './siteRipFileMatchFilter';
 import styles from './SiteRipMatchingView.css';
 
 interface SiteRipMatchingViewProps {
@@ -50,20 +60,25 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
     matchPhase,
     matchCompletedFiles,
     matchTotalFiles,
-    selections
+    selections,
   } = useSelector((state: AppState) => state.siteRip);
 
   const episodes = useSelector((state: AppState) => state.episodes.items);
-  const episodeFiles = useSelector((state: AppState) => state.episodeFiles.items);
+  const episodeFiles = useSelector(
+    (state: AppState) => state.episodeFiles.items
+  );
   const isEpisodeFilesPopulated = useSelector(
     (state: AppState) => state.episodeFiles.isPopulated
   );
 
   const episodeMap = useMemo(() => {
-    return episodes.reduce<Record<number, (typeof episodes)[number]>>((acc, episode) => {
-      acc[episode.id] = episode;
-      return acc;
-    }, {});
+    return episodes.reduce<Record<number, (typeof episodes)[number]>>(
+      (acc, episode) => {
+        acc[episode.id] = episode;
+        return acc;
+      },
+      {}
+    );
   }, [episodes]);
 
   useEffect(() => {
@@ -74,11 +89,13 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
   useEffect(() => {
     if (selectedRelease) {
-      dispatch(startSiteRipMatching({
-        guid: selectedRelease.guid,
-        indexerId: selectedRelease.indexerId,
-        seriesId
-      }));
+      dispatch(
+        startSiteRipMatching({
+          guid: selectedRelease.guid,
+          indexerId: selectedRelease.indexerId,
+          seriesId,
+        })
+      );
     }
   }, [dispatch, selectedRelease, seriesId]);
 
@@ -92,31 +109,41 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
       return;
     }
 
-    const preferredIndex = matches.findIndex((match) => match.matchedEpisodeId != null);
+    const preferredIndex = matches.findIndex(
+      (match) => match.matchedEpisodeId != null
+    );
     setActiveFileIndex(preferredIndex >= 0 ? preferredIndex : 0);
   }, [matches, activeFileIndex]);
 
-  const getSortValue = useCallback((item: SiteRipFileListItem, key: SiteRipFileSortKey) => {
-    const selection = selections[item.index];
-    const episode = selection?.episodeId ? episodeMap[selection.episodeId] : undefined;
-    const downloadedSummary = getEpisodeDownloadedSummary(episode, episodeFiles);
+  const getSortValue = useCallback(
+    (item: SiteRipFileListItem, key: SiteRipFileSortKey) => {
+      const selection = selections[item.index];
+      const episode = selection?.episodeId
+        ? episodeMap[selection.episodeId]
+        : undefined;
+      const downloadedSummary = getEpisodeDownloadedSummary(
+        episode,
+        episodeFiles
+      );
 
-    switch (key) {
-      case 'totalSize':
-        return item.match.totalSize;
-      case 'monitored':
-        if (!episode) {
-          return -1;
-        }
+      switch (key) {
+        case 'totalSize':
+          return item.match.totalSize;
+        case 'monitored':
+          if (!episode) {
+            return -1;
+          }
 
-        return episode.monitored ? 1 : 0;
-      case 'downloaded':
-        return downloadedSummary?.totalSize ?? 0;
-      case 'displayName':
-      default:
-        return item.match.displayName.toLowerCase();
-    }
-  }, [selections, episodeMap, episodeFiles]);
+          return episode.monitored ? 1 : 0;
+        case 'downloaded':
+          return downloadedSummary?.totalSize ?? 0;
+        case 'displayName':
+        default:
+          return item.match.displayName.toLowerCase();
+      }
+    },
+    [selections, episodeMap, episodeFiles]
+  );
 
   const filteredAndSortedItems = useMemo(() => {
     const normalizedFilter = filter.toLowerCase();
@@ -128,16 +155,22 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
           return true;
         }
 
-        return match.displayName.toLowerCase().includes(normalizedFilter) ||
-          match.filePaths.some((path) => path.toLowerCase().includes(normalizedFilter));
+        return (
+          match.displayName.toLowerCase().includes(normalizedFilter) ||
+          match.filePaths.some((path) =>
+            path.toLowerCase().includes(normalizedFilter)
+          )
+        );
       })
-      .filter((item) => matchesSiteRipFileFilter(
-        item,
-        matchFilter,
-        selections,
-        episodeMap,
-        episodeFiles
-      ));
+      .filter((item) =>
+        matchesSiteRipFileFilter(
+          item,
+          matchFilter,
+          selections,
+          episodeMap,
+          episodeFiles
+        )
+      );
 
     return items.sort((a, b) => {
       const aValue = getSortValue(a, sortKey);
@@ -150,7 +183,17 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
       return ((aValue as number) - (bValue as number)) * direction;
     });
-  }, [matches, filter, matchFilter, sortKey, sortDirection, getSortValue, selections, episodeMap, episodeFiles]);
+  }, [
+    matches,
+    filter,
+    matchFilter,
+    sortKey,
+    sortDirection,
+    getSortValue,
+    selections,
+    episodeMap,
+    episodeFiles,
+  ]);
 
   const onFilterChange = useCallback((value: string) => {
     setFilter(value);
@@ -160,57 +203,78 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
     setMatchFilter(value);
   }, []);
 
-  const onSortPress = useCallback((name: string, nextSortDirection?: string) => {
-    const nextSortKey = name as SiteRipFileSortKey;
+  const onSortPress = useCallback(
+    (name: string, nextSortDirection?: string) => {
+      const nextSortKey = name as SiteRipFileSortKey;
 
-    if (nextSortDirection) {
+      if (nextSortDirection) {
+        setSortKey(nextSortKey);
+        setSortDirection(nextSortDirection as SortDirection);
+        return;
+      }
+
+      if (sortKey === nextSortKey) {
+        setSortDirection((current) =>
+          current === ASCENDING ? DESCENDING : ASCENDING
+        );
+        return;
+      }
+
       setSortKey(nextSortKey);
-      setSortDirection(nextSortDirection as SortDirection);
-      return;
-    }
+      setSortDirection(ASCENDING);
+    },
+    [sortKey]
+  );
 
-    if (sortKey === nextSortKey) {
-      setSortDirection((current) => (current === ASCENDING ? DESCENDING : ASCENDING));
-      return;
-    }
-
-    setSortKey(nextSortKey);
-    setSortDirection(ASCENDING);
-  }, [sortKey]);
-
-  const onSelectAllChange = useCallback((change: CheckInputChanged) => {
-    filteredAndSortedItems.forEach(({ index }) => {
-      dispatch(setSiteRipSelection({ index, selected: change.value }));
-    });
-  }, [dispatch, filteredAndSortedItems]);
+  const onSelectAllChange = useCallback(
+    (change: CheckInputChanged) => {
+      filteredAndSortedItems.forEach(({ index }) => {
+        dispatch(setSiteRipSelection({ index, selected: change.value }));
+      });
+    },
+    [dispatch, filteredAndSortedItems]
+  );
 
   const onRowPress = useCallback((index: number) => {
     setActiveFileIndex(index);
   }, []);
 
-  const onSelectionChange = useCallback((index: number, selected: boolean) => {
-    dispatch(setSiteRipSelection({ index, selected }));
-  }, [dispatch]);
+  const onSelectionChange = useCallback(
+    (index: number, selected: boolean) => {
+      dispatch(setSiteRipSelection({ index, selected }));
+    },
+    [dispatch]
+  );
 
-  const onEpisodeSelect = useCallback((episodeId: number) => {
-    if (activeFileIndex == null) {
-      return;
-    }
+  const onEpisodeSelect = useCallback(
+    (episodeId: number) => {
+      if (activeFileIndex == null) {
+        return;
+      }
 
-    dispatch(setSiteRipEpisode({ index: activeFileIndex, episodeId }));
-  }, [activeFileIndex, dispatch]);
+      dispatch(setSiteRipEpisode({ index: activeFileIndex, episodeId }));
+    },
+    [activeFileIndex, dispatch]
+  );
 
-  const activeEpisodeId = activeFileIndex == null ?
-    undefined :
-    selections[activeFileIndex]?.episodeId;
+  const activeEpisodeId =
+    activeFileIndex == null
+      ? undefined
+      : selections[activeFileIndex]?.episodeId;
 
-  const filesErrorMessage = typeof filesError === 'string' ? filesError : getErrorMessage(filesError as never);
-  const matchErrorMessage = typeof matchError === 'string' ? matchError : getErrorMessage(matchError as never);
+  const filesErrorMessage =
+    typeof filesError === 'string'
+      ? filesError
+      : getErrorMessage(filesError as never);
+  const matchErrorMessage =
+    typeof matchError === 'string'
+      ? matchError
+      : getErrorMessage(matchError as never);
   const isLoading = isMatching || isFilesFetching || !!matchId;
   const showMatchProgressBar = matchPhase === 'matching' && matchTotalFiles > 0;
-  const matchProgressPercent = showMatchProgressBar ?
-    Math.round((matchCompletedFiles / matchTotalFiles) * 100) :
-    0;
+  const matchProgressPercent = showMatchProgressBar
+    ? Math.round((matchCompletedFiles / matchTotalFiles) * 100)
+    : 0;
 
   const getMatchPhaseLabel = () => {
     switch (matchPhase) {
@@ -235,82 +299,72 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
   return (
     <div className={styles.matchingView}>
-      {
-        isLoading ?
-          <div className={styles.loadingContainer}>
-            <LoadingIndicator />
-            <div className={styles.statusMessage}>
-              {matchStatusMessage || getMatchPhaseLabel()}
+      {isLoading ? (
+        <div className={styles.loadingContainer}>
+          <LoadingIndicator />
+          <div className={styles.statusMessage}>
+            {matchStatusMessage || getMatchPhaseLabel()}
+          </div>
+          {showMatchProgressBar ? (
+            <div className={styles.progressBarContainer}>
+              <div
+                className={styles.progressBarFill}
+                style={{ width: `${matchProgressPercent}%` }}
+              />
             </div>
-            {
-              showMatchProgressBar ?
-                <div className={styles.progressBarContainer}>
-                  <div
-                    className={styles.progressBarFill}
-                    style={{ width: `${matchProgressPercent}%` }}
-                  />
-                </div> :
-                null
-            }
-          </div> :
-          null
-      }
+          ) : null}
+        </div>
+      ) : null}
 
-      {
-        filesErrorMessage ?
-          <Alert kind={kinds.DANGER}>{filesErrorMessage}</Alert> :
-          null
-      }
+      {filesErrorMessage ? (
+        <Alert kind={kinds.DANGER}>{filesErrorMessage}</Alert>
+      ) : null}
 
-      {
-        matchErrorMessage ?
-          <Alert kind={kinds.DANGER}>{matchErrorMessage}</Alert> :
-          null
-      }
+      {matchErrorMessage ? (
+        <Alert kind={kinds.DANGER}>{matchErrorMessage}</Alert>
+      ) : null}
 
-      {
-        !isLoading && matches.length ?
-          <div className={styles.splitPane}>
-            <SiteRipMatchingFileList
-              items={filteredAndSortedItems}
-              selections={selections}
-              episodes={seriesEpisodes}
-              episodeFiles={episodeFiles}
-              filter={filter}
-              matchFilter={matchFilter}
-              sortKey={sortKey}
-              sortDirection={sortDirection}
+      {!isLoading && matches.length ? (
+        <div className={styles.splitPane}>
+          <SiteRipMatchingFileList
+            items={filteredAndSortedItems}
+            selections={selections}
+            episodes={seriesEpisodes}
+            episodeFiles={episodeFiles}
+            filter={filter}
+            matchFilter={matchFilter}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            activeFileIndex={activeFileIndex}
+            onFilterChange={onFilterChange}
+            onMatchFilterChange={onMatchFilterChange}
+            onSortPress={onSortPress}
+            onSelectAllChange={onSelectAllChange}
+            onRowPress={onRowPress}
+            onSelectionChange={onSelectionChange}
+          />
+
+          <div className={styles.rightPane}>
+            <SiteRipScenePicker
+              seriesId={seriesId}
               activeFileIndex={activeFileIndex}
-              onFilterChange={onFilterChange}
-              onMatchFilterChange={onMatchFilterChange}
-              onSortPress={onSortPress}
-              onSelectAllChange={onSelectAllChange}
-              onRowPress={onRowPress}
-              onSelectionChange={onSelectionChange}
+              selectedEpisodeId={activeEpisodeId}
+              episodeFilterYear={episodeFilterYear}
+              episodeFilterTitle={episodeFilterTitle}
+              episodeFilterPerformer={episodeFilterPerformer}
+              onEpisodeFilterYearChange={setEpisodeFilterYear}
+              onEpisodeFilterTitleChange={setEpisodeFilterTitle}
+              onEpisodeFilterPerformerChange={setEpisodeFilterPerformer}
+              onEpisodeSelect={onEpisodeSelect}
             />
 
-            <div className={styles.rightPane}>
-              <SiteRipScenePicker
-                seriesId={seriesId}
-                activeFileIndex={activeFileIndex}
-                selectedEpisodeId={activeEpisodeId}
-                episodeFilterYear={episodeFilterYear}
-                episodeFilterTitle={episodeFilterTitle}
-                episodeFilterPerformer={episodeFilterPerformer}
-                onEpisodeFilterYearChange={setEpisodeFilterYear}
-                onEpisodeFilterTitleChange={setEpisodeFilterTitle}
-                onEpisodeFilterPerformerChange={setEpisodeFilterPerformer}
-                onEpisodeSelect={onEpisodeSelect}
-              />
-
-              <SiteRipSceneDetails
-                seriesId={seriesId}
-                episodeId={activeEpisodeId}
-              />
-            </div>
-          </div> :
-          null
-      }
+            <SiteRipSceneDetails
+              seriesId={seriesId}
+              episodeId={activeEpisodeId}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

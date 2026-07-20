@@ -2,10 +2,10 @@
 // Please do not change this file!
 interface CssExports {
   'bodyLayout': string;
-  'episodeImage': string;
-  'hasImage': string;
+  'episodeDetailsPane': string;
+  'episodeDetailsPaneScreenshotOnly': string;
+  'hasLeftPane': string;
   'openSeriesButton': string;
-  'screenshot': string;
   'selectedTab': string;
   'separator': string;
   'seriesTitle': string;

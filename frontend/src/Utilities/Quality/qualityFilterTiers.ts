@@ -38,7 +38,10 @@ export function getQualityFilterTier(index: number): QualityFilterTier {
   return QUALITY_FILTER_TIERS[index] ?? QUALITY_FILTER_TIERS[0];
 }
 
-export function isFullQualityRange(minIndex: number, maxIndex: number): boolean {
+export function isFullQualityRange(
+  minIndex: number,
+  maxIndex: number
+): boolean {
   return minIndex === 0 && maxIndex === QUALITY_FILTER_MAX_INDEX;
 }
 

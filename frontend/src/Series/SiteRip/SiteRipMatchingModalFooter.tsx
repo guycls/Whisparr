@@ -4,10 +4,7 @@ import AppState from 'App/State/AppState';
 import Button from 'Components/Link/Button';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import { kinds } from 'Helpers/Props';
-import {
-  grabSiteRip,
-  setSiteRipView
-} from 'Store/Actions/siteRipActions';
+import { grabSiteRip, setSiteRipView } from 'Store/Actions/siteRipActions';
 import translate from 'Utilities/String/translate';
 import styles from './SiteRipMatchingView.css';
 
@@ -26,10 +23,12 @@ function SiteRipMatchingModalFooter(props: SiteRipMatchingModalFooterProps) {
     selections,
     isGrabbing,
     isGrabbed,
-    grabError
+    grabError,
   } = useSelector((state: AppState) => state.siteRip);
 
-  const selectedCount = Object.values(selections).filter((selection) => selection.selected).length;
+  const selectedCount = Object.values(selections).filter(
+    (selection) => selection.selected
+  ).length;
 
   const onBackPress = useCallback(() => {
     dispatch(setSiteRipView('search'));
@@ -37,7 +36,11 @@ function SiteRipMatchingModalFooter(props: SiteRipMatchingModalFooterProps) {
 
   const onGrabPress = useCallback(() => {
     const grabSelections = Object.keys(selections)
-      .filter((key) => selections[parseInt(key, 10)].selected && selections[parseInt(key, 10)].episodeId)
+      .filter(
+        (key) =>
+          selections[parseInt(key, 10)].selected &&
+          selections[parseInt(key, 10)].episodeId
+      )
       .map((key) => {
         const index = parseInt(key, 10);
         const match = matches[index];
@@ -45,7 +48,7 @@ function SiteRipMatchingModalFooter(props: SiteRipMatchingModalFooterProps) {
         return {
           fileIndices: match.fileIndices,
           filePaths: match.filePaths,
-          episodeId: selections[index].episodeId as number
+          episodeId: selections[index].episodeId as number,
         };
       });
 
@@ -53,12 +56,14 @@ function SiteRipMatchingModalFooter(props: SiteRipMatchingModalFooterProps) {
       return;
     }
 
-    dispatch(grabSiteRip({
-      guid: selectedRelease.guid,
-      indexerId: selectedRelease.indexerId,
-      seriesId,
-      selections: grabSelections
-    }));
+    dispatch(
+      grabSiteRip({
+        guid: selectedRelease.guid,
+        indexerId: selectedRelease.indexerId,
+        seriesId,
+        selections: grabSelections,
+      })
+    );
   }, [dispatch, matches, selections, selectedRelease, seriesId]);
 
   React.useEffect(() => {
@@ -77,11 +82,7 @@ function SiteRipMatchingModalFooter(props: SiteRipMatchingModalFooterProps) {
       >
         {isGrabbing ? translate('Downloading') : translate('GrabRelease')}
       </Button>
-      {
-        grabError ?
-          <span className={styles.grabError}>{grabError}</span> :
-          null
-      }
+      {grabError ? <span className={styles.grabError}>{grabError}</span> : null}
     </ModalFooter>
   );
 }

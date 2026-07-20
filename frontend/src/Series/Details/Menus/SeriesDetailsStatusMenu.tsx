@@ -19,23 +19,43 @@ function SeriesDetailsStatusMenu(props: SeriesDetailsStatusMenuProps) {
       showIndicator={monitorStatusFilter !== 'all'}
     >
       <MenuContent>
-        <ViewMenuItem name="all" selectedView={monitorStatusFilter} onPress={onStatusSelect}>
+        <ViewMenuItem
+          name="all"
+          selectedView={monitorStatusFilter}
+          onPress={onStatusSelect}
+        >
           {translate('All')}
         </ViewMenuItem>
 
-        <ViewMenuItem name="monitored" selectedView={monitorStatusFilter} onPress={onStatusSelect}>
+        <ViewMenuItem
+          name="monitored"
+          selectedView={monitorStatusFilter}
+          onPress={onStatusSelect}
+        >
           {translate('Monitored')}
         </ViewMenuItem>
 
-        <ViewMenuItem name="unmonitored" selectedView={monitorStatusFilter} onPress={onStatusSelect}>
+        <ViewMenuItem
+          name="unmonitored"
+          selectedView={monitorStatusFilter}
+          onPress={onStatusSelect}
+        >
           {translate('Unmonitored')}
         </ViewMenuItem>
 
-        <ViewMenuItem name="downloaded" selectedView={monitorStatusFilter} onPress={onStatusSelect}>
+        <ViewMenuItem
+          name="downloaded"
+          selectedView={monitorStatusFilter}
+          onPress={onStatusSelect}
+        >
           {translate('Downloaded')}
         </ViewMenuItem>
 
-        <ViewMenuItem name="missing" selectedView={monitorStatusFilter} onPress={onStatusSelect}>
+        <ViewMenuItem
+          name="missing"
+          selectedView={monitorStatusFilter}
+          onPress={onStatusSelect}
+        >
           {translate('Missing')}
         </ViewMenuItem>
       </MenuContent>

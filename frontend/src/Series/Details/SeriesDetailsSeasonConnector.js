@@ -11,11 +11,11 @@ import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import createSeriesSelector from 'Store/Selectors/createSeriesSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
-import { filterEpisodesByQualityRange, isFullQualityRange } from 'Utilities/Quality/qualityFilterTiers';
 import {
   filterEpisodesByRuntimeRange,
-  isFullRuntimeRange,
+  isFullRuntimeRange
 } from 'Utilities/Number/runtimeFilterUtils';
+import { filterEpisodesByQualityRange, isFullQualityRange } from 'Utilities/Quality/qualityFilterTiers';
 import SeriesDetailsSeason from './SeriesDetailsSeason';
 
 function filterByMonitorStatus(episodes, monitorStatusFilter) {

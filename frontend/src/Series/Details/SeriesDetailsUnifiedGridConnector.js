@@ -5,7 +5,7 @@ import { createSelector } from 'reselect';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { toggleEpisodesMonitored } from 'Store/Actions/episodeActions';
 import {
-  fetchMoreSeriesDetailsUnifiedGrid,
+  fetchMoreSeriesDetailsUnifiedGrid
 } from 'Store/Actions/seriesDetailsActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
@@ -19,7 +19,7 @@ function createMapStateToProps() {
     (unifiedGrid, dimensions) => {
       return {
         ...unifiedGrid,
-        isSmallScreen: dimensions.isSmallScreen,
+        isSmallScreen: dimensions.isSmallScreen
       };
     }
   );
@@ -27,7 +27,7 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchMoreSeriesDetailsUnifiedGrid,
-  toggleEpisodesMonitored,
+  toggleEpisodesMonitored
 };
 
 function SeriesDetailsUnifiedGridConnector(props) {
@@ -43,7 +43,7 @@ function SeriesDetailsUnifiedGridConnector(props) {
     error,
     isSmallScreen,
     fetchMoreSeriesDetailsUnifiedGrid: fetchMore,
-    toggleEpisodesMonitored: toggleMonitored,
+    toggleEpisodesMonitored: toggleMonitored
   } = props;
 
   useEffect(() => {
@@ -64,7 +64,7 @@ function SeriesDetailsUnifiedGridConnector(props) {
     toggleMonitored({
       episodeIds: [episodeId],
       monitored,
-      episodeEntity: 'seriesDetails.unifiedGrid',
+      episodeEntity: 'seriesDetails.unifiedGrid'
     });
   }, [toggleMonitored]);
 
@@ -129,7 +129,7 @@ SeriesDetailsUnifiedGridConnector.propTypes = {
   error: PropTypes.object,
   isSmallScreen: PropTypes.bool.isRequired,
   fetchMoreSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
-  toggleEpisodesMonitored: PropTypes.func.isRequired,
+  toggleEpisodesMonitored: PropTypes.func.isRequired
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(SeriesDetailsUnifiedGridConnector);

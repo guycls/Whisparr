@@ -1,7 +1,7 @@
+import Episode from 'Episode/Episode';
 import BlocklistAppState from './BlocklistAppState';
 import CalendarAppState from './CalendarAppState';
 import CommandAppState from './CommandAppState';
-import Episode from 'Episode/Episode';
 import EpisodeFilesAppState from './EpisodeFilesAppState';
 import EpisodesAppState from './EpisodesAppState';
 import HistoryAppState from './HistoryAppState';
@@ -79,7 +79,12 @@ interface AppState {
   series: SeriesAppState;
   seriesDetails: {
     view: 'list' | 'grid' | 'unifiedGrid';
-    monitorStatusFilter: 'all' | 'monitored' | 'unmonitored' | 'downloaded' | 'missing';
+    monitorStatusFilter:
+      | 'all'
+      | 'monitored'
+      | 'unmonitored'
+      | 'downloaded'
+      | 'missing';
     qualityFilter: {
       minIndex: number;
       maxIndex: number;

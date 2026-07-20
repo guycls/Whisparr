@@ -25,34 +25,30 @@ function SiteRipSearchModalContent(props: SiteRipSearchModalContentProps) {
   return (
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>
-        {view === 'matching' ?
-          translate('MatchFiles') :
-          translate('SiteRipSearch')}
+        {view === 'matching'
+          ? translate('MatchFiles')
+          : translate('SiteRipSearch')}
         {seriesTitle ? ` - ${seriesTitle}` : null}
       </ModalHeader>
 
       <ModalBody scrollDirection={scrollDirections.BOTH}>
-        {
-          view === 'matching' ?
-            <SiteRipMatchingView
-              seriesId={seriesId}
-            /> :
-            <SiteRipSearchView
-              seriesId={seriesId}
-            />
-        }
+        {view === 'matching' ? (
+          <SiteRipMatchingView seriesId={seriesId} />
+        ) : (
+          <SiteRipSearchView seriesId={seriesId} />
+        )}
       </ModalBody>
 
-      {
-        view === 'search' ?
-          <ModalFooter>
-            <Button onPress={onModalClose}>{translate('Close')}</Button>
-          </ModalFooter> :
-          <SiteRipMatchingModalFooter
-            seriesId={seriesId}
-            onModalClose={onModalClose}
-          />
-      }
+      {view === 'search' ? (
+        <ModalFooter>
+          <Button onPress={onModalClose}>{translate('Close')}</Button>
+        </ModalFooter>
+      ) : (
+        <SiteRipMatchingModalFooter
+          seriesId={seriesId}
+          onModalClose={onModalClose}
+        />
+      )}
     </ModalContent>
   );
 }

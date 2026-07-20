@@ -66,10 +66,9 @@ function SeriesDetailsQualityFilterMenu(
     ) => {
       const tierIndex = index === 0 ? minIndex : maxIndex;
       const tier = getQualityFilterTier(tierIndex);
-      const label =
-        tier.isUnknown ?
-          translate('SeriesDetailsQualityFilterUnknown') :
-          formatQualityTierLabel(tier);
+      const label = tier.isUnknown
+        ? translate('SeriesDetailsQualityFilterUnknown')
+        : formatQualityTierLabel(tier);
 
       return (
         <div {...thumbProps} className={styles.thumb}>
@@ -84,14 +83,12 @@ function SeriesDetailsQualityFilterMenu(
 
   const minTier = getQualityFilterTier(minIndex);
   const maxTier = getQualityFilterTier(maxIndex);
-  const minLabel =
-    minTier.isUnknown ?
-      translate('SeriesDetailsQualityFilterUnknown') :
-      formatQualityTierLabel(minTier);
-  const maxLabel =
-    maxTier.isUnknown ?
-      translate('SeriesDetailsQualityFilterUnknown') :
-      formatQualityTierLabel(maxTier);
+  const minLabel = minTier.isUnknown
+    ? translate('SeriesDetailsQualityFilterUnknown')
+    : formatQualityTierLabel(minTier);
+  const maxLabel = maxTier.isUnknown
+    ? translate('SeriesDetailsQualityFilterUnknown')
+    : formatQualityTierLabel(maxTier);
 
   return (
     <Menu alignMenu={align.RIGHT} enforceMaxHeight={false}>
@@ -106,9 +103,9 @@ function SeriesDetailsQualityFilterMenu(
           <div className={styles.tierLabels}>
             {QUALITY_FILTER_TIERS.map((tier) => (
               <span key={tier.index} className={styles.tierLabel}>
-                {tier.isUnknown ?
-                  translate('SeriesDetailsQualityFilterUnknown') :
-                  formatQualityTierLabel(tier)}
+                {tier.isUnknown
+                  ? translate('SeriesDetailsQualityFilterUnknown')
+                  : formatQualityTierLabel(tier)}
               </span>
             ))}
           </div>
@@ -134,7 +131,10 @@ function SeriesDetailsQualityFilterMenu(
           </div>
 
           <div className={styles.rangeSummary}>
-            {translate('SeriesDetailsQualityFilterRange', { minLabel, maxLabel })}
+            {translate('SeriesDetailsQualityFilterRange', {
+              minLabel,
+              maxLabel,
+            })}
           </div>
         </div>
       </MenuContent>

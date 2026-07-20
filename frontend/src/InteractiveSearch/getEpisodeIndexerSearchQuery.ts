@@ -27,7 +27,8 @@ export default function getEpisodeIndexerSearchQuery(
   }
 
   const sceneTitle = series.studioSearchPrefix || series.titleSlug;
-  const datePart = episode.airDate ? formatReleaseDate(episode.airDate) : '';
+  const sceneDate = episode.releaseDate || episode.airDate;
+  const datePart = sceneDate ? formatReleaseDate(sceneDate) : '';
 
   return `${sceneTitle} ${datePart}`.trim();
 }

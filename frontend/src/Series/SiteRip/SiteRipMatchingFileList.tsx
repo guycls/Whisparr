@@ -1,20 +1,20 @@
 import classNames from 'classnames';
 import React, { useCallback, useMemo } from 'react';
+import { SiteRipMatch, SiteRipSelection } from 'App/State/SiteRipAppState';
 import CheckInput from 'Components/Form/CheckInput';
 import SelectInput from 'Components/Form/SelectInput';
 import TextInput from 'Components/Form/TextInput';
 import Label from 'Components/Label';
 import Scroller from 'Components/Scroller/Scroller';
+import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import TableRowButton from 'Components/Table/TableRowButton';
-import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import Episode from 'Episode/Episode';
 import EpisodeQuality from 'Episode/EpisodeQuality';
 import { EpisodeFile } from 'EpisodeFile/EpisodeFile';
 import { kinds, scrollDirections, sizes } from 'Helpers/Props';
 import { SortDirection } from 'Helpers/Props/sortDirections';
-import { SiteRipMatch, SiteRipSelection } from 'App/State/SiteRipAppState';
 import { CheckInputChanged } from 'typings/inputs';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
@@ -41,26 +41,26 @@ const columns = [
     label: () => translate('Title'),
     className: styles.titleColumn,
     isSortable: true,
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'totalSize',
     label: () => translate('Size'),
     isSortable: true,
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'monitored',
     label: () => translate('Monitored'),
     isSortable: true,
-    isVisible: true
+    isVisible: true,
   },
   {
     name: 'downloaded',
     label: () => translate('Downloaded'),
     isSortable: true,
-    isVisible: true
-  }
+    isVisible: true,
+  },
 ];
 
 const matchFilterOptions = [
@@ -69,7 +69,7 @@ const matchFilterOptions = [
   { key: 'unmatched', value: () => translate('SiteRipFilterUnmatched') },
   { key: 'monitored', value: () => translate('Monitored') },
   { key: 'missing', value: () => translate('Missing') },
-  { key: 'toGrab', value: () => translate('SiteRipFilterToGrab') }
+  { key: 'toGrab', value: () => translate('SiteRipFilterToGrab') },
 ];
 
 interface SiteRipMatchingFileListProps {
@@ -106,7 +106,7 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
     onSortPress,
     onSelectAllChange,
     onRowPress,
-    onSelectionChange
+    onSelectionChange,
   } = props;
 
   const episodeMap = useMemo(() => {
@@ -121,21 +121,29 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
       return { allSelected: false, allUnselected: true };
     }
 
-    const selectedCount = items.filter(({ index }) => selections[index]?.selected).length;
+    const selectedCount = items.filter(
+      ({ index }) => selections[index]?.selected
+    ).length;
 
     return {
       allSelected: selectedCount === items.length,
-      allUnselected: selectedCount === 0
+      allUnselected: selectedCount === 0,
     };
   }, [items, selections]);
 
-  const handleFilterChange = useCallback(({ value }: { value: string }) => {
-    onFilterChange(value);
-  }, [onFilterChange]);
+  const handleFilterChange = useCallback(
+    ({ value }: { value: string }) => {
+      onFilterChange(value);
+    },
+    [onFilterChange]
+  );
 
-  const handleMatchFilterChange = useCallback(({ value }: { name: string; value: string | number }) => {
-    onMatchFilterChange(String(value) as SiteRipFileMatchFilter);
-  }, [onMatchFilterChange]);
+  const handleMatchFilterChange = useCallback(
+    ({ value }: { name: string; value: string | number }) => {
+      onMatchFilterChange(String(value) as SiteRipFileMatchFilter);
+    },
+    [onMatchFilterChange]
+  );
 
   const stopCheckboxPropagation = useCallback((event: React.MouseEvent) => {
     event.stopPropagation();
@@ -170,21 +178,23 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
             className={styles.matchingTable}
             horizontalScroll={false}
             selectAll={true}
-          allSelected={allSelected}
-          allUnselected={allUnselected}
-          columns={columns}
-          sortKey={sortKey}
-          sortDirection={sortDirection}
-          onSortPress={onSortPress}
-          onSelectAllChange={onSelectAllChange}
-        >
-          <TableBody>
-            {
-              items.map(({ match, index }) => {
+            allSelected={allSelected}
+            allUnselected={allUnselected}
+            columns={columns}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSortPress={onSortPress}
+            onSelectAllChange={onSelectAllChange}
+          >
+            <TableBody>
+              {items.map(({ match, index }) => {
                 const selection = selections[index];
                 const episodeId = selection?.episodeId;
                 const episode = episodeId ? episodeMap[episodeId] : undefined;
-                const downloadedSummary = getEpisodeDownloadedSummary(episode, episodeFiles);
+                const downloadedSummary = getEpisodeDownloadedSummary(
+                  episode,
+                  episodeFiles
+                );
                 const rowState = getSiteRipFileRowState(selection);
                 const torrentPath = formatTorrentFilePaths(match.filePaths);
 
@@ -193,8 +203,10 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
                     key={index}
                     className={classNames(
                       styles.fileRow,
-                      rowState === 'matchedSelected' && styles.fileRowMatchedSelected,
-                      rowState === 'matchedUnselected' && styles.fileRowMatchedUnselected,
+                      rowState === 'matchedSelected' &&
+                        styles.fileRowMatchedSelected,
+                      rowState === 'matchedUnselected' &&
+                        styles.fileRowMatchedUnselected,
                       rowState === 'unmatched' && styles.fileRowUnmatched,
                       activeFileIndex === index && styles.fileRowActive
                     )}
@@ -209,28 +221,33 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
                         className={styles.checkboxInput}
                         name={`file-${index}`}
                         value={selection?.selected ?? false}
-                        onChange={(change: CheckInputChanged) => onSelectionChange(index, change.value)}
+                        onChange={(change: CheckInputChanged) =>
+                          onSelectionChange(index, change.value)
+                        }
                       />
                     </TableRowCell>
 
                     <TableRowCell className={styles.fileNameCell}>
-                      <div className={styles.fileName} title={match.displayName}>
+                      <div
+                        className={styles.fileName}
+                        title={match.displayName}
+                      >
                         {match.displayName}
                       </div>
-                      {
-                        torrentPath ?
-                          <div className={styles.filePath} title={match.filePaths.join('\n')}>
-                            {torrentPath}
-                          </div> :
-                          null
-                      }
-                      {
-                        match.partNumber ?
-                          <div className={styles.partLabel}>
-                            {translate('Scene')} {match.partNumber}{match.partTotal ? `/${match.partTotal}` : ''}
-                          </div> :
-                          null
-                      }
+                      {torrentPath ? (
+                        <div
+                          className={styles.filePath}
+                          title={match.filePaths.join('\n')}
+                        >
+                          {torrentPath}
+                        </div>
+                      ) : null}
+                      {match.partNumber ? (
+                        <div className={styles.partLabel}>
+                          {translate('Scene')} {match.partNumber}
+                          {match.partTotal ? `/${match.partTotal}` : ''}
+                        </div>
+                      ) : null}
                     </TableRowCell>
 
                     <TableRowCell className={styles.sizeCell}>
@@ -238,43 +255,44 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
                     </TableRowCell>
 
                     <TableRowCell className={styles.monitoredCell}>
-                      {
-                        episode ?
-                          <Label
-                            kind={episode.monitored ? kinds.SUCCESS : kinds.DISABLED}
-                            size={sizes.SMALL}
-                          >
-                            {episode.monitored ? translate('Monitored') : translate('Unmonitored')}
-                          </Label> :
-                          <span className={styles.emptyCell}>-</span>
-                      }
+                      {episode ? (
+                        <Label
+                          kind={
+                            episode.monitored ? kinds.SUCCESS : kinds.DISABLED
+                          }
+                          size={sizes.SMALL}
+                        >
+                          {episode.monitored
+                            ? translate('Monitored')
+                            : translate('Unmonitored')}
+                        </Label>
+                      ) : (
+                        <span className={styles.emptyCell}>-</span>
+                      )}
                     </TableRowCell>
 
                     <TableRowCell className={styles.downloadedCell}>
-                      {
-                        downloadedSummary ?
-                          <div className={styles.downloadedSummary}>
-                            <EpisodeQuality
-                              quality={downloadedSummary.quality}
-                              size={downloadedSummary.totalSize}
-                            />
-                            {
-                              downloadedSummary.partCount > 1 ?
-                                <span className={styles.partCount}>
-                                  {` (${downloadedSummary.partCount} parts)`}
-                                </span> :
-                                null
-                            }
-                          </div> :
-                          <span className={styles.emptyCell}>-</span>
-                      }
+                      {downloadedSummary ? (
+                        <div className={styles.downloadedSummary}>
+                          <EpisodeQuality
+                            quality={downloadedSummary.quality}
+                            size={downloadedSummary.totalSize}
+                          />
+                          {downloadedSummary.partCount > 1 ? (
+                            <span className={styles.partCount}>
+                              {` (${downloadedSummary.partCount} parts)`}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <span className={styles.emptyCell}>-</span>
+                      )}
                     </TableRowCell>
                   </TableRowButton>
                 );
-              })
-            }
-          </TableBody>
-        </Table>
+              })}
+            </TableBody>
+          </Table>
         </Scroller>
       </div>
     </div>

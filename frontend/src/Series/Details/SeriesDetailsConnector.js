@@ -2,11 +2,11 @@ import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { createSelector } from 'reselect';
 import { bindActionCreators } from 'redux';
+import { createSelector } from 'reselect';
 import * as commandNames from 'Commands/commandNames';
-import { executeCommand } from 'Store/Actions/commandActions';
 import { set } from 'Store/Actions/baseActions';
+import { executeCommand } from 'Store/Actions/commandActions';
 import { clearEpisodes, fetchEpisodes } from 'Store/Actions/episodeActions';
 import { clearEpisodeFiles, fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
@@ -18,11 +18,11 @@ import {
   fetchSeriesDetailsUnifiedGrid,
   gotoSeriesDetailsUnifiedGridFirstPage,
   section as seriesDetailsSection,
+  setSeriesDetailsActiveSeries,
   setSeriesDetailsMonitorStatusFilter,
   setSeriesDetailsQualityFilter,
   setSeriesDetailsRuntimeFilter,
-  setSeriesDetailsActiveSeries,
-  setSeriesDetailsView,
+  setSeriesDetailsView
 } from 'Store/Actions/seriesDetailsActions';
 import { fetchDownloadClients } from 'Store/Actions/settingsActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
@@ -208,9 +208,9 @@ const mapDispatchToProps = (dispatch) => {
         maxEpisodeRuntime: 0,
         isFilterBoundsPopulated: false,
         isFilterBoundsFetching: false,
-        filterBoundsError: null,
+        filterBoundsError: null
       }));
-    },
+    }
   };
 };
 

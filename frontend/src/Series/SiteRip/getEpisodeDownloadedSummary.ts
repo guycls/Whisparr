@@ -4,7 +4,8 @@ import { QualityModel } from 'Quality/Quality';
 import { QualitySource } from 'Quality/Quality';
 
 const BRACKET_PART_REGEX = /\[\d{1,3}[/+]\d{1,3}\]/gi;
-const PART_OF_REGEX = /(?:^|[\s._-])(?:Part|Pt\.?)\s*\d{1,3}(?:\s*of\s*\d{1,3})?(?:[\s._-]|$)/gi;
+const PART_OF_REGEX =
+  /(?:^|[\s._-])(?:Part|Pt\.?)\s*\d{1,3}(?:\s*of\s*\d{1,3})?(?:[\s._-]|$)/gi;
 const CD_REGEX = /(?:^|[\s._-])(?:cd|disc)\d{1,3}(?:[\s._-]|$)/gi;
 
 export interface EpisodeDownloadedSummary {
@@ -33,7 +34,7 @@ function getQualityTierIndex(quality: QualityModel): number {
     576: 2,
     720: 3,
     1080: 4,
-    2160: 5
+    2160: 5,
   };
 
   return resolutionTiers[qualityInfo.resolution] ?? 0;
@@ -94,7 +95,9 @@ export function getEpisodeDownloadedSummary(
     return null;
   }
 
-  const primaryFile = episodeFiles.find((file) => file.id === episode.episodeFileId);
+  const primaryFile = episodeFiles.find(
+    (file) => file.id === episode.episodeFileId
+  );
 
   if (!primaryFile) {
     return null;
@@ -110,6 +113,6 @@ export function getEpisodeDownloadedSummary(
   return {
     totalSize: relatedFiles.reduce((total, file) => total + file.size, 0),
     quality,
-    partCount: relatedFiles.length
+    partCount: relatedFiles.length,
   };
 }

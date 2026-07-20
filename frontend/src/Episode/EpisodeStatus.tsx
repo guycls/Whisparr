@@ -88,10 +88,7 @@ function EpisodeStatus(props: EpisodeStatusProps) {
   if (hasFile) {
     return (
       <div className={styles.center}>
-        <Icon
-          name={icons.DOWNLOADED}
-          title={translate('EpisodeDownloaded')}
-        />
+        <Icon name={icons.DOWNLOADED} title={translate('EpisodeDownloaded')} />
       </div>
     );
   }

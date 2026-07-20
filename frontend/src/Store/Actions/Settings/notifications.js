@@ -1,4 +1,5 @@
 import { createAction } from 'redux-actions';
+import { set } from 'Store/Actions/baseActions';
 import createFetchHandler from 'Store/Actions/Creators/createFetchHandler';
 import createFetchSchemaHandler from 'Store/Actions/Creators/createFetchSchemaHandler';
 import createRemoveItemHandler from 'Store/Actions/Creators/createRemoveItemHandler';
@@ -6,7 +7,6 @@ import createSaveProviderHandler, { createCancelSaveProviderHandler } from 'Stor
 import createTestProviderHandler, { createCancelTestProviderHandler } from 'Store/Actions/Creators/createTestProviderHandler';
 import createSetProviderFieldValueReducer from 'Store/Actions/Creators/Reducers/createSetProviderFieldValueReducer';
 import createSetSettingValueReducer from 'Store/Actions/Creators/Reducers/createSetSettingValueReducer';
-import { set } from 'Store/Actions/baseActions';
 import { createThunk } from 'Store/thunks';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
 import selectProviderSchema from 'Utilities/State/selectProviderSchema';
