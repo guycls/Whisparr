@@ -1,7 +1,14 @@
 import classNames from 'classnames';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+import AppState from 'App/State/AppState';
 import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
@@ -14,6 +21,8 @@ import episodeEntities from 'Episode/episodeEntities';
 import EpisodeSceneDetails from 'Episode/EpisodeSceneDetails';
 import { hasEpisodeScreenshot } from 'Episode/EpisodeScreenshot';
 import useEpisode, { EpisodeEntities } from 'Episode/useEpisode';
+import useMeasure from 'Helpers/Hooks/useMeasure';
+import { scrollDirections } from 'Helpers/Props';
 import Series from 'Series/Series';
 import useSeries from 'Series/useSeries';
 import { toggleEpisodeMonitored } from 'Store/Actions/episodeActions';
@@ -28,7 +37,6 @@ import SeasonEpisodeNumber from './SeasonEpisodeNumber';
 import styles from './EpisodeDetailsModalContent.css';
 
 const TABS: EpisodeDetailsTab[] = ['details', 'search', 'history'];
-
 export interface EpisodeDetailsModalContentProps {
   episodeId: number;
   episodeEntity: EpisodeEntities;
@@ -58,7 +66,27 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
 
   const dispatch = useDispatch();
 
+  const isMediumScreen = useSelector(
+    (state: AppState) => state.app.dimensions.isMediumScreen
+  );
+
   const [currentlySelectedTab, setCurrentlySelectedTab] = useState(selectedTab);
+  const [isLeftPaneMetadataMounted, setIsLeftPaneMetadataMounted] = useState(
+    selectedTab !== 'details'
+  );
+  const [bodyMeasureRef, bodyBounds] = useMeasure();
+  const bodyElementRef = useRef<HTMLDivElement | null>(null);
+  const wasLeftPaneMetadataMountedRef = useRef(selectedTab !== 'details');
+  const [isBodyAnimating, setIsBodyAnimating] = useState(false);
+  const [bodyHeight, setBodyHeight] = useState<number | undefined>();
+
+  const setBodyLayoutRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      bodyElementRef.current = node;
+      bodyMeasureRef(node);
+    },
+    [bodyMeasureRef]
+  );
 
   const {
     title: seriesTitle,
@@ -78,15 +106,89 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
 
   const hasScreenshot = hasEpisodeScreenshot(images);
   const isDetailsTab = currentlySelectedTab === 'details';
+  const isLeftPaneDetailsLayout = isDetailsTab && !isLeftPaneMetadataMounted;
   const showLeftPane = !isDetailsTab || hasScreenshot;
+  const stackedFullTabs = showLeftPane && !isDetailsTab && isMediumScreen;
+
+  const handleMetadataMountChange = useCallback(
+    (mounted: boolean) => {
+      const wasMounted = wasLeftPaneMetadataMountedRef.current;
+      wasLeftPaneMetadataMountedRef.current = mounted;
+
+      setIsLeftPaneMetadataMounted(mounted);
+
+      if (
+        wasMounted &&
+        !mounted &&
+        !isMediumScreen &&
+        bodyElementRef.current &&
+        currentlySelectedTab === 'details'
+      ) {
+        const startHeight =
+          bodyElementRef.current.getBoundingClientRect().height;
+
+        setBodyHeight(startHeight);
+        setIsBodyAnimating(true);
+      }
+    },
+    [currentlySelectedTab, isMediumScreen]
+  );
+
+  useEffect(() => {
+    if (!isDetailsTab) {
+      wasLeftPaneMetadataMountedRef.current = true;
+      setIsLeftPaneMetadataMounted(true);
+    }
+  }, [isDetailsTab]);
 
   const handleTabSelect = useCallback(
     (selectedIndex: number) => {
       const tab = TABS[selectedIndex];
+
       onTabChange(tab === 'search');
       setCurrentlySelectedTab(tab);
     },
     [onTabChange]
+  );
+
+  useLayoutEffect(() => {
+    if (!isBodyAnimating || isMediumScreen) {
+      return;
+    }
+
+    const element = bodyElementRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      const endHeight = element.scrollHeight;
+
+      if (endHeight === bodyHeight) {
+        setIsBodyAnimating(false);
+        setBodyHeight(undefined);
+        return;
+      }
+
+      setBodyHeight(endHeight);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [isBodyAnimating, isMediumScreen, currentlySelectedTab, bodyBounds.height, bodyHeight]);
+
+  const handleBodyTransitionEnd = useCallback(
+    (event: React.TransitionEvent<HTMLDivElement>) => {
+      if (event.propertyName !== 'height') {
+        return;
+      }
+
+      setIsBodyAnimating(false);
+      setBodyHeight(undefined);
+    },
+    []
   );
 
   const handleMonitorEpisodePress = useCallback(
@@ -142,16 +244,21 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
       </ModalHeader>
 
       <div
+        ref={setBodyLayoutRef}
         className={classNames(
           styles.bodyLayout,
-          showLeftPane && styles.hasLeftPane
+          showLeftPane && styles.hasLeftPane,
+          stackedFullTabs && styles.bodyLayoutStackedFullTabs,
+          isBodyAnimating && styles.bodyLayoutAnimating
         )}
+        style={bodyHeight == null ? undefined : { height: bodyHeight }}
+        onTransitionEnd={handleBodyTransitionEnd}
       >
         {showLeftPane ? (
           <div
             className={classNames(
               styles.episodeDetailsPane,
-              isDetailsTab && styles.episodeDetailsPaneScreenshotOnly
+              isLeftPaneDetailsLayout && styles.episodeDetailsPaneScreenshotOnly
             )}
           >
             <EpisodeSceneDetails
@@ -163,7 +270,8 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
               showMetadata={true}
               centerScreenshot={isDetailsTab}
               collapseMetadata={isDetailsTab}
-              fillHeight={isDetailsTab}
+              fillHeight={isLeftPaneDetailsLayout}
+              onMetadataMountChange={handleMetadataMountChange}
             />
           </div>
         ) : null}
@@ -171,6 +279,9 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
         <ModalBody
           className={styles.tabsColumn}
           innerClassName={styles.tabsColumnInner}
+          scrollDirection={
+            stackedFullTabs ? scrollDirections.NONE : scrollDirections.VERTICAL
+          }
         >
           <Tabs
             className={styles.tabs}

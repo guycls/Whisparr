@@ -36,7 +36,6 @@
 }
 
 .sceneDetailsBody {
-  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -53,10 +52,17 @@
 .sceneScreenshotRegion {
   display: flex;
   flex: 0 0 auto;
+  align-items: flex-start;
   justify-content: center;
   width: 100%;
   min-height: 0;
-  transition: flex-grow 0.25s ease, flex-basis 0.25s ease, align-items 0.25s ease;
+  overflow: hidden;
+  transition: flex-grow 0.15s ease-in, flex-basis 0.15s ease-in, align-items 0.15s ease-in;
+}
+
+.sceneScreenshotRegionGrowing {
+  flex: 0 0 auto;
+  align-items: flex-start;
 }
 
 .sceneScreenshotRegionExpanded {
@@ -69,7 +75,7 @@
   justify-content: center;
   width: 100%;
   margin-bottom: 12px;
-  transition: margin 0.25s ease;
+  transition: margin 0.15s ease-in;
 }
 
 .sceneScreenshotRegionExpanded .sceneScreenshot {
@@ -82,24 +88,13 @@
   max-height: 3000px;
   opacity: 1;
   visibility: visible;
-  transition:
-    max-height 0.25s ease,
-    opacity 0.25s ease,
-    margin 0.25s ease,
-    visibility 0.25s ease;
+  transition: opacity 0.15s ease-in, max-height 0.15s ease-in, margin-top 0.15s ease-in, visibility 0.15s ease-in;
 }
 
-.metadataSectionCollapsed {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: auto;
-  bottom: 0;
+.metadataSectionFadingOut {
   max-height: 0;
-  opacity: 0;
   margin-top: 0;
-  margin-bottom: 0;
-  overflow: hidden;
+  opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
@@ -110,7 +105,11 @@
   max-height: 240px;
   border-radius: 4px;
   object-fit: contain;
-  transition: max-height 0.25s ease;
+  transition: max-height 0.15s ease-in;
+}
+
+.sceneScreenshotRegionGrowing .screenshot {
+  max-height: min(50vh, 480px);
 }
 
 .sceneScreenshotRegionExpanded .screenshot {

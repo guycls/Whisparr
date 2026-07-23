@@ -8,7 +8,7 @@ interface CssExports {
   'metadataPlaceholder': string;
   'metadataRow': string;
   'metadataSection': string;
-  'metadataSectionCollapsed': string;
+  'metadataSectionFadingOut': string;
   'metadataSeries': string;
   'metadataTitle': string;
   'overviewPanel': string;
@@ -23,6 +23,7 @@ interface CssExports {
   'sceneScreenshot': string;
   'sceneScreenshotRegion': string;
   'sceneScreenshotRegionExpanded': string;
+  'sceneScreenshotRegionGrowing': string;
   'screenshot': string;
   'tpdbLink': string;
   'tpdbLinks': string;

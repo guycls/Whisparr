@@ -41,14 +41,24 @@
     border-right: 1px solid var(--borderColor);
     max-height: min(70vh, 560px);
     overflow: hidden;
+    transition: max-height 0.15s ease-in;
   }
 }
 
 .bodyLayout.hasLeftPane .episodeDetailsPaneScreenshotOnly {
   @media (min-width: $breakpointMedium) {
-    max-height: none;
+    max-height: min(calc(50vh + 4em), 544px);
     min-height: 0;
   }
+}
+
+.bodyLayoutAnimating {
+  overflow: hidden;
+  transition: height 0.15s ease-in;
+}
+
+.bodyLayoutAnimating .episodeDetailsPane {
+  overflow: hidden;
 }
 
 .bodyLayout.hasLeftPane .tabsColumn {
@@ -58,6 +68,25 @@
     min-width: 0;
     max-width: 50%;
   }
+}
+
+.bodyLayoutStackedFullTabs {
+  flex: 0 1 auto;
+  min-height: auto;
+  overflow: visible;
+}
+
+.bodyLayoutStackedFullTabs .episodeDetailsPane {
+  flex: 0 0 auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.bodyLayoutStackedFullTabs .tabsColumn {
+  flex: 0 0 auto;
+  flex-grow: 0;
+  overflow: visible;
+  max-height: none;
 }
 
 .tabsColumn {

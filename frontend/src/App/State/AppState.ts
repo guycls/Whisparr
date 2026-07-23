@@ -56,6 +56,7 @@ export interface AppSectionState {
   prevVersion?: string;
   dimensions: {
     isSmallScreen: boolean;
+    isMediumScreen: boolean;
     width: number;
     height: number;
   };

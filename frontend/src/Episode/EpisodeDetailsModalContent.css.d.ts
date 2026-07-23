@@ -2,6 +2,8 @@
 // Please do not change this file!
 interface CssExports {
   'bodyLayout': string;
+  'bodyLayoutAnimating': string;
+  'bodyLayoutStackedFullTabs': string;
   'episodeDetailsPane': string;
   'episodeDetailsPaneScreenshotOnly': string;
   'hasLeftPane': string;

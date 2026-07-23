@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
 import Label from 'Components/Label';
@@ -22,6 +22,8 @@ import formatRuntime from 'Utilities/Number/formatRuntime';
 import translate from 'Utilities/String/translate';
 import styles from './EpisodeSceneDetails.css';
 
+const METADATA_FADE_MS = 150;
+
 interface EpisodeSceneDetailsProps {
   seriesId: number;
   episodeId?: number;
@@ -36,6 +38,7 @@ interface EpisodeSceneDetailsProps {
   fillHeight?: boolean;
   className?: string;
   scrollerClassName?: string;
+  onMetadataMountChange?: (mounted: boolean) => void;
 }
 
 function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
@@ -53,6 +56,7 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
     fillHeight = false,
     className,
     scrollerClassName,
+    onMetadataMountChange,
   } = props;
 
   const safeForWorkMode = useSelector(
@@ -99,8 +103,52 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
   const showTpdbLinks = !!seriesTvdbId || !!episodeTvdbId;
   const hasScreenshot = hasEpisodeScreenshot(images);
   const shouldShowScreenshot = showScreenshotProp && hasScreenshot;
-  const shouldRenderMetadata = showMetadata || collapseMetadata;
-  const isMetadataVisible = showMetadata && !collapseMetadata;
+  const [isMetadataMounted, setIsMetadataMounted] = useState(
+    showMetadata && !collapseMetadata
+  );
+  const [isMetadataFadingOut, setIsMetadataFadingOut] = useState(false);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showMetadata) {
+      setIsMetadataMounted(false);
+      setIsMetadataFadingOut(false);
+      return;
+    }
+
+    if (!collapseMetadata) {
+      setIsMetadataMounted(true);
+      setIsMetadataFadingOut(false);
+    }
+  }, [showMetadata, collapseMetadata]);
+
+  useEffect(() => {
+    if (!showMetadata || !collapseMetadata || !isMetadataMounted) {
+      return;
+    }
+
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollTop = 0;
+    }
+
+    setIsMetadataFadingOut(true);
+
+    const timeoutId = window.setTimeout(() => {
+      setIsMetadataMounted(false);
+      setIsMetadataFadingOut(false);
+    }, METADATA_FADE_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [showMetadata, collapseMetadata, isMetadataMounted]);
+
+  useEffect(() => {
+    onMetadataMountChange?.(isMetadataMounted);
+  }, [isMetadataMounted, onMetadataMountChange]);
+
+  const isScreenshotGrowing = centerScreenshot && isMetadataMounted;
+  const isScreenshotCentered = centerScreenshot && !isMetadataMounted;
 
   return (
     <div
@@ -114,6 +162,7 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
       ) : null}
 
       <Scroller
+        ref={scrollerRef}
         className={scrollerClassName ?? styles.sceneDetailsScroller}
         scrollDirection={scrollDirections.VERTICAL}
       >
@@ -123,7 +172,8 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
               <div
                 className={classNames(
                   styles.sceneScreenshotRegion,
-                  centerScreenshot && styles.sceneScreenshotRegionExpanded
+                  isScreenshotGrowing && styles.sceneScreenshotRegionGrowing,
+                  isScreenshotCentered && styles.sceneScreenshotRegionExpanded
                 )}
               >
                 <div className={styles.sceneScreenshot}>
@@ -136,11 +186,11 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
               </div>
             ) : null}
 
-            {shouldRenderMetadata ? (
+            {isMetadataMounted ? (
               <div
                 className={classNames(
                   styles.metadataSection,
-                  !isMetadataVisible && styles.metadataSectionCollapsed
+                  isMetadataFadingOut && styles.metadataSectionFadingOut
                 )}
               >
                 <div className={styles.metadataTitle}>{title}</div>
