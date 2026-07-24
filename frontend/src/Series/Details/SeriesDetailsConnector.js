@@ -31,6 +31,7 @@ import { findCommand, isCommandExecuting } from 'Utilities/Command';
 import { resolveRuntimeFilter } from 'Utilities/Number/runtimeFilterUtils';
 import { registerPagePopulator, unregisterPagePopulator } from 'Utilities/pagePopulator';
 import filterAlternateTitles from 'Utilities/Series/filterAlternateTitles';
+import { getSeriesDetailsToolbarState } from './getSeriesDetailsToolbarState';
 import SeriesDetails from './SeriesDetails';
 
 const selectEpisodes = createSelector(
@@ -47,6 +48,7 @@ const selectEpisodes = createSelector(
     const hasMonitoredEpisodes = items.some((e) => e.monitored);
 
     return {
+      items,
       isEpisodesFetching: isFetching,
       isEpisodesPopulated: isPopulated,
       episodesError: error,
@@ -69,6 +71,7 @@ const selectEpisodeFiles = createSelector(
     const hasEpisodeFiles = !!items.length;
 
     return {
+      items,
       isEpisodeFilesFetching: isFetching,
       isEpisodeFilesPopulated: isPopulated,
       episodeFilesError: error,
@@ -106,19 +109,24 @@ function createMapStateToProps() {
       }
 
       const {
+        items: episodeItems,
         isEpisodesFetching,
         isEpisodesPopulated,
-        episodesError,
-        hasEpisodes,
-        hasMonitoredEpisodes
+        episodesError
       } = episodes;
 
       const {
+        items: episodeFileItems,
         isEpisodeFilesFetching,
         isEpisodeFilesPopulated,
-        episodeFilesError,
-        hasEpisodeFiles
+        episodeFilesError
       } = episodeFiles;
+
+      const toolbarState = getSeriesDetailsToolbarState({
+        episodeItems,
+        episodeFileItems,
+        statistics: series.statistics
+      });
 
       const previousSeries = sortedSeries[seriesIndex - 1] || _.last(sortedSeries);
       const nextSeries = sortedSeries[seriesIndex + 1] || _.first(sortedSeries);
@@ -157,9 +165,9 @@ function createMapStateToProps() {
         isPopulated,
         episodesError,
         episodeFilesError,
-        hasEpisodes,
-        hasMonitoredEpisodes,
-        hasEpisodeFiles,
+        hasEpisodes: toolbarState.hasEpisodes,
+        hasMonitoredEpisodes: toolbarState.hasMonitoredEpisodes,
+        hasEpisodeFiles: toolbarState.hasEpisodeFiles,
         hasQBittorrent,
         isDownloadClientsPopulated: downloadClients?.isPopulated ?? false,
         isDownloadClientsFetching: downloadClients?.isFetching ?? false,
