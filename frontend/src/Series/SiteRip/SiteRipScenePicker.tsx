@@ -1,7 +1,5 @@
 import classNames from 'classnames';
 import React, { useCallback, useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import AppState from 'App/State/AppState';
 import SelectInput from 'Components/Form/SelectInput';
 import TextInput from 'Components/Form/TextInput';
 import Scroller from 'Components/Scroller/Scroller';
@@ -13,6 +11,7 @@ import Episode from 'Episode/Episode';
 import { scrollDirections } from 'Helpers/Props';
 import useSeries from 'Series/useSeries';
 import translate from 'Utilities/String/translate';
+import { useSiteRipSeriesEpisodes } from './useSiteRipSeriesEpisodes';
 import styles from './SiteRipMatchingView.css';
 
 const episodeColumns = [
@@ -68,12 +67,8 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
     onEpisodeSelect,
   } = props;
 
-  const episodes = useSelector((state: AppState) => state.episodes.items);
+  const { episodes: seriesEpisodes } = useSiteRipSeriesEpisodes(seriesId);
   const series = useSeries(seriesId);
-
-  const seriesEpisodes = useMemo(() => {
-    return episodes.filter((episode) => episode.seriesId === seriesId);
-  }, [episodes, seriesId]);
 
   const yearOptions = useMemo(() => {
     const years = [
@@ -91,9 +86,7 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
   const filteredEpisodes = useMemo(() => {
     const titleFilter = episodeFilterTitle.toLowerCase();
     const performerFilter = episodeFilterPerformer.toLowerCase();
-    const yearFilter = episodeFilterYear
-      ? parseInt(episodeFilterYear, 10)
-      : null;
+    const yearFilter = episodeFilterYear ? Number(episodeFilterYear) : null;
 
     return seriesEpisodes.filter((episode) => {
       if (yearFilter != null && episode.seasonNumber !== yearFilter) {

@@ -1519,6 +1519,8 @@
   "SiteRipMatchingScenes": "Matching scenes...",
   "SiteRipMatchingProgress": "Matching file {0} of {1}...",
   "SiteRipMatchingComplete": "Matching complete",
+  "SiteRipLoadingScenes": "Loading scenes from library...",
+  "SiteRipLoadingScenesProgress": "Loading scenes... {loaded} of {total}",
   "SiteRipSelectFileHint": "Select a file to assign a scene",
   "SiteRipSortAlphabetical": "Alphabetical",
   "SiteRipSortSize": "Size",

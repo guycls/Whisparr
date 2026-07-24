@@ -11,6 +11,10 @@ import {
 } from 'Helpers/Props/sortDirections';
 import { fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import {
+  fetchMoreSeriesDetailsUnifiedGrid,
+  fetchSeriesDetailsUnifiedGrid,
+} from 'Store/Actions/seriesDetailsActions';
+import {
   setSiteRipEpisode,
   setSiteRipSelection,
   startSiteRipMatching,
@@ -29,6 +33,7 @@ import SiteRipMatchingFileList, {
 } from './SiteRipMatchingFileList';
 import SiteRipSceneDetails from './SiteRipSceneDetails';
 import SiteRipScenePicker from './SiteRipScenePicker';
+import { useSiteRipSeriesEpisodes } from './useSiteRipSeriesEpisodes';
 import styles from './SiteRipMatchingView.css';
 
 interface SiteRipMatchingViewProps {
@@ -63,7 +68,18 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
     selections,
   } = useSelector((state: AppState) => state.siteRip);
 
-  const episodes = useSelector((state: AppState) => state.episodes.items);
+  const {
+    episodes: seriesEpisodes,
+    isFullyLoaded: isSeriesEpisodesFullyLoaded,
+    isLoading: isSeriesEpisodesLoading,
+    usesUnifiedGrid,
+    loadedCount: seriesEpisodesLoadedCount,
+    totalCount: seriesEpisodesTotalCount,
+    loadError: seriesEpisodesLoadError,
+  } = useSiteRipSeriesEpisodes(seriesId);
+  const unifiedGrid = useSelector(
+    (state: AppState) => state.seriesDetails.unifiedGrid
+  );
   const episodeFiles = useSelector(
     (state: AppState) => state.episodeFiles.items
   );
@@ -72,14 +88,42 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
   );
 
   const episodeMap = useMemo(() => {
-    return episodes.reduce<Record<number, (typeof episodes)[number]>>(
-      (acc, episode) => {
-        acc[episode.id] = episode;
-        return acc;
-      },
-      {}
-    );
-  }, [episodes]);
+    return seriesEpisodes.reduce<
+      Record<number, (typeof seriesEpisodes)[number]>
+    >((acc, episode) => {
+      acc[episode.id] = episode;
+      return acc;
+    }, {});
+  }, [seriesEpisodes]);
+
+  useEffect(() => {
+    if (
+      !usesUnifiedGrid ||
+      isSeriesEpisodesFullyLoaded ||
+      seriesEpisodesLoadError
+    ) {
+      return;
+    }
+
+    if (!unifiedGrid.isPopulated && !unifiedGrid.isFetching) {
+      dispatch(fetchSeriesDetailsUnifiedGrid({ seriesId }));
+      return;
+    }
+
+    if (!unifiedGrid.isFetching) {
+      dispatch(fetchMoreSeriesDetailsUnifiedGrid({ seriesId }));
+    }
+  }, [
+    dispatch,
+    usesUnifiedGrid,
+    isSeriesEpisodesFullyLoaded,
+    seriesEpisodesLoadError,
+    seriesId,
+    unifiedGrid.isPopulated,
+    unifiedGrid.isFetching,
+    unifiedGrid.items.length,
+    unifiedGrid.page,
+  ]);
 
   useEffect(() => {
     if (!isEpisodeFilesPopulated) {
@@ -270,11 +314,20 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
     typeof matchError === 'string'
       ? matchError
       : getErrorMessage(matchError as never);
-  const isLoading = isMatching || isFilesFetching || !!matchId;
+  const isMatchLoading = isMatching || isFilesFetching || !!matchId;
+  const isScenesLoading = usesUnifiedGrid && isSeriesEpisodesLoading;
+  const isLoading = isMatchLoading || isScenesLoading;
   const showMatchProgressBar = matchPhase === 'matching' && matchTotalFiles > 0;
+  const showScenesProgressBar = isScenesLoading && seriesEpisodesTotalCount > 0;
   const matchProgressPercent = showMatchProgressBar
     ? Math.round((matchCompletedFiles / matchTotalFiles) * 100)
     : 0;
+  const scenesProgressPercent = showScenesProgressBar
+    ? Math.round((seriesEpisodesLoadedCount / seriesEpisodesTotalCount) * 100)
+    : 0;
+  const seriesEpisodesLoadErrorMessage = seriesEpisodesLoadError
+    ? getErrorMessage(seriesEpisodesLoadError as never)
+    : null;
 
   const getMatchPhaseLabel = () => {
     switch (matchPhase) {
@@ -293,23 +346,44 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
     }
   };
 
-  const seriesEpisodes = useMemo(() => {
-    return episodes.filter((episode) => episode.seriesId === seriesId);
-  }, [episodes, seriesId]);
+  const getLoadingMessage = () => {
+    if (isMatchLoading) {
+      return matchStatusMessage || getMatchPhaseLabel();
+    }
+
+    if (isScenesLoading) {
+      if (seriesEpisodesTotalCount > 0) {
+        return translate('SiteRipLoadingScenesProgress', {
+          loaded: seriesEpisodesLoadedCount,
+          total: seriesEpisodesTotalCount,
+        });
+      }
+
+      return translate('SiteRipLoadingScenes');
+    }
+
+    return '';
+  };
 
   return (
     <div className={styles.matchingView}>
       {isLoading ? (
         <div className={styles.loadingContainer}>
           <LoadingIndicator />
-          <div className={styles.statusMessage}>
-            {matchStatusMessage || getMatchPhaseLabel()}
-          </div>
+          <div className={styles.statusMessage}>{getLoadingMessage()}</div>
           {showMatchProgressBar ? (
             <div className={styles.progressBarContainer}>
               <div
                 className={styles.progressBarFill}
                 style={{ width: `${matchProgressPercent}%` }}
+              />
+            </div>
+          ) : null}
+          {showScenesProgressBar ? (
+            <div className={styles.progressBarContainer}>
+              <div
+                className={styles.progressBarFill}
+                style={{ width: `${scenesProgressPercent}%` }}
               />
             </div>
           ) : null}
@@ -322,6 +396,10 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
 
       {matchErrorMessage ? (
         <Alert kind={kinds.DANGER}>{matchErrorMessage}</Alert>
+      ) : null}
+
+      {seriesEpisodesLoadErrorMessage ? (
+        <Alert kind={kinds.DANGER}>{seriesEpisodesLoadErrorMessage}</Alert>
       ) : null}
 
       {!isLoading && matches.length ? (

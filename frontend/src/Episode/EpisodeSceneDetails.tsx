@@ -27,6 +27,7 @@ const METADATA_FADE_MS = 150;
 interface EpisodeSceneDetailsProps {
   seriesId: number;
   episodeId?: number;
+  episode?: Episode;
   episodeEntity?: EpisodeEntities;
   episodeFileId?: number;
   placeholder?: string;
@@ -45,6 +46,7 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
   const {
     seriesId,
     episodeId,
+    episode: episodeProp,
     episodeEntity = 'episodes',
     episodeFileId: episodeFileIdProp,
     placeholder = translate('SelectEpisode'),
@@ -71,38 +73,11 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
     tvdbId: seriesTvdbId,
   } = useSeries(seriesId) as Series;
 
-  const episode = useEpisode(episodeId, episodeEntity) as Episode | undefined;
+  const episodeFromStore = useEpisode(episodeId, episodeEntity) as
+    | Episode
+    | undefined;
+  const episode = episodeProp ?? episodeFromStore;
 
-  if (!episodeId || !episode) {
-    return (
-      <div className={className ?? styles.sceneDetails}>
-        <div className={styles.metadataPlaceholder}>{placeholder}</div>
-      </div>
-    );
-  }
-
-  const {
-    title,
-    overview,
-    seasonNumber,
-    episodeNumber,
-    absoluteEpisodeNumber,
-    releaseDate,
-    runtime,
-    monitored,
-    images,
-    actors,
-    tvdbId: episodeTvdbId,
-    episodeFileId: episodeFileIdFromEpisode,
-  } = episode;
-
-  const episodeFileId = episodeFileIdProp ?? episodeFileIdFromEpisode;
-  const performers = formatPerformers(actors);
-  const hasPerformers = !!performers;
-  const hasOverview = !!overview;
-  const showTpdbLinks = !!seriesTvdbId || !!episodeTvdbId;
-  const hasScreenshot = hasEpisodeScreenshot(images);
-  const shouldShowScreenshot = showScreenshotProp && hasScreenshot;
   const [isMetadataMounted, setIsMetadataMounted] = useState(
     showMetadata && !collapseMetadata
   );
@@ -146,6 +121,37 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
   useEffect(() => {
     onMetadataMountChange?.(isMetadataMounted);
   }, [isMetadataMounted, onMetadataMountChange]);
+
+  if (!episodeId || !episode) {
+    return (
+      <div className={className ?? styles.sceneDetails}>
+        <div className={styles.metadataPlaceholder}>{placeholder}</div>
+      </div>
+    );
+  }
+
+  const {
+    title,
+    overview,
+    seasonNumber,
+    episodeNumber,
+    absoluteEpisodeNumber,
+    releaseDate,
+    runtime,
+    monitored,
+    images,
+    actors,
+    tvdbId: episodeTvdbId,
+    episodeFileId: episodeFileIdFromEpisode,
+  } = episode;
+
+  const episodeFileId = episodeFileIdProp ?? episodeFileIdFromEpisode;
+  const performers = formatPerformers(actors);
+  const hasPerformers = !!performers;
+  const hasOverview = !!overview;
+  const showTpdbLinks = !!seriesTvdbId || !!episodeTvdbId;
+  const hasScreenshot = hasEpisodeScreenshot(images);
+  const shouldShowScreenshot = showScreenshotProp && hasScreenshot;
 
   const isScreenshotGrowing = centerScreenshot && isMetadataMounted;
   const isScreenshotCentered = centerScreenshot && !isMetadataMounted;

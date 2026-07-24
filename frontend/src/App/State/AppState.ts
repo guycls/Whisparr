@@ -97,8 +97,17 @@ interface AppState {
     maxEpisodeRuntime: number;
     activeSeriesId: number;
     unifiedGrid: {
-      items: Episode[];
+      isFetching: boolean;
+      isPopulated: boolean;
+      page: number;
+      pageSize: number;
+      sortKey: string;
+      sortDirection: string;
+      totalRecords: number;
+      totalPages: number;
       lastPageSize: number;
+      error: unknown;
+      items: Episode[];
     };
   };
   seriesIndex: SeriesIndexAppState;
