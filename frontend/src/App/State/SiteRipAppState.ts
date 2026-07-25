@@ -28,6 +28,7 @@ export interface SiteRipRelease {
   leechers?: number;
   rejections: string[];
   releaseWeight?: number;
+  infoUrl?: string;
 }
 
 export default interface SiteRipAppState {

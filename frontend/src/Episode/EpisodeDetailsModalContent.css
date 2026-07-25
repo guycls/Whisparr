@@ -39,7 +39,6 @@
     align-self: stretch;
     border-bottom: none;
     border-right: 1px solid var(--borderColor);
-    max-height: min(70vh, 560px);
     overflow: hidden;
     transition: max-height 0.15s ease-in;
   }

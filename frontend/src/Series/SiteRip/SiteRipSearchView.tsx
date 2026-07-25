@@ -7,6 +7,7 @@ import Alert from 'Components/Alert';
 import TextInput from 'Components/Form/TextInput';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
+import Link from 'Components/Link/Link';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import Table from 'Components/Table/Table';
@@ -107,8 +108,12 @@ function SiteRipSearchView(props: SiteRipSearchViewProps) {
   } = useSelector((state: AppState) => state.siteRip);
 
   useEffect(() => {
+    if (isPopulated || isFetching) {
+      return;
+    }
+
     dispatch(fetchSiteRipReleases({ seriesId }));
-  }, [dispatch, seriesId]);
+  }, [dispatch, seriesId, isPopulated, isFetching]);
 
   const onFilterChange = useCallback(({ value }: { value: string }) => {
     setFilter(value.toLowerCase());
@@ -193,7 +198,13 @@ function SiteRipSearchView(props: SiteRipSearchViewProps) {
                 <TableRowCell>
                   {formatAge(release.age, release.ageHours, release.ageMinutes)}
                 </TableRowCell>
-                <TableRowCell>{release.title}</TableRowCell>
+                <TableRowCell>
+                  {release.infoUrl ? (
+                    <Link to={release.infoUrl}>{release.title}</Link>
+                  ) : (
+                    release.title
+                  )}
+                </TableRowCell>
                 <TableRowCell>{formatBytes(release.size)}</TableRowCell>
                 <TableRowCell>
                   {release.seeders ?? 0} / {release.leechers ?? 0}
