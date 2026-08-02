@@ -1,90 +1,121 @@
-# Whisparr
+# Whisparr v2: vibe-coded ✨ fork
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Whisparr/Whisparr/build.yml?branch=v2)
-![Github Downloads](https://img.shields.io/github/downloads/Whisparr/Whisparr/total.svg)
-[![Backers on Open Collective](https://opencollective.com/Whisparr/backers/badge.svg)](#backers)
-[![Sponsors on Open Collective](https://opencollective.com/Whisparr/sponsors/badge.svg)](#sponsors)
-[![Mega Sponsors on Open Collective](https://opencollective.com/Whisparr/megasponsors/badge.svg)](#mega-sponsors)
+## What
 
-Whisparr is an adult movie collection manager for Usenet and BitTorrent users. It can monitor multiple RSS feeds for new movies and will interface with clients and indexers to grab, sort, and rename them. It can also be configured to automatically upgrade the quality of existing files in the library when a better quality format becomes available.
-Note that only one type of a given movie is supported. If you want both an 4k version and 1080p version of a given movie you will need multiple instances.
+This is a fork of [Whisparr v2](https://github.com/Whisparr/Whisparr/tree/v2) with vibe-coded enhancements and docker build support via [hotio/whisparr](https://github.com/hotio/whisparr).
 
-## Major Features Include
+### Enhancements:
 
-* Adding new movies with lots of information, such as trailers, ratings, etc.
-* Support for major platforms: Windows, Linux, macOS, Raspberry Pi, etc.
-* Can watch for better quality of the movies you have and do an automatic upgrade. *e.g. from DVD to Blu-Ray*
-* Automatic failed download handling will try another release if one fails
-* Manual search so you can pick any release or to see why a release was not downloaded automatically
-* Full integration with SABnzbd and NZBGet
-* Automatically searching for releases as well as RSS Sync
-* Automatically importing downloaded movies
-* Recognizing Special Editions, Director's Cut, etc.
-* Identifying releases with hardcoded subs
-* Identifying releases with AKA movie names
-* SABnzbd, NZBGet, QBittorrent, Deluge, rTorrent, Transmission, uTorrent, and other download clients are supported and integrated
-* Full integration with Kodi and Plex (notifications, library updates)
-* Importing Metadata such as trailers or subtitles
-* Adding metadata such as posters and information for Kodi and others to use
-* Advanced customization for profiles, such that Whisparr will always download the copy you want
-* A beautiful UI
+#### **SiteRip matching**
 
-## Installation
-### Version 2.x (based on Sonarr), focuses on studios
-See https://wiki.servarr.com/whisparr/installation
+Search indexers and grab site-rip torrents from a studio page
 
-### Version 3.x (based on Radarr), focuses on scenes, but also supports movies.
-Docker: use `image: hotio/whisparr:v3` in Docker Compose
-See https://wiki.servarr.com/whisparr/installation/docker
+- Inspect torrent file lists before download
+- Auto-match files to scenes
+- Selective grab via qBittorrent
+- Matching modal with progress UI and file/scene filters
+- Cached search results when navigating back
 
-Direct install: See ***Releases*** at https://github.com/whisparr/whisparr-eros
+#### **Thumbnail view**
 
-## Support
+Screenshot-based episode browsing on studio details
 
-[![Wiki](https://img.shields.io/badge/servarr-wiki-181717.svg?maxAge=60)](https://wiki.servarr.com/whisparr)
-[![Discord](https://img.shields.io/badge/discord-chat-7289DA.svg?maxAge=60)](https://whisparr.com/discord)
-[![Reddit](https://img.shields.io/badge/reddit-discussion-FF4500.svg?maxAge=60)](https://www.reddit.com/r/Whisparr)
+- Unified all-seasons grid (removes year-based categorization on studio)
+  - **requires TPDB api key setup in Settings -> Metadata Source**
+- Runtime filter
 
-Note: GitHub Issues are for Bugs and Feature Requests Only
 
-[![GitHub - Bugs and Feature Requests Only](https://img.shields.io/badge/github-issues-red.svg?maxAge=60)](https://github.com/Whisparr/Whisparr/issues)
 
-## Contributors & Developers
+#### **Scene modal**
 
-[API Documentation](https://whisparr.com/docs/api/)
+Richer episode/scene details in the details modal
 
-This project exists thanks to all the people who contribute.
-- [Contribute (GitHub)](CONTRIBUTING.md)
-- [Contribution (Wiki Article)](https://wiki.servarr.com/whisparr/contributing)
+- Expanded scene metadata
+- Layout improvements
 
-[![Contributors List](https://opencollective.com/Whisparr/contributors.svg?width=890&button=false)](https://github.com/Whisparr/Whisparr/graphs/contributors)
 
-## Backers
 
-Thank you to all our backers! 🙏 [Become a backer](https://opencollective.com/Whisparr#backer)
+#### **Interactive search**
 
-[![Backers List](https://opencollective.com/Whisparr/backers.svg?width=890)](https://opencollective.com/Whisparr#backer)
+Improved release search from episode and series pages
 
-## Sponsors
+- Custom search query input
+- Episode status filter
+- Live search progress
+- Quality filter
 
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [Become a sponsor](https://opencollective.com/Whisparr#sponsor)
 
-[![Sponsors List](https://opencollective.com/Whisparr/sponsors.svg?width=890)](https://opencollective.com/Whisparr#sponsor)
 
-## Mega Sponsors
+#### **Stash sync**
 
-[![Mega Sponsors List](https://opencollective.com/Whisparr/tiers/mega-sponsor.svg?width=890)](https://opencollective.com/Whisparr#mega-sponsor)
+When stash is added as a Connect client
 
-## JetBrains
+- Trigger sync to:
+  - search and import monitored but not yet tracked Whisparr scenes from stash
+  - Trigger stash scan for Whisparr downloaded scenes not yet scanned by stash.
 
-Thank you to [<img src="/Logo/jetbrains.svg" alt="JetBrains" width="32"> JetBrains](http://www.jetbrains.com/) for providing us with free licenses to their great tools.
 
-* [<img src="/Logo/resharper.svg" alt="ReSharper" width="32"> ReSharper](http://www.jetbrains.com/resharper/)
-* [<img src="/Logo/webstorm.svg" alt="WebStorm" width="32"> WebStorm](http://www.jetbrains.com/webstorm/)
-* [<img src="/Logo/rider.svg" alt="Rider" width="32"> Rider](http://www.jetbrains.com/rider/)
-* [<img src="/Logo/dottrace.svg" alt="dotTrace" width="32"> dotTrace](http://www.jetbrains.com/dottrace/)
 
-### License
+#### **Split import**
 
-* [GNU GPL v3](http://www.gnu.org/licenses/gpl.html)
-* Copyright 2010-2022
+Import multi-part scene files as separate episodes
+
+#### **Import fixes**
+
+Various import and matching improvements
+
+- Handle unexpected downloaded filenames
+- Serialized studio search
+- Skip date-based scene search/matching
+- Assorted import and queue bugfixes
+
+
+
+#### **Indexer setting**
+
+Option to disable indexer blocking/backoff
+
+#### **Docker**
+
+Container build and deployment support
+
+- Dockerfile and s6-overlay config
+- Build scripts
+
+
+
+## Build steps
+
+Refer to [Dockerfile (all platforms)](./Dockerfile) and [docker build script (Windows)](./scripts/docker-build.ps1).
+
+The docker file builds both FE and BE bundles.
+
+## Running (Windows)
+
+
+
+### Build docker image
+
+- `./scripts/docker-build.ps1`
+- Exports to local docker with name `whisparr:local`
+
+
+
+### [Optional] Export image for deploy
+
+- Export built image using `docker save whisparr:local -o <full_file_path_for_export.tar>
+- Move tar to target machine/NAS with docker
+- Import using `docker load -i <full_copied_image_path.tar>`
+- Deploy on remote via docker.
+
+
+
+## Why
+
+I would love to switch to Whisparr v3 ([eros](https://github.com/Whisparr/Whisparr/tree/eros)), but seems like it doesn't integrate with TPDB at the moment with only StashDB support.
+
+I could attempt adding TPDB support to v3 using AI but It'll be a significant refactor per [#547](https://github.com/Whisparr/Whisparr/issues/547), and might be super janky/full of bugs if not designed properly.
+
+## How
+
+Changes are mostly AI generated using Cursor. Guided & tested by human.
