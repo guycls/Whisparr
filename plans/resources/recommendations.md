@@ -1,57 +1,75 @@
 # Performance Recommendations
 
 **Last updated:** 2026-08-05  
-**Method:** Static code-path analysis (not runtime profiling)
+**Method:** Static code-path analysis (not runtime profiling)  
+**Implementation status:** P0 complete (R1–R4); P2 stats linking bundled with R1
 
 Impact ratings assume **large libraries** (100–1000+ series) and **active download workflows**.
 
 ---
 
-## P0 — Critical (implement first)
+## Implemented (2026-08-05)
 
-### R1. Cache series statistics
+| ID | Recommendation | Files |
+|----|----------------|-------|
+| R1 | Series statistics cache + O(n²) linking fix | `SeriesStatisticsService.cs`, `SeriesStatisticsRepository.cs`, `SeriesController.cs` |
+| R2 | Cover URL mtime cache | `MediaCoverService.cs` |
+| R3 | Queue status snapshot | `QueueStatusService.cs`, `QueueStatusSnapshot.cs`, `PendingReleaseService.cs`, `QueueStatusController.cs` |
+| R4 | SiteRip DB indexes | `219_add_siterip_indexes.cs`, `SiteRipDownloadRepository.cs`, `SiteRipDownloadService.cs` |
+
+---
+
+## P0 — Critical ~~(implement first)~~ DONE
+
+### R1. Cache series statistics — **IMPLEMENTED**
 
 | | |
 |---|---|
+| **Status** | Done 2026-08-05 |
 | **Impact** | HIGH |
 | **Area** | API — `GET /api/v3/series` |
-| **Files** | `src/Whisparr.Api.V3/Series/SeriesController.cs:99` |
-| | `src/NzbDrone.Core/SeriesStats/SeriesStatisticsRepository.cs:29-34` |
-| **Problem** | Every series list request runs two grouped aggregate queries over all Episodes and EpisodeFiles. |
-| **Fix** | Cache `SeriesStatistics()` result in memory with TTL or invalidate on `EpisodeImportedEvent`, `EpisodeFileDeletedEvent`, `SeriesDeletedEvent`, `SeriesUpdatedEvent`. Controller already handles several of these via SignalR. |
-| **Also fix** | O(n²) linking in `MapResults` (lines 44-52) and `LinkSeriesStatistics` in controller — use `Dictionary<(SeriesId, SeasonNumber), ...>`. |
+| **Files** | `src/NzbDrone.Core/SeriesStats/SeriesStatisticsService.cs` |
+| | `src/NzbDrone.Core/SeriesStats/SeriesStatisticsRepository.cs` |
+| | `src/Whisparr.Api.V3/Series/SeriesController.cs` |
+| **Was** | Every series list request ran two grouped aggregate queries over all Episodes and EpisodeFiles. |
+| **Done** | `ICacheManager` cache with invalidation on `EpisodeImportedEvent`, `EpisodeFileDeletedEvent`, `EpisodeFileAddedEvent`, `SeriesDeletedEvent`. Dictionary-based linking in repository + controller. |
 
-### R2. Remove sync disk I/O from cover URL generation
+### R2. Remove sync disk I/O from cover URL generation — **IMPLEMENTED**
 
 | | |
 |---|---|
+| **Status** | Done 2026-08-05 |
 | **Impact** | HIGH |
 | **Area** | API — series list, episode pages |
-| **Files** | `src/NzbDrone.Core/MediaCover/MediaCoverService.cs:96-100` |
-| **Problem** | `ConvertToLocalUrls` calls `FileExists` + `FileGetLastWrite` for every cover of every series on every list fetch. With 500 series × 2-3 covers = 1000+ disk syscalls per request. |
-| **Fix** | Option A: Omit `?lastWrite=` cache buster (rely on SignalR `MediaCoversUpdatedEvent`). Option B: Cache mtime in memory keyed by `(seriesId, coverType)`. Option C: Store cover mtime in DB. |
+| **Files** | `src/NzbDrone.Core/MediaCover/MediaCoverService.cs` |
+| **Was** | `ConvertToLocalUrls` called `FileExists` + `FileGetLastWrite` per cover per series on every list fetch. |
+| **Done** | In-memory mtime cache (`ICached<long?>`) keyed by `(seriesId, coverType)`; invalidated on cover download and series delete. |
 
-### R3. Cache queue status counts
+### R3. Cache queue status counts — **IMPLEMENTED**
 
 | | |
 |---|---|
+| **Status** | Done 2026-08-05 |
 | **Impact** | HIGH |
 | **Area** | API — `GET /api/v3/queue/status`, SignalR broadcast |
-| **Files** | `src/Whisparr.Api.V3/Queue/QueueStatusController.cs:46-61, 69-71` |
-| | `src/NzbDrone.Core/Download/Pending/PendingReleaseService.cs:177-214` |
-| **Problem** | Every status GET and debounced SignalR broadcast calls `GetPendingQueue()` which loads all pending releases, re-parses episodes, runs quality comparer dedup. |
-| **Fix** | Maintain `QueueStatusSnapshot` updated incrementally on `QueueUpdatedEvent` / `PendingReleasesUpdatedEvent`. Status GET reads snapshot only. Single-pass counter loop instead of 6 LINQ iterations. |
+| **Files** | `src/NzbDrone.Core/Queue/QueueStatusService.cs` |
+| | `src/NzbDrone.Core/Download/Pending/PendingReleaseService.cs` (`GetPendingQueueCount`) |
+| | `src/Whisparr.Api.V3/Queue/QueueStatusController.cs` |
+| **Was** | Every status GET and debounced broadcast called `GetPendingQueue()` — full pending release rebuild. |
+| **Done** | `QueueStatusSnapshot` refreshed on `QueueUpdatedEvent` / `PendingReleasesUpdatedEvent`; lightweight pending count via unique episode IDs. |
 
-### R4. Add SiteRip DB indexes
+### R4. Add SiteRip DB indexes — **IMPLEMENTED**
 
 | | |
 |---|---|
+| **Status** | Done 2026-08-05 |
 | **Impact** | HIGH |
 | **Area** | Queue — download monitoring (every 1 min) |
-| **Files** | `src/NzbDrone.Core/Datastore/Migration/217_add_siterip_downloads.cs` |
-| | `src/NzbDrone.Core/SiteRip/SiteRipDownloadRepository.cs` (FindByDownloadId) |
-| **Problem** | Migration 217 creates tables with no indexes. Lookups use case-insensitive OR → table scan on every download refresh per SiteRip item. |
-| **Fix** | New migration: index on `SiteRipDownloads(DownloadId)`, index on `SiteRipDownloadFiles(SiteRipDownloadId, Imported)`. Consider storing normalized DownloadId to avoid OR query. |
+| **Files** | `src/NzbDrone.Core/Datastore/Migration/219_add_siterip_indexes.cs` |
+| | `src/NzbDrone.Core/SiteRip/SiteRipDownloadRepository.cs` |
+| | `src/NzbDrone.Core/SiteRip/SiteRipDownloadService.cs` |
+| **Was** | No indexes; case-insensitive OR lookup caused table scans. |
+| **Done** | Migration 219: indexes on `DownloadId`, `SiteRipDownloadId`, composite `(SiteRipDownloadId, Imported)`; backfill lowercase; normalized insert. |
 
 ---
 
@@ -198,33 +216,34 @@ Impact ratings assume **large libraries** (100–1000+ series) and **active down
 
 ## API-specific quick reference
 
-| Endpoint | Primary file | Top issue |
-|----------|-------------|-----------|
-| GET /series | SeriesController.cs | Stats aggregates + cover disk I/O |
-| GET /episode/paged | EpisodeController.cs | Quality JSON LIKE filter |
-| GET /queue/status | QueueStatusController.cs | GetPendingQueue on every request |
-| GET /health | HealthController.cs | Read cheap; global event handler expensive |
-| GET /release | ReleaseController.cs | RSS re-fetch on HTTP thread |
-| GET /mediacover | MediaCoverController.cs | Disk stat per request |
-| SiteRip * | SiteRipController.cs | Sync match, missing indexes, all-episodes load |
+| Endpoint | Primary file | Status | Top issue |
+|----------|-------------|--------|-----------|
+| GET /series | SeriesController.cs | Improved | Full library load; stats + cover mtime cached |
+| GET /episode/paged | EpisodeController.cs | Open | Quality JSON LIKE filter |
+| GET /queue/status | QueueStatusController.cs | **Fixed** | Snapshot via QueueStatusService |
+| GET /health | HealthController.cs | Open | Global event handler expensive |
+| GET /release | ReleaseController.cs | Open | RSS re-fetch on HTTP thread |
+| GET /mediacover | MediaCoverController.cs | Open | Disk stat per request |
+| SiteRip * | SiteRipController.cs | Partial | Indexes done; batch DB + sync match remain |
 
 ## Queue-specific quick reference
 
-| Task | Primary file | Top issue |
-|------|-------------|-----------|
-| DownloadMonitoring | DownloadMonitoringService.cs | Sequential client I/O, per-item history |
-| DownloadProcessing | DownloadProcessingService.cs | SiteRip qBittorrent poll every cycle |
-| RssSync | RssSyncService.cs | Full fetch + duplicate with API |
-| HealthCheck | HealthCheckService.cs | IHandleAsync<IEvent> global |
-| QueueService | QueueService.cs | SiteRip N+1, full rebuild |
-| ImportListSync | ImportListSyncService.cs | O(n) lookups |
+| Task | Primary file | Status | Top issue |
+|------|-------------|--------|-----------|
+| DownloadMonitoring | DownloadMonitoringService.cs | Partial | Indexed SiteRip lookup; sequential I/O remains |
+| DownloadProcessing | DownloadProcessingService.cs | Open | SiteRip qBittorrent poll every cycle |
+| RssSync | RssSyncService.cs | Open | Full fetch + duplicate with API |
+| HealthCheck | HealthCheckService.cs | Open | IHandleAsync<IEvent> global |
+| QueueService | QueueService.cs | Partial | SiteRip N+1 still present; status counts fixed |
+| ImportListSync | ImportListSyncService.cs | Open | O(n) lookups |
 
 ---
 
 ## Validation checklist (before/after)
 
-- [ ] Measure `GET /series` latency with 100, 500, 1000 series
-- [ ] Measure `GET /queue/status` during active downloads + pending releases
+- [ ] Measure `GET /series` latency with 100, 500, 1000 series (P0 — not yet profiled)
+- [ ] Measure `GET /queue/status` during active downloads + pending releases (P0 — not yet profiled)
 - [ ] Profile download monitoring cycle duration with 2+ clients + SiteRip
 - [ ] Confirm episode paged with quality filter on large series
-- [ ] Verify SiteRip lookup query plan after index migration
+- [x] Verify SiteRip lookup uses indexes after migration 219 (code complete; runtime query plan TBD)
+- [x] Solution builds (`dotnet build src/Whisparr.sln`)

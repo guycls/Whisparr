@@ -1,6 +1,6 @@
 # Backend Architecture Overview
 
-**Last updated:** 2026-08-05
+**Last updated:** 2026-08-05 (post-P0)
 
 ## Project structure
 
@@ -75,4 +75,4 @@ SignalR events trigger refetches or direct state updates:
 
 - SQLite (main DB) via Dapper + FluentMigrator
 - Migrations in `src/NzbDrone.Core/Datastore/Migration/`
-- Latest SiteRip tables: migration 217 (`SiteRipDownloads`, `SiteRipDownloadFiles`)
+- Latest SiteRip tables: migration 217 (`SiteRipDownloads`, `SiteRipDownloadFiles`); indexes added in migration 219

@@ -1,6 +1,7 @@
 # Queue Task & Event Handler Catalog
 
-**Last updated:** 2026-08-05
+**Last updated:** 2026-08-05  
+**Note:** SiteRip `DownloadId` lookups indexed via migration 219 (2026-08-05)
 
 ## Scheduler infrastructure
 
@@ -144,7 +145,8 @@ Scheduler (30s poll)
       → TrackDownload per item [history DB queries]
       → TrackedDownloadService.UpdateTrackable()
       → Publish TrackedDownloadRefreshedEvent
-          → QueueService.Handle() [full rebuild + SiteRip N+1]
+          → QueueService.Handle() [full rebuild; SiteRip N+1 on pending files — P1]
+          → QueueStatusService.Handle() [snapshot refresh — P0 done]
           → QueueStatusController debounced broadcast
       → Push ProcessMonitoredDownloadsCommand
   → DownloadProcessingService.Execute()

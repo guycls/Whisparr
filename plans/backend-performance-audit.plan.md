@@ -59,7 +59,9 @@ isProject: true
 # Backend Performance Audit
 
 **Created:** 2026-08-05  
-**Branch baseline:** current `main` / working tree  
+**Last updated:** 2026-08-05  
+**Build status:** Solution builds successfully (`dotnet build src/Whisparr.sln` — 0 errors)  
+**Branch baseline:** working tree (P0 changes uncommitted)  
 **Scope:** Backend only (`src/NzbDrone.Core`, `src/Whisparr.Api.V3`, `src/Whisparr.Http`, `src/NzbDrone.Host`)
 
 ## Purpose
@@ -99,27 +101,50 @@ NzbDrone.SignalR       → Real-time push at /signalr/messages
 
 ### Highest-traffic surfaces
 
-**APIs (HTTP):**
+**APIs (HTTP) — remaining bottlenecks after P0:**
 
-| Rank | Endpoint | Est. frequency | Primary bottleneck |
-|------|----------|----------------|-------------------|
-| 1 | `GET /api/v3/series` | Every page load | Full library + 2 aggregate DB scans + disk I/O per cover |
-| 2 | `GET /api/v3/localization` | App boot | Low (cached after first load) |
-| 3 | `GET /api/v3/mediacover/{id}/{file}` | Many img tags | Disk stat per request |
-| 4 | `GET /api/v3/health` | Sidebar + SignalR | Read path cheap; write path fires on all events |
-| 5 | `GET /api/v3/queue/status` | Sidebar badge | Rebuilds full pending queue |
-| 6 | `GET /api/v3/episode/paged` | Series detail | Quality filter uses JSON LIKE |
-| 7 | `GET /api/v3/release` + progress poll | Search workflow | RSS mode re-fetches on HTTP thread |
+| Rank | Endpoint | Est. frequency | Status | Remaining bottleneck |
+|------|----------|----------------|--------|---------------------|
+| 1 | `GET /api/v3/series` | Every page load | **Improved** | Full library load still unbounded; stats + cover mtime now cached |
+| 2 | `GET /api/v3/localization` | App boot | OK | Cached after first load |
+| 3 | `GET /api/v3/mediacover/{id}/{file}` | Many img tags | Open | Disk stat per image request (P2: Cache-Control headers) |
+| 4 | `GET /api/v3/health` | Sidebar + SignalR | Open | Global `IHandleAsync<IEvent>` on write path (P1) |
+| 5 | `GET /api/v3/queue/status` | Sidebar badge | **Fixed** | Reads `QueueStatusService` snapshot; no `GetPendingQueue()` on GET |
+| 6 | `GET /api/v3/episode/paged` | Series detail | Open | Quality filter uses JSON LIKE (P1) |
+| 7 | `GET /api/v3/release` + progress poll | Search workflow | Open | RSS mode re-fetches on HTTP thread (P1) |
 
-**Queue tasks:**
+**Queue tasks — remaining bottlenecks after P0:**
 
-| Rank | Task | Interval | Primary bottleneck |
-|------|------|----------|-------------------|
-| 1 | RefreshMonitoredDownloads + ProcessMonitoredDownloads | 1 min + events | Sequential download client I/O; SiteRip qBittorrent polling |
-| 2 | HealthCheckService event debouncer | Every domain event | `IHandleAsync<IEvent>` global subscription |
-| 3 | RssSyncCommand | 15 min (default) | Full indexer fetch + decision pipeline |
-| 4 | ImportListSyncCommand | 5 min | O(n) lookups per item |
-| 5 | QueueService rebuild | ~1 min + events | SiteRip N+1 DB; full queue rebuild |
+| Rank | Task | Interval | Status | Remaining bottleneck |
+|------|------|----------|--------|---------------------|
+| 1 | RefreshMonitoredDownloads + ProcessMonitoredDownloads | 1 min + events | **Partial** | SiteRip `DownloadId` lookups indexed; sequential client I/O + qBittorrent poll remain |
+| 2 | HealthCheckService event debouncer | Every domain event | Open | `IHandleAsync<IEvent>` global subscription (P1) |
+| 3 | RssSyncCommand | 15 min (default) | Open | Full indexer fetch + decision pipeline |
+| 4 | ImportListSyncCommand | 5 min | Open | O(n) lookups per item (P2) |
+| 5 | QueueService rebuild | ~1 min + events | **Partial** | Full rebuild remains; SiteRip N+1 DB still present (P1) |
+
+---
+
+## Completed (P0 + bundled P2)
+
+| ID | Item | Implementation |
+|----|------|----------------|
+| P0-1 | Series statistics cache | `SeriesStatisticsService` — `ICacheManager` with event invalidation on import/file add/delete/series delete |
+| P0-2 | Cover URL disk I/O | `MediaCoverService` — in-memory mtime cache via `ICached<long?>`; invalidated on download/delete |
+| P0-3 | Queue status snapshot | `QueueStatusService` + `QueueStatusSnapshot`; `PendingReleaseService.GetPendingQueueCount()`; controller reads snapshot |
+| P0-4 | SiteRip DB indexes | Migration `219_add_siterip_indexes.cs`; lowercase `DownloadId` on insert; indexed lookup in repository |
+| P2 | O(n²) stats linking | `SeriesStatisticsRepository.MapResults` + `SeriesController.LinkSeriesStatistics` use dictionaries |
+
+**Key files changed:**
+- `src/NzbDrone.Core/Datastore/Migration/219_add_siterip_indexes.cs`
+- `src/NzbDrone.Core/SeriesStats/SeriesStatisticsService.cs`
+- `src/NzbDrone.Core/SeriesStats/SeriesStatisticsRepository.cs`
+- `src/NzbDrone.Core/MediaCover/MediaCoverService.cs`
+- `src/NzbDrone.Core/Queue/QueueStatusService.cs`, `QueueStatusSnapshot.cs`
+- `src/NzbDrone.Core/Download/Pending/PendingReleaseService.cs` (`GetPendingQueueCount`)
+- `src/NzbDrone.Core/SiteRip/SiteRipDownloadRepository.cs`, `SiteRipDownloadService.cs`
+- `src/Whisparr.Api.V3/Series/SeriesController.cs`
+- `src/Whisparr.Api.V3/Queue/QueueStatusController.cs`
 
 ---
 
@@ -141,21 +166,21 @@ NzbDrone.SignalR       → Real-time push at /signalr/messages
 | Q1 | Does any external tool still call `LanguageProfile` or `CheckForFinishedDownload` APIs? | Both are deprecated stubs; removal blocked on D2 | Open |
 | Q2 | Should `GET /delayprofile/schema` be implemented or frontend call removed? | `delayProfiles.js` line 66 references non-existent endpoint | Open |
 | Q3 | What is typical library size for perf testing? | Recommendations assume 100–1000+ series; validate with real data | Open |
-| Q4 | Is runtime profiling (dotTrace, MiniProfiler) available in dev? | Code review only so far; confirm hotspots with traces before large refactors | Open |
+| Q4 | Is runtime profiling (dotTrace, MiniProfiler) available in dev? | Code review only so far; **build verified** — runtime profiling still recommended before P1 | Open |
 | Q5 | Should sync `POST /siterip/match` be deprecated in favor of async `match/start`? | Sync endpoint blocks HTTP thread on large torrents | Open |
 
 ---
 
 ## Improvement roadmap
 
-### P0 — High impact, affects every session or every minute
+### P0 — Completed 2026-08-05
 
-1. **Series statistics cache** — `SeriesStatisticsRepository` runs grouped scans over all Episodes + EpisodeFiles on every `GET /series`. Cache with invalidation on import/delete/refresh events.
-2. **Cover URL disk I/O** — `MediaCoverService.ConvertToLocalUrls` does `FileExists` + `FileGetLastWrite` per cover per series on every list fetch. Use static URLs or in-memory mtime cache.
-3. **Queue status cache** — `QueueStatusController.GetQueueStatus()` calls `GetPendingQueue()` which re-parses all pending releases. Maintain lightweight count snapshot.
-4. **SiteRip DB indexes** — Migration 217 creates tables without indexes; lookups use case-insensitive OR causing table scans.
+1. ~~**Series statistics cache**~~ — Done. Event-driven cache in `SeriesStatisticsService`.
+2. ~~**Cover URL disk I/O**~~ — Done. Mtime cache in `MediaCoverService`.
+3. ~~**Queue status cache**~~ — Done. `QueueStatusService` snapshot + lightweight pending count.
+4. ~~**SiteRip DB indexes**~~ — Done. Migration 219 + normalized `DownloadId`.
 
-### P1 — Significant impact on active workflows
+### P1 — Next up (significant impact on active workflows)
 
 5. RSS snapshot sharing between scheduled sync and `GET /release`
 6. Batch SiteRip DB lookups in `QueueService` and `SiteRipImportService`
@@ -165,7 +190,7 @@ NzbDrone.SignalR       → Real-time push at /signalr/messages
 
 ### P2 — Incremental wins
 
-10. O(n²) → O(n) stats linking in controller + repository
+10. ~~O(n²) → O(n) stats linking~~ — Done (bundled with P0-1)
 11. Parallel download client polling
 12. HashSet/Dictionary in ImportListSyncService
 13. Cache-Control on media cover responses
@@ -193,13 +218,14 @@ Full catalog: [resources/dead-code.md](resources/dead-code.md)
 |------|---------------|-----------|
 | 2026-08-05 | Initial audit | Created plan + resource files; code-path analysis of APIs, queue tasks, dead code |
 | 2026-08-05 | P0 implementation | SiteRip indexes (migration 219), series stats cache + O(n²) linking fix, cover mtime cache, QueueStatusService snapshot |
+| 2026-08-05 | Build fix + plan sync | Fixed CA1805/test errors; verified `dotnet build` passes; updated plan + resource docs to reflect P0 state |
 
 ---
 
 ## How to resume
 
 1. Open this plan in Cursor Plans view
-2. Pick highest-priority pending todo
+2. Pick highest-priority **pending** todo (start with P1: `p1-rss-cache` or `p1-siterip-batch-db`)
 3. Read linked resource file for file paths and context
 4. Mark todo `in_progress` → implement → mark `completed`
 5. Add row to Session log above

@@ -96,7 +96,7 @@
 
 | Method | Route | Freq | Perf notes |
 |--------|-------|------|------------|
-| GET | `/` | **High** | Full library + stats aggregates + cover disk I/O |
+| GET | `/` | **High** | Stats cached (`SeriesStatisticsService`); cover mtime cached; full library still loaded |
 | GET | `/{id}` | High | Single series |
 | POST | `/` | Medium | Add series |
 | PUT | `/{id}` | Medium | Update series |
@@ -171,7 +171,7 @@
 
 | Method | Route | Freq | Perf notes |
 |--------|-------|------|------------|
-| GET | `/` | **High** | Rebuilds full pending queue on every request |
+| GET | `/` | **High** | Reads `QueueStatusService` snapshot; no `GetPendingQueue()` on GET |
 
 ### QueueDetailsController — `/api/v3/queue/details`
 
@@ -207,6 +207,8 @@
 ---
 
 ## SiteRip (Whisparr-specific)
+
+DB lookups indexed (migration 219). Remaining: batch N+1 in `QueueService`, qBittorrent throttle (P1).
 
 ### SiteRipController — `/api/v3/siterip`
 
