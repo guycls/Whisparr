@@ -27,6 +27,7 @@ namespace NzbDrone.Core.Download.Pending
         List<ReleaseInfo> GetPending();
         List<RemoteEpisode> GetPendingRemoteEpisodes(int seriesId);
         List<Queue.Queue> GetPendingQueue();
+        int GetPendingQueueCount();
         Queue.Queue FindPendingQueueItem(int queueId);
         void RemovePendingQueueItems(int queueId);
         RemoteEpisode OldestPendingRelease(int seriesId, int[] episodeIds);
@@ -212,6 +213,27 @@ namespace NzbDrone.Core.Download.Pending
             });
 
             return deduped.ToList();
+        }
+
+        public int GetPendingQueueCount()
+        {
+            var pendingReleases = IncludeRemoteEpisodes(_repository.WithoutFallback());
+            var episodeIds = new HashSet<int>();
+
+            foreach (var pendingRelease in pendingReleases)
+            {
+                if (pendingRelease.RemoteEpisode?.Episodes == null || pendingRelease.RemoteEpisode.Episodes.Empty())
+                {
+                    continue;
+                }
+
+                foreach (var episode in pendingRelease.RemoteEpisode.Episodes)
+                {
+                    episodeIds.Add(episode.Id);
+                }
+            }
+
+            return episodeIds.Count;
         }
 
         public Queue.Queue FindPendingQueueItem(int queueId)

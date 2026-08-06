@@ -48,7 +48,7 @@ namespace NzbDrone.Integration.Test.ApiTests
             var bounds = Episodes.GetFilterBounds(_series.Id);
 
             bounds.MaxEpisodeRuntime.Should().BeGreaterOrEqualTo(0);
-            bounds.MaxEpisodeRuntime % 10.Should().Be(0);
+            (bounds.MaxEpisodeRuntime % 10).Should().Be(0);
         }
 
         [TearDown]

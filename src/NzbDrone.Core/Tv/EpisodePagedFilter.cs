@@ -3,9 +3,9 @@ namespace NzbDrone.Core.Tv
     public class EpisodePagedFilter
     {
         public string MonitorStatus { get; set; } = "all";
-        public int QualityMinIndex { get; set; } = 0;
+        public int QualityMinIndex { get; set; }
         public int QualityMaxIndex { get; set; } = 6;
-        public int RuntimeMinMinutes { get; set; } = 0;
+        public int RuntimeMinMinutes { get; set; }
         public int? RuntimeMaxMinutes { get; set; }
 
         public bool RequiresEpisodeFileJoin =>

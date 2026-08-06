@@ -28,12 +28,12 @@ namespace NzbDrone.Core.Test.TvTests.EpisodeRepositoryTests
             _series.Id = Db.Insert(_series).Id;
 
             var episodeFile480 = Builder<EpisodeFile>.CreateNew()
-                .With(f => f.Quality = new QualityModel(new Quality(1, "SDTV", QualitySource.Television, 480)))
+                .With(f => f.Quality = new QualityModel(Quality.SDTV))
                 .With(f => f.Languages = new System.Collections.Generic.List<Language> { Language.English })
                 .BuildNew();
 
             var episodeFile720 = Builder<EpisodeFile>.CreateNew()
-                .With(f => f.Quality = new QualityModel(new Quality(4, "HDTV-720p", QualitySource.Television, 720)))
+                .With(f => f.Quality = new QualityModel(Quality.HDTV720p))
                 .With(f => f.Languages = new System.Collections.Generic.List<Language> { Language.English })
                 .BuildNew();
 

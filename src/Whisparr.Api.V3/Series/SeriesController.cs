@@ -227,15 +227,14 @@ namespace Whisparr.Api.V3.Series
 
         private void LinkSeriesStatistics(List<SeriesResource> resources, List<SeriesStatistics> seriesStatistics)
         {
+            var statsBySeriesId = seriesStatistics.ToDictionary(ss => ss.SeriesId);
+
             foreach (var series in resources)
             {
-                var stats = seriesStatistics.SingleOrDefault(ss => ss.SeriesId == series.Id);
-                if (stats == null)
+                if (statsBySeriesId.TryGetValue(series.Id, out var stats))
                 {
-                    continue;
+                    LinkSeriesStatistics(series, stats);
                 }
-
-                LinkSeriesStatistics(series, stats);
             }
         }
 
@@ -247,9 +246,14 @@ namespace Whisparr.Api.V3.Series
 
             if (seriesStatistics.SeasonStatistics != null)
             {
+                var seasonStatsByNumber = seriesStatistics.SeasonStatistics.ToDictionary(s => s.SeasonNumber);
+
                 foreach (var season in resource.Seasons)
                 {
-                    season.Statistics = seriesStatistics.SeasonStatistics.SingleOrDefault(s => s.SeasonNumber == season.SeasonNumber).ToResource();
+                    if (seasonStatsByNumber.TryGetValue(season.SeasonNumber, out var seasonStats))
+                    {
+                        season.Statistics = seasonStats.ToResource();
+                    }
                 }
             }
         }

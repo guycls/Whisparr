@@ -128,7 +128,7 @@ namespace NzbDrone.Core.SiteRip
             {
                 siteRipDownload = _siteRipDownloadRepository.Insert(new SiteRipDownload
                 {
-                    DownloadId = downloadId,
+                    DownloadId = downloadId.ToLowerInvariant(),
                     SeriesId = seriesId,
                     TorrentTitle = remoteEpisode.Release.Title,
                     DownloadClientId = qbit.Definition.Id

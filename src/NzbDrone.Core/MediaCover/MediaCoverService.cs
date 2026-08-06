@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using NLog;
+using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -34,6 +35,7 @@ namespace NzbDrone.Core.MediaCover
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
+        private readonly ICached<long?> _coverMtimeCache;
 
         private readonly string _coverRootFolder;
 
@@ -49,6 +51,7 @@ namespace NzbDrone.Core.MediaCover
                                  ICoverExistsSpecification coverExistsSpecification,
                                  IConfigFileProvider configFileProvider,
                                  IEventAggregator eventAggregator,
+                                 ICacheManager cacheManager,
                                  Logger logger)
         {
             _mediaCoverProxy = mediaCoverProxy;
@@ -58,6 +61,7 @@ namespace NzbDrone.Core.MediaCover
             _coverExistsSpecification = coverExistsSpecification;
             _configFileProvider = configFileProvider;
             _eventAggregator = eventAggregator;
+            _coverMtimeCache = cacheManager.GetCache<long?>(GetType(), "mtime");
             _logger = logger;
 
             _coverRootFolder = appFolderInfo.GetMediaCoverPath();
@@ -93,12 +97,51 @@ namespace NzbDrone.Core.MediaCover
 
                     mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/" + seriesId + "/" + mediaCover.CoverType.ToString().ToLower() + GetExtension(mediaCover.CoverType);
 
-                    if (_diskProvider.FileExists(filePath))
+                    var lastWriteTicks = GetCoverLastWriteTicks(seriesId, mediaCover.CoverType, filePath);
+
+                    if (lastWriteTicks.HasValue)
                     {
-                        var lastWrite = _diskProvider.FileGetLastWrite(filePath);
-                        mediaCover.Url += "?lastWrite=" + lastWrite.Ticks;
+                        mediaCover.Url += "?lastWrite=" + lastWriteTicks.Value;
                     }
                 }
+            }
+        }
+
+        private long? GetCoverLastWriteTicks(int seriesId, MediaCoverTypes coverType, string filePath)
+        {
+            var key = GetMtimeCacheKey(seriesId, coverType);
+
+            return _coverMtimeCache.Get(key, () =>
+            {
+                if (!_diskProvider.FileExists(filePath))
+                {
+                    return null;
+                }
+
+                return _diskProvider.FileGetLastWrite(filePath).Ticks;
+            });
+        }
+
+        private static string GetMtimeCacheKey(int seriesId, MediaCoverTypes coverType)
+        {
+            return $"mtime-{seriesId}-{coverType}";
+        }
+
+        private void InvalidateCoverMtime(int seriesId, MediaCoverTypes coverType)
+        {
+            _coverMtimeCache.Remove(GetMtimeCacheKey(seriesId, coverType));
+        }
+
+        private void InvalidateSeriesCoverMtimes(int seriesId)
+        {
+            foreach (MediaCoverTypes coverType in Enum.GetValues(typeof(MediaCoverTypes)))
+            {
+                if (coverType == MediaCoverTypes.Unknown)
+                {
+                    continue;
+                }
+
+                InvalidateCoverMtime(seriesId, coverType);
             }
         }
 
@@ -171,6 +214,7 @@ namespace NzbDrone.Core.MediaCover
 
             _logger.Info("Downloading {0} for {1} {2}", cover.CoverType, series, cover.RemoteUrl);
             _httpClient.DownloadFile(cover.RemoteUrl, fileName);
+            InvalidateCoverMtime(series.Id, cover.CoverType);
         }
 
         private void EnsureResizedCovers(Series series, MediaCover cover, bool forceResize)
@@ -241,6 +285,8 @@ namespace NzbDrone.Core.MediaCover
         {
             foreach (var series in message.Series)
             {
+                InvalidateSeriesCoverMtimes(series.Id);
+
                 var path = GetSeriesCoverPath(series.Id);
                 if (_diskProvider.FolderExists(path))
                 {

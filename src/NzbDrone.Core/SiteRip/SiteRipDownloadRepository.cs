@@ -25,10 +25,9 @@ namespace NzbDrone.Core.SiteRip
                 return null;
             }
 
-            var upper = downloadId.ToUpper();
-            var lower = downloadId.ToLower();
+            var normalized = downloadId.ToLowerInvariant();
 
-            return Query(x => x.DownloadId == upper || x.DownloadId == lower).FirstOrDefault();
+            return Query(x => x.DownloadId == normalized).FirstOrDefault();
         }
     }
 
