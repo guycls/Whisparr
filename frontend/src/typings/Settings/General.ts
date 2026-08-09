@@ -39,6 +39,7 @@ export interface General {
   backupFolder: string;
   backupInterval: number;
   backupRetention: number;
+  cleanFileFormatWhileSearchingScene: boolean;
 }
 
 export default General;

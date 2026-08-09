@@ -92,6 +92,9 @@ namespace NzbDrone.Core.Configuration
         int BackupInterval { get; }
         int BackupRetention { get; }
 
+        // Search
+        bool CleanFileFormatWhileSearchingScene { get; set; }
+
         CertificateValidationType CertificateValidation { get; }
         string ApplicationUrl { get; }
 

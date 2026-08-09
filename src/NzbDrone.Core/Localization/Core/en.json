@@ -200,6 +200,8 @@
   "Clear": "Clear",
   "ClearBlocklist": "Clear blocklist",
   "ClearBlocklistMessageText": "Are you sure you want to clear all items from the blocklist?",
+  "CleanFileFormatWhileSearchingScene": "Clean File Format While Searching Scene",
+  "CleanFileFormatWhileSearchingSceneHelpText": "Remove trailing video file extensions, quality tags (e.g. 1080p, 4K), and separators from scene names when building search queries.",
   "ClickToChangeEpisode": "Click to change episode",
   "ClickToChangeIndexerFlags": "Click to change indexer flags",
   "ClickToChangeLanguage": "Click to change language",

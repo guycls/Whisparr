@@ -3,11 +3,23 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import * as releaseActions from 'Store/Actions/releaseActions';
-import { fetchIndexerOptions } from 'Store/Actions/settingsActions';
+import { fetchGeneralSettings, fetchIndexerOptions } from 'Store/Actions/settingsActions';
 import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import getEpisodeIndexerSearchQuery from './getEpisodeIndexerSearchQuery';
 import InteractiveSearch from './InteractiveSearch';
+
+function areEpisodeSearchSettingsReady({
+  isIndexerOptionsPopulated,
+  isGeneralSettingsPopulated,
+  isIndexerOptionsFetching,
+  isGeneralSettingsFetching
+}) {
+  return isIndexerOptionsPopulated &&
+    isGeneralSettingsPopulated &&
+    !isIndexerOptionsFetching &&
+    !isGeneralSettingsFetching;
+}
 
 function createMapStateToProps(appState, { type, searchPayload }) {
   return createSelector(
@@ -20,7 +32,11 @@ function createMapStateToProps(appState, { type, searchPayload }) {
     (state) => state.series.itemMap,
     (state) => state.series.items,
     (state) => state.settings.indexerOptions.isPopulated,
+    (state) => state.settings.indexerOptions.isFetching,
     (state) => state.settings.indexerOptions.item,
+    (state) => state.settings.general.isPopulated,
+    (state) => state.settings.general.isFetching,
+    (state) => state.settings.general.item,
     (
       totalReleasesCount,
       releases,
@@ -31,7 +47,11 @@ function createMapStateToProps(appState, { type, searchPayload }) {
       itemMap,
       allSeries,
       isIndexerOptionsPopulated,
-      indexerOptions
+      isIndexerOptionsFetching,
+      indexerOptions,
+      isGeneralSettingsPopulated,
+      isGeneralSettingsFetching,
+      generalSettings
     ) => {
       const episode = searchPayload?.episodeId != null ?
         episodes.find((item) => item.id === searchPayload.episodeId) ??
@@ -43,15 +63,32 @@ function createMapStateToProps(appState, { type, searchPayload }) {
         undefined;
 
       const ignoreSceneDate = indexerOptions?.ignoreSceneDate ?? false;
-      const defaultSearchTerm = getEpisodeIndexerSearchQuery(series, episode, ignoreSceneDate);
+      const cleanFileFormatWhileSearchingScene = generalSettings?.cleanFileFormatWhileSearchingScene ?? false;
+      const defaultSearchTerm = getEpisodeIndexerSearchQuery(
+        series,
+        episode,
+        ignoreSceneDate,
+        cleanFileFormatWhileSearchingScene
+      );
+
+      const settingsReady = areEpisodeSearchSettingsReady({
+        isIndexerOptionsPopulated,
+        isGeneralSettingsPopulated,
+        isIndexerOptionsFetching,
+        isGeneralSettingsFetching
+      });
 
       return {
         totalReleasesCount,
         longDateFormat: uiSettings.longDateFormat,
         timeFormat: uiSettings.timeFormat,
-        searchTerm: searchTerm || defaultSearchTerm,
+        searchTerm: settingsReady ? (searchTerm || defaultSearchTerm) : defaultSearchTerm,
         defaultSearchTerm,
         isIndexerOptionsPopulated,
+        isGeneralSettingsPopulated,
+        isIndexerOptionsFetching,
+        isGeneralSettingsFetching,
+        areEpisodeSearchSettingsReady: settingsReady,
         ...releases
       };
     }
@@ -66,6 +103,10 @@ function createMapDispatchToProps(dispatch, props) {
 
     dispatchFetchIndexerOptions() {
       dispatch(fetchIndexerOptions());
+    },
+
+    dispatchFetchGeneralSettings() {
+      dispatch(fetchGeneralSettings());
     },
 
     onSortPress(sortKey, sortDirection) {
@@ -96,10 +137,20 @@ class InteractiveSearchConnector extends Component {
   // Lifecycle
 
   componentDidMount() {
-    const { type, isIndexerOptionsPopulated, dispatchFetchIndexerOptions } = this.props;
+    const {
+      type,
+      isIndexerOptionsPopulated,
+      dispatchFetchIndexerOptions,
+      dispatchFetchGeneralSettings
+    } = this.props;
 
-    if (type === 'episode' && !isIndexerOptionsPopulated) {
-      dispatchFetchIndexerOptions();
+    if (type === 'episode') {
+      dispatchFetchGeneralSettings();
+
+      if (!isIndexerOptionsPopulated) {
+        dispatchFetchIndexerOptions();
+      }
+
       return;
     }
 
@@ -107,28 +158,37 @@ class InteractiveSearchConnector extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { type } = this.props;
+    const { type, areEpisodeSearchSettingsReady, defaultSearchTerm } = this.props;
 
-    if (type === 'episode' &&
-        !prevProps.isIndexerOptionsPopulated &&
-        this.props.isIndexerOptionsPopulated) {
-      this.fetchIfNeeded();
+    if (type !== 'episode') {
+      return;
+    }
+
+    const settingsBecameReady = areEpisodeSearchSettingsReady && !prevProps.areEpisodeSearchSettingsReady;
+    const defaultSearchTermChanged = areEpisodeSearchSettingsReady &&
+      prevProps.defaultSearchTerm !== defaultSearchTerm;
+
+    if (settingsBecameReady || defaultSearchTermChanged) {
+      this.fetchIfNeeded(defaultSearchTermChanged);
     }
   }
 
-  fetchIfNeeded() {
+  fetchIfNeeded(force = false) {
     const {
       searchPayload,
       isPopulated,
-      searchTerm,
       defaultSearchTerm,
       dispatchFetchReleases
     } = this.props;
 
-    if (!isPopulated) {
+    if (!defaultSearchTerm) {
+      return;
+    }
+
+    if (!isPopulated || force) {
       dispatchFetchReleases({
         ...searchPayload,
-        searchTerm: searchTerm || defaultSearchTerm
+        searchTerm: defaultSearchTerm
       });
     }
   }
@@ -152,6 +212,7 @@ class InteractiveSearchConnector extends Component {
     const {
       dispatchFetchReleases,
       dispatchFetchIndexerOptions,
+      dispatchFetchGeneralSettings,
       type,
       searchTerm,
       ...otherProps
@@ -174,10 +235,15 @@ InteractiveSearchConnector.propTypes = {
   searchPayload: PropTypes.object.isRequired,
   isPopulated: PropTypes.bool,
   isIndexerOptionsPopulated: PropTypes.bool,
+  isGeneralSettingsPopulated: PropTypes.bool,
+  isIndexerOptionsFetching: PropTypes.bool,
+  isGeneralSettingsFetching: PropTypes.bool,
+  areEpisodeSearchSettingsReady: PropTypes.bool,
   searchTerm: PropTypes.string,
   defaultSearchTerm: PropTypes.string,
   dispatchFetchReleases: PropTypes.func,
-  dispatchFetchIndexerOptions: PropTypes.func
+  dispatchFetchIndexerOptions: PropTypes.func,
+  dispatchFetchGeneralSettings: PropTypes.func
 };
 
 export default connect(createMapStateToProps, createMapDispatchToProps)(InteractiveSearchConnector);

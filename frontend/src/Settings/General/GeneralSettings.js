@@ -12,6 +12,7 @@ import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
 import translate from 'Utilities/String/translate';
 import AnalyticSettings from './AnalyticSettings';
 import BackupSettings from './BackupSettings';
+import SearchSettings from './SearchSettings';
 import HostSettings from './HostSettings';
 import LoggingSettings from './LoggingSettings';
 import ProxySettings from './ProxySettings';
@@ -177,6 +178,11 @@ class GeneralSettings extends Component {
 
                 <BackupSettings
                   advancedSettings={advancedSettings}
+                  settings={settings}
+                  onInputChange={onInputChange}
+                />
+
+                <SearchSettings
                   settings={settings}
                   onInputChange={onInputChange}
                 />

@@ -70,5 +70,38 @@ namespace NzbDrone.Core.Test.IndexerSearchTests
             EpisodeSearchQueryBuilder.NormalizeForIndexer("  test query  ")
                 .Should().Be("test query");
         }
+
+        [Test]
+        public void should_clean_scene_title_when_enabled()
+        {
+            EpisodeSearchQueryBuilder.GetDefaultQuery(
+                    new Series { StudioSearchPrefix = "Brazzers", Title = "Brazzers Exxtra" },
+                    new Episode { Title = "My Scene 1080p.mp4" },
+                    ignoreSceneDate: true,
+                    cleanSceneTitle: true)
+                .Should().Be("Brazzers My Scene");
+        }
+
+        [Test]
+        public void should_not_clean_scene_title_when_disabled()
+        {
+            EpisodeSearchQueryBuilder.GetDefaultQuery(
+                    new Series { StudioSearchPrefix = "Brazzers", Title = "Brazzers Exxtra" },
+                    new Episode { Title = "My Scene 1080p.mp4" },
+                    ignoreSceneDate: true,
+                    cleanSceneTitle: false)
+                .Should().Be("Brazzers My Scene 1080p.mp4");
+        }
+
+        [TestCase("My Scene 1080p.mp4", "My Scene")]
+        [TestCase("My Scene - 720p", "My Scene")]
+        [TestCase("My Scene 1080p:", "My Scene")]
+        [TestCase("Amateur Boxxx Bitch Real Estate Agent Controlled 4k Mp4", "Amateur Boxxx Bitch Real Estate Agent Controlled")]
+        [TestCase("Normal Scene Title", "Normal Scene Title")]
+        public void should_clean_trailing_file_format_and_quality_from_scene_title(string title, string expected)
+        {
+            EpisodeSearchQueryBuilder.CleanSceneTitleForSearch(title)
+                .Should().Be(expected);
+        }
     }
 }

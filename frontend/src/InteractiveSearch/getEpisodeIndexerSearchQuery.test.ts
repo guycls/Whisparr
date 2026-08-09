@@ -91,4 +91,26 @@ describe('getEpisodeIndexerSearchQuery', () => {
 
     expect(query).toBe('test-studio 20.01.01');
   });
+
+  it('cleans scene title when cleanFileFormatWhileSearchingScene is enabled', () => {
+    const query = getEpisodeIndexerSearchQuery(
+      createSeries(),
+      createEpisode({ title: 'Scene Title 1080p.mp4' }),
+      true,
+      true
+    );
+
+    expect(query).toBe('TestPrefix Scene Title');
+  });
+
+  it('does not clean scene title when cleanFileFormatWhileSearchingScene is disabled', () => {
+    const query = getEpisodeIndexerSearchQuery(
+      createSeries(),
+      createEpisode({ title: 'Scene Title 1080p.mp4' }),
+      true,
+      false
+    );
+
+    expect(query).toBe('TestPrefix Scene Title 1080p.mp4');
+  });
 });

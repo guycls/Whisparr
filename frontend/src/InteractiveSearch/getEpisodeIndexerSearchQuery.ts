@@ -1,5 +1,6 @@
 import Episode from 'Episode/Episode';
 import Series from 'Series/Series';
+import cleanSceneTitleForSearch from './cleanSceneTitleForSearch';
 
 function formatReleaseDate(airDate: string): string {
   const [year, month, day] = airDate.split('-');
@@ -14,7 +15,8 @@ function formatReleaseDate(airDate: string): string {
 export default function getEpisodeIndexerSearchQuery(
   series: Series | undefined,
   episode: Episode | undefined,
-  ignoreSceneDate: boolean
+  ignoreSceneDate: boolean,
+  cleanFileFormatWhileSearchingScene = false
 ): string {
   if (!series || !episode) {
     return '';
@@ -23,7 +25,11 @@ export default function getEpisodeIndexerSearchQuery(
   const siteTitle = series.studioSearchPrefix || series.title;
 
   if (ignoreSceneDate) {
-    return `${siteTitle} ${episode.title}`.trim();
+    const sceneTitle = cleanFileFormatWhileSearchingScene ?
+      cleanSceneTitleForSearch(episode.title) :
+      episode.title;
+
+    return `${siteTitle} ${sceneTitle}`.trim();
   }
 
   const sceneTitle = series.studioSearchPrefix || series.titleSlug;

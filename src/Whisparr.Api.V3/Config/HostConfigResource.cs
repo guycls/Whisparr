@@ -45,6 +45,7 @@ namespace Whisparr.Api.V3.Config
         public string BackupFolder { get; set; }
         public int BackupInterval { get; set; }
         public int BackupRetention { get; set; }
+        public bool CleanFileFormatWhileSearchingScene { get; set; }
     }
 
     public static class HostConfigResourceMapper
@@ -89,6 +90,7 @@ namespace Whisparr.Api.V3.Config
                 BackupFolder = configService.BackupFolder,
                 BackupInterval = configService.BackupInterval,
                 BackupRetention = configService.BackupRetention,
+                CleanFileFormatWhileSearchingScene = configService.CleanFileFormatWhileSearchingScene,
                 ApplicationUrl = configService.ApplicationUrl
             };
         }

@@ -89,7 +89,9 @@ namespace NzbDrone.Core.IndexerSearch
                 var episode = episodes.First();
                 searchSpec.ReleaseDate = DateOnly.Parse(episode.AirDate);
                 searchSpec.Performer = episode.Actors.Select(p => p.Name).FirstOrDefault();
-                searchSpec.EpisodeTitle = episode.Title;
+                searchSpec.EpisodeTitle = _configService.CleanFileFormatWhileSearchingScene && _configService.IgnoreSceneDate
+                    ? EpisodeSearchQueryBuilder.CleanSceneTitleForSearch(episode.Title)
+                    : episode.Title;
                 searchSpec.ExternalId = episode.ExternalId;
 
                 var decisions = await Dispatch(indexer => indexer.Fetch(searchSpec), searchSpec, searchId);
@@ -135,7 +137,9 @@ namespace NzbDrone.Core.IndexerSearch
             var searchSpec = Get<SingleEpisodeSearchCriteria>(series, new List<Episode> { episode }, monitoredOnly, userInvokedSearch, interactiveSearch);
             searchSpec.ReleaseDate = DateOnly.Parse(episode.AirDate);
             searchSpec.Performer = episode.Actors.Select(p => p.Name).FirstOrDefault();
-            searchSpec.EpisodeTitle = episode.Title;
+            searchSpec.EpisodeTitle = _configService.CleanFileFormatWhileSearchingScene && _configService.IgnoreSceneDate
+                ? EpisodeSearchQueryBuilder.CleanSceneTitleForSearch(episode.Title)
+                : episode.Title;
             searchSpec.ExternalId = episode.ExternalId;
 
             if (searchTerm.IsNotNullOrWhiteSpace())

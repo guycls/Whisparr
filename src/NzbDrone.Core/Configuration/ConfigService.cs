@@ -396,6 +396,12 @@ namespace NzbDrone.Core.Configuration
 
         public int BackupRetention => GetValueInt("BackupRetention", 28);
 
+        public bool CleanFileFormatWhileSearchingScene
+        {
+            get { return GetValueBoolean("CleanFileFormatWhileSearchingScene", false); }
+            set { SetValue("CleanFileFormatWhileSearchingScene", value); }
+        }
+
         public CertificateValidationType CertificateValidation =>
             GetValueEnum("CertificateValidation", CertificateValidationType.Enabled);
 
