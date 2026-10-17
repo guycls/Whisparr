@@ -79,4 +79,5 @@ RUN rm -rf "${APP_DIR}/bin/Whisparr.Update" && \
     chmod -R u=rwX,go=rX "${APP_DIR}"
 
 COPY docker/root/ /
-RUN find /etc/s6-overlay/s6-rc.d -name "run*" -execdir chmod +x {} +
+RUN find /etc/s6-overlay/s6-rc.d -type f -exec sh -c 'for f; do tr -d "\r" < "$f" > "$f.tmp" && mv "$f.tmp" "$f"; done' sh {} + && \
+    find /etc/s6-overlay/s6-rc.d -name "run*" -execdir chmod +x {} +
