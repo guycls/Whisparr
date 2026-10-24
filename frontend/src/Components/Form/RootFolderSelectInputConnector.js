@@ -9,6 +9,16 @@ import RootFolderSelectInput from './RootFolderSelectInput';
 
 const ADD_NEW_KEY = 'addNew';
 
+function pathsEqual(left, right) {
+  if (!left || !right || typeof left !== 'string' || typeof right !== 'string') {
+    return false;
+  }
+
+  const normalize = (path) => path.replace(/[\\/]+$/, '').toLowerCase();
+
+  return normalize(left) === normalize(right);
+}
+
 function createMapStateToProps() {
   return createSelector(
     createRootFoldersSelector(),
@@ -62,6 +72,7 @@ function createMapStateToProps() {
 
       return {
         values,
+        isPopulated: rootFolders.isPopulated,
         isSaving: rootFolders.isSaving,
         saveError: rootFolders.saveError
       };
@@ -84,6 +95,7 @@ class RootFolderSelectInputConnector extends Component {
 
   componentWillMount() {
     const {
+      name,
       value,
       values,
       onChange
@@ -95,6 +107,10 @@ class RootFolderSelectInputConnector extends Component {
   }
 
   componentDidMount() {
+    if (!this.props.isPopulated) {
+      return;
+    }
+
     const {
       name,
       value,
@@ -121,7 +137,7 @@ class RootFolderSelectInputConnector extends Component {
       onChange
     } = this.props;
 
-    if (prevProps.values === values) {
+    if (prevProps.values === values || !this.props.isPopulated) {
       return;
     }
 
@@ -138,7 +154,19 @@ class RootFolderSelectInputConnector extends Component {
   // Listeners
 
   onNewRootFolderSelect = (path) => {
+    const existing = this.props.values.find((option) => pathsEqual(option.key, path));
+
+    if (existing) {
+      this.props.onChange({
+        name: this.props.name,
+        value: existing.key
+      });
+
+      return false;
+    }
+
     this.props.dispatchAddRootFolder(path);
+    return true;
   };
 
   //
@@ -147,6 +175,7 @@ class RootFolderSelectInputConnector extends Component {
   render() {
     const {
       dispatchAddRootFolder,
+      isPopulated,
       ...otherProps
     } = this.props;
 
@@ -163,6 +192,7 @@ RootFolderSelectInputConnector.propTypes = {
   name: PropTypes.string.isRequired,
   value: PropTypes.string,
   values: PropTypes.arrayOf(PropTypes.object).isRequired,
+  isPopulated: PropTypes.bool.isRequired,
   includeNoChange: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   dispatchAddRootFolder: PropTypes.func.isRequired

@@ -22,10 +22,10 @@ namespace Whisparr.Api.V3.Notifications
             _commandQueueManager = commandQueueManager;
         }
 
-        [HttpPost("stash/sync")]
-        public ActionResult<StashSyncResponse> SyncFromStash()
+        [HttpPost("stash/fullImport")]
+        public ActionResult<StashSyncResponse> FullImportFromStash()
         {
-            var command = _commandQueueManager.Push(new StashSyncCommand(), CommandPriority.Normal, CommandTrigger.Manual);
+            var command = _commandQueueManager.Push(new StashFullImportCommand(), CommandPriority.Normal, CommandTrigger.Manual);
 
             return Ok(new StashSyncResponse { CommandId = command.Id });
         }

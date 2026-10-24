@@ -29,7 +29,7 @@ export const CANCEL_SAVE_NOTIFICATION = 'settings/notifications/cancelSaveNotifi
 export const DELETE_NOTIFICATION = 'settings/notifications/deleteNotification';
 export const TEST_NOTIFICATION = 'settings/notifications/testNotification';
 export const CANCEL_TEST_NOTIFICATION = 'settings/notifications/cancelTestNotification';
-export const SYNC_FROM_STASH = 'settings/notifications/syncFromStash';
+export const FULL_IMPORT_FROM_STASH = 'settings/notifications/fullImportFromStash';
 
 //
 // Action Creators
@@ -43,7 +43,7 @@ export const cancelSaveNotification = createThunk(CANCEL_SAVE_NOTIFICATION);
 export const deleteNotification = createThunk(DELETE_NOTIFICATION);
 export const testNotification = createThunk(TEST_NOTIFICATION);
 export const cancelTestNotification = createThunk(CANCEL_TEST_NOTIFICATION);
-export const syncFromStash = createThunk(SYNC_FROM_STASH);
+export const fullImportFromStash = createThunk(FULL_IMPORT_FROM_STASH);
 
 export const setNotificationValue = createAction(SET_NOTIFICATION_VALUE, (payload) => {
   return {
@@ -79,7 +79,7 @@ export default {
     isSaving: false,
     saveError: null,
     isTesting: false,
-    isSyncingFromStash: false,
+    isFullImportingFromStash: false,
     items: [],
     pendingChanges: {}
   },
@@ -97,25 +97,25 @@ export default {
     [TEST_NOTIFICATION]: createTestProviderHandler(section, '/notification'),
     [CANCEL_TEST_NOTIFICATION]: createCancelTestProviderHandler(section),
 
-    [SYNC_FROM_STASH]: function(getState, payload, dispatch) {
-      dispatch(set({ section, isSyncingFromStash: true }));
+    [FULL_IMPORT_FROM_STASH]: function(getState, payload, dispatch) {
+      dispatch(set({ section, isFullImportingFromStash: true }));
 
       const { request } = createAjaxRequest({
-        url: '/notification/stash/sync',
+        url: '/notification/stash/fullImport',
         method: 'POST'
       });
 
       request.done(() => {
         dispatch(set({
           section,
-          isSyncingFromStash: false
+          isFullImportingFromStash: false
         }));
       });
 
       request.fail(() => {
         dispatch(set({
           section,
-          isSyncingFromStash: false
+          isFullImportingFromStash: false
         }));
       });
     }

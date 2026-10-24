@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { deleteNotification, fetchNotifications } from 'Store/Actions/settingsActions';
 import createSortedSectionSelector from 'Store/Selectors/createSortedSectionSelector';
 import createTagsSelector from 'Store/Selectors/createTagsSelector';
@@ -23,7 +24,8 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchNotifications,
-  deleteNotification
+  deleteNotification,
+  fetchRootFolders
 };
 
 class NotificationsConnector extends Component {
@@ -33,6 +35,7 @@ class NotificationsConnector extends Component {
 
   componentDidMount() {
     this.props.fetchNotifications();
+    this.props.fetchRootFolders();
   }
 
   //
@@ -57,7 +60,8 @@ class NotificationsConnector extends Component {
 
 NotificationsConnector.propTypes = {
   fetchNotifications: PropTypes.func.isRequired,
-  deleteNotification: PropTypes.func.isRequired
+  deleteNotification: PropTypes.func.isRequired,
+  fetchRootFolders: PropTypes.func.isRequired
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(NotificationsConnector);

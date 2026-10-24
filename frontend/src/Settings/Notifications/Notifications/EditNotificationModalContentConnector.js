@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
 import { saveNotification, setNotificationFieldValue, setNotificationValue, testNotification } from 'Store/Actions/settingsActions';
 import createProviderSettingsSelector from 'Store/Selectors/createProviderSettingsSelector';
 import EditNotificationModalContent from './EditNotificationModalContent';
@@ -23,13 +24,18 @@ const mapDispatchToProps = {
   setNotificationValue,
   setNotificationFieldValue,
   saveNotification,
-  testNotification
+  testNotification,
+  fetchRootFolders
 };
 
 class EditNotificationModalContentConnector extends Component {
 
   //
   // Lifecycle
+
+  componentDidMount() {
+    this.props.fetchRootFolders();
+  }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.isSaving && !this.props.isSaving && !this.props.saveError) {
@@ -82,6 +88,7 @@ EditNotificationModalContentConnector.propTypes = {
   setNotificationFieldValue: PropTypes.func.isRequired,
   saveNotification: PropTypes.func.isRequired,
   testNotification: PropTypes.func.isRequired,
+  fetchRootFolders: PropTypes.func.isRequired,
   onModalClose: PropTypes.func.isRequired
 };
 

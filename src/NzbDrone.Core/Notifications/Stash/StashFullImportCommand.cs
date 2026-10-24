@@ -2,11 +2,11 @@ using NzbDrone.Core.Messaging.Commands;
 
 namespace NzbDrone.Core.Notifications.Stash
 {
-    public class StashSyncCommand : Command
+    public class StashFullImportCommand : Command
     {
-        public int? NotificationId { get; set; }
-
         public override bool SendUpdatesToClient => true;
         public override bool RequiresDiskAccess => true;
+        public override bool IsLongRunning => true;
+        public override bool UpdateScheduledTask => false;
     }
 }

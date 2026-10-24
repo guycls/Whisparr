@@ -1,4 +1,3 @@
-using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
@@ -10,16 +9,15 @@ namespace NzbDrone.Core.Notifications.Stash
     {
         public const string TpdbEndpoint = "https://theporndb.net/graphql";
 
-        private const string FindSceneByStashIdQuery = @"query FindSceneByStashId($stashId: String!) {
+        private const string FindTpdbScenesQuery = @"query FindTpdbScenes($page: Int!, $perPage: Int!) {
   findScenes(
     scene_filter: {
       stash_id_endpoint: {
-        stash_id: $stashId
         endpoint: """ + TpdbEndpoint + @"""
-        modifier: EQUALS
+        modifier: NOT_NULL
       }
     }
-    filter: { per_page: 1 }
+    filter: { page: $page, per_page: $perPage }
   ) {
     count
     scenes {
@@ -27,21 +25,6 @@ namespace NzbDrone.Core.Notifications.Stash
       title
       files { path basename }
       stash_ids { endpoint stash_id }
-    }
-  }
-}";
-
-        private const string FindSceneByPathQuery = @"query FindSceneByPath($path: String!) {
-  findScenes(
-    scene_filter: {
-      path: { value: $path, modifier: EQUALS }
-    }
-    filter: { per_page: 1 }
-  ) {
-    count
-    scenes {
-      id
-      files { path }
     }
   }
 }";
@@ -126,18 +109,11 @@ namespace NzbDrone.Core.Notifications.Stash
             ProcessRequest(request, settings);
         }
 
-        public StashScene FindSceneByStashId(StashSettings settings, string stashId)
+        public StashFindScenesResult FindTpdbScenes(StashSettings settings, int page, int perPage)
         {
-            var response = ExecuteQuery<StashGraphQlResponse>(settings, FindSceneByStashIdQuery, new { stashId });
+            var response = ExecuteQuery<StashGraphQlResponse>(settings, FindTpdbScenesQuery, new { page, perPage });
 
-            return response?.Data?.FindScenes?.Scenes?.FirstOrDefault();
-        }
-
-        public bool IsPathTracked(StashSettings settings, string path)
-        {
-            var response = ExecuteQuery<StashGraphQlResponse>(settings, FindSceneByPathQuery, new { path });
-
-            return response?.Data?.FindScenes?.Count > 0;
+            return response?.Data?.FindScenes;
         }
 
         private T ExecuteQuery<T>(StashSettings settings, string query, object variables)

@@ -13,6 +13,7 @@ namespace NzbDrone.Core.MetadataSource.ThePornDb
     public class TpdbSceneClient : ITpdbSceneClient
     {
         private const string GraphQlUrl = "https://theporndb.net/graphql";
+        private const string ScenesUrl = "https://api.theporndb.net/scenes";
         private const string FindSceneQuery = @"query FindSceneByID($id: ID!) {
   findScene(id: $id) {
     id
@@ -53,6 +54,104 @@ namespace NzbDrone.Core.MetadataSource.ThePornDb
             var scene = FindScene(sceneId);
 
             return scene?.Id;
+        }
+
+        public TpdbSceneReference GetSceneByUuid(string sceneUuid)
+        {
+            var apiKey = _configService.TpdbApiKey;
+
+            if (apiKey.IsNullOrWhiteSpace() || sceneUuid.IsNullOrWhiteSpace())
+            {
+                return null;
+            }
+
+            try
+            {
+                for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+                {
+                    var request = new HttpRequestBuilder(ScenesUrl)
+                        .Resource(sceneUuid)
+                        .Accept(HttpAccept.Json)
+                        .SetHeader("Authorization", FormatAuthorizationHeader(apiKey))
+                        .Build();
+
+                    request.SuppressHttpError = true;
+
+                    var response = _httpClient.Get(request);
+
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        _logger.Debug("TPDB scene lookup failed for {0}: Unauthorized", sceneUuid);
+                        return null;
+                    }
+
+                    if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                    {
+                        if (attempt < MaxAttempts)
+                        {
+                            var retryDelay = GetRetryDelay(response);
+                            _logger.Debug("TPDB scene lookup failed for {0}: {1}, retrying in {2:0.###}s ({3}/{4})", sceneUuid, response.StatusCode, retryDelay.TotalSeconds, attempt, MaxAttempts);
+                            Thread.Sleep(retryDelay);
+                            continue;
+                        }
+
+                        _logger.Debug("TPDB scene lookup failed for {0}: rate limited", sceneUuid);
+                        return null;
+                    }
+
+                    if (response.HasHttpError || response.Content.IsNullOrWhiteSpace())
+                    {
+                        _logger.Debug("TPDB scene lookup failed for {0}: {1}", sceneUuid, response.StatusCode);
+                        return null;
+                    }
+
+                    var scene = ParseRestScene(response.Content);
+
+                    if (scene == null)
+                    {
+                        _logger.Debug("TPDB scene lookup failed for {0}: invalid response", sceneUuid);
+                        return null;
+                    }
+
+                    var sceneId = scene.NumericId;
+                    var siteId = scene.SiteId > 0 ? scene.SiteId : scene.Site?.Id ?? 0;
+
+                    if (sceneId <= 0 || siteId <= 0)
+                    {
+                        _logger.Debug("TPDB scene {0} did not include a scene id and site id", sceneUuid);
+                        return null;
+                    }
+
+                    return new TpdbSceneReference
+                    {
+                        SceneId = sceneId,
+                        SiteId = siteId,
+                        Title = scene.Title
+                    };
+                }
+
+                return null;
+            }
+            catch (HttpException ex)
+            {
+                _logger.Debug(ex, "TPDB scene lookup failed for {0}", sceneUuid);
+                return null;
+            }
+        }
+
+        private static TpdbRestScene ParseRestScene(string content)
+        {
+            if (Json.TryDeserialize<TpdbRestSceneResponse>(content, out var wrapped) && wrapped?.Data != null)
+            {
+                return wrapped.Data;
+            }
+
+            if (Json.TryDeserialize<TpdbRestScene>(content, out var scene))
+            {
+                return scene;
+            }
+
+            return null;
         }
 
         private TpdbScene FindScene(int sceneId)

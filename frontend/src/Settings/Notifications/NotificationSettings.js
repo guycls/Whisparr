@@ -4,7 +4,8 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
-import { icons } from 'Helpers/Props';
+import Tooltip from 'Components/Tooltip/Tooltip';
+import { icons, tooltipPositions } from 'Helpers/Props';
 import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
 import translate from 'Utilities/String/translate';
 import NotificationsConnector from './Notifications/NotificationsConnector';
@@ -12,8 +13,8 @@ import NotificationsConnector from './Notifications/NotificationsConnector';
 function NotificationSettings(props) {
   const {
     hasStashConnection,
-    isSyncingFromStash,
-    dispatchSyncFromStash
+    isFullImportingFromStash,
+    dispatchFullImportFromStash
   } = props;
 
   return (
@@ -25,12 +26,19 @@ function NotificationSettings(props) {
             <Fragment>
               <PageToolbarSeparator />
 
-              <PageToolbarButton
-                label={translate('ImportFromStash')}
-                iconName={icons.REFRESH}
-                isSpinning={isSyncingFromStash}
-                isDisabled={isSyncingFromStash}
-                onPress={dispatchSyncFromStash}
+              <Tooltip
+                anchor={
+                  <PageToolbarButton
+                    label={translate('FullImportFromStash')}
+                    iconName={icons.DOWNLOAD}
+                    isSpinning={isFullImportingFromStash}
+                    isDisabled={isFullImportingFromStash}
+                    onPress={dispatchFullImportFromStash}
+                  />
+                }
+                tooltip={translate('FullImportFromStashHelpText')}
+                position={tooltipPositions.BOTTOM}
+                canFlip={true}
               />
             </Fragment> :
             null
@@ -46,8 +54,8 @@ function NotificationSettings(props) {
 
 NotificationSettings.propTypes = {
   hasStashConnection: PropTypes.bool.isRequired,
-  isSyncingFromStash: PropTypes.bool.isRequired,
-  dispatchSyncFromStash: PropTypes.func.isRequired
+  isFullImportingFromStash: PropTypes.bool.isRequired,
+  dispatchFullImportFromStash: PropTypes.func.isRequired
 };
 
 export default NotificationSettings;

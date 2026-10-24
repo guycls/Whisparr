@@ -73,6 +73,12 @@ namespace NzbDrone.Core.Notifications.Stash
         [FieldDefinition(13, Label = "Map Paths To", Type = FieldType.Textbox, Advanced = true, HelpText = "Stash Path, Used to modify site paths when Stash sees library path location differently from Whisparr")]
         public string MapTo { get; set; }
 
+        [FieldDefinition(14, Label = "Full Import Root Folder", Type = FieldType.RootFolder, HelpText = "Root folder used when Import from Stash adds a studio that is not already in Whisparr")]
+        public string FullImportRootFolder { get; set; }
+
+        [FieldDefinition(15, Label = "Full Import Quality Profile", Type = FieldType.QualityProfile, HelpText = "Quality profile used when Import from Stash adds a studio that is not already in Whisparr")]
+        public int FullImportQualityProfileId { get; set; }
+
         [JsonIgnore]
         public string Address => $"{Host.ToUrlHost()}:{Port}";
 

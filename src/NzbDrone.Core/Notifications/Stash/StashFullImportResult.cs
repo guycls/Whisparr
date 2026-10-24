@@ -1,9 +1,9 @@
 namespace NzbDrone.Core.Notifications.Stash
 {
-    public class StashSyncResult
+    public class StashFullImportResult
     {
+        public int StudiosAdded { get; set; }
         public int Imported { get; set; }
-        public int Scanned { get; set; }
         public int Skipped { get; set; }
         public int Failed { get; set; }
     }

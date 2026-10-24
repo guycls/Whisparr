@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace NzbDrone.Core.Notifications.Stash
 {
@@ -29,6 +30,8 @@ namespace NzbDrone.Core.Notifications.Stash
         public string Id { get; set; }
         public string Title { get; set; }
         public List<StashSceneFile> Files { get; set; }
+
+        [JsonProperty("stash_ids")]
         public List<StashSceneStashId> StashIds { get; set; }
     }
 
@@ -41,6 +44,8 @@ namespace NzbDrone.Core.Notifications.Stash
     public class StashSceneStashId
     {
         public string Endpoint { get; set; }
+
+        [JsonProperty("stash_id")]
         public string StashId { get; set; }
     }
 }

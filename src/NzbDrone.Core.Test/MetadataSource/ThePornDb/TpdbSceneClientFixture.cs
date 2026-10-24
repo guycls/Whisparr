@@ -161,6 +161,89 @@ namespace NzbDrone.Core.Test.MetadataSource.ThePornDb
         }
 
         [Test]
+        public void should_resolve_scene_uuid_to_numeric_scene_and_site_ids()
+        {
+            const string sceneUuid = "520677d4-7436-4f5a-9b66-d3e1ebc23687";
+            HttpRequest capturedRequest = null;
+
+            Mocker.GetMock<IHttpClient>()
+                .Setup(c => c.Get(It.IsAny<HttpRequest>()))
+                .Callback<HttpRequest>(r => capturedRequest = r)
+                .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), "{\"data\":{\"_id\":3188328,\"site_id\":99,\"title\":\"Scene\"}}"));
+
+            var scene = Subject.GetSceneByUuid(sceneUuid);
+
+            scene.Should().NotBeNull();
+            scene.SceneId.Should().Be(3188328);
+            scene.SiteId.Should().Be(99);
+            scene.Title.Should().Be("Scene");
+            capturedRequest.Url.FullUri.Should().Contain(sceneUuid);
+            capturedRequest.Headers.GetSingleValue("Authorization").Should().Be("Bearer " + ApiKey);
+        }
+
+        [Test]
+        public void should_use_nested_site_id_when_site_id_is_missing()
+        {
+            Mocker.GetMock<IHttpClient>()
+                .Setup(c => c.Get(It.IsAny<HttpRequest>()))
+                .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), "{\"data\":{\"_id\":42,\"title\":\"Scene\",\"site\":{\"id\":7}}}"));
+
+            var scene = Subject.GetSceneByUuid("520677d4-7436-4f5a-9b66-d3e1ebc23687");
+
+            scene.SceneId.Should().Be(42);
+            scene.SiteId.Should().Be(7);
+        }
+
+        [Test]
+        public void should_return_null_scene_reference_when_api_key_not_set()
+        {
+            Mocker.GetMock<IConfigService>()
+                .SetupGet(c => c.TpdbApiKey)
+                .Returns(string.Empty);
+
+            Subject.GetSceneByUuid("520677d4-7436-4f5a-9b66-d3e1ebc23687").Should().BeNull();
+            Mocker.GetMock<IHttpClient>().Verify(c => c.Get(It.IsAny<HttpRequest>()), Times.Never);
+        }
+
+        [Test]
+        public void should_return_null_scene_reference_on_not_found()
+        {
+            Mocker.GetMock<IHttpClient>()
+                .Setup(c => c.Get(It.IsAny<HttpRequest>()))
+                .Returns<HttpRequest>(r => new HttpResponse(r, new HttpHeader(), string.Empty, HttpStatusCode.NotFound));
+
+            Subject.GetSceneByUuid("520677d4-7436-4f5a-9b66-d3e1ebc23687").Should().BeNull();
+        }
+
+        [Test]
+        public void should_retry_scene_reference_lookup_after_429()
+        {
+            var headers = new HttpHeader();
+            headers.Set("Retry-After", "0");
+            var calls = 0;
+
+            Mocker.GetMock<IHttpClient>()
+                .Setup(c => c.Get(It.IsAny<HttpRequest>()))
+                .Returns<HttpRequest>(r =>
+                {
+                    calls++;
+
+                    if (calls == 1)
+                    {
+                        return new HttpResponse(r, headers, string.Empty, HttpStatusCode.TooManyRequests);
+                    }
+
+                    return new HttpResponse(r, new HttpHeader(), "{\"data\":{\"_id\":11,\"site_id\":22}}");
+                });
+
+            var scene = Subject.GetSceneByUuid("520677d4-7436-4f5a-9b66-d3e1ebc23687");
+
+            scene.SceneId.Should().Be(11);
+            scene.SiteId.Should().Be(22);
+            calls.Should().Be(2);
+        }
+
+        [Test]
         public void should_return_null_uuid_when_scene_not_found()
         {
             SetupHttpResponse(Json.ToJson(new TpdbGraphQlResponse
