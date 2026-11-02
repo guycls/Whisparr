@@ -1,37 +1,27 @@
-import classNames from 'classnames';
+import Button from '@mui/material/Button';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import Link from 'Components/Link/Link';
-import styles from './MenuButton.css';
+import React from 'react';
 
-class MenuButton extends Component {
+function MenuButton(props) {
+  const {
+    className,
+    children,
+    isDisabled,
+    onPress,
+    ...otherProps
+  } = props;
 
-  //
-  // Render
-
-  render() {
-    const {
-      className,
-      children,
-      isDisabled,
-      onPress,
-      ...otherProps
-    } = this.props;
-
-    return (
-      <Link
-        className={classNames(
-          className,
-          isDisabled && styles.isDisabled
-        )}
-        isDisabled={isDisabled}
-        onPress={onPress}
-        {...otherProps}
-      >
-        {children}
-      </Link>
-    );
-  }
+  return (
+    <Button
+      className={className}
+      color="inherit"
+      disabled={isDisabled}
+      onClick={onPress}
+      {...otherProps}
+    >
+      {children}
+    </Button>
+  );
 }
 
 MenuButton.propTypes = {
@@ -42,7 +32,6 @@ MenuButton.propTypes = {
 };
 
 MenuButton.defaultProps = {
-  className: styles.menuButton,
   isDisabled: false
 };
 

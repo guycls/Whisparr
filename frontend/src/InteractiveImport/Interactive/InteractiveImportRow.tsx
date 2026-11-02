@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Icon from 'Components/Icon';
@@ -36,7 +37,6 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
 import InteractiveImportRowCellPlaceholder from './InteractiveImportRowCellPlaceholder';
-import styles from './InteractiveImportRow.css';
 
 type SelectType =
   | 'series'
@@ -369,7 +369,7 @@ function InteractiveImportRow(props: InteractiveImportRowProps) {
         onSelectedChange={onSelectedChangeWrapper}
       />
 
-      <TableRowCell className={styles.relativePath} title={relativePath}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }} title={relativePath}>
         {relativePath}
       </TableRowCell>
 
@@ -399,7 +399,9 @@ function InteractiveImportRow(props: InteractiveImportRowProps) {
         )}
 
         {isReprocessing && seasonNumber == null ? (
-          <LoadingIndicator className={styles.reprocessing} size={20} />
+          <Box sx={{ mt: 0, textAlign: 'start' }}>
+            <LoadingIndicator size={20} />
+          </Box>
         ) : null}
       </TableRowCellButton>
 
@@ -431,26 +433,30 @@ function InteractiveImportRow(props: InteractiveImportRowProps) {
       </TableRowCellButton>
 
       <TableRowCellButton
-        className={styles.quality}
+        sx={{ textAlign: 'center' }}
         title={translate('ClickToChangeQuality')}
         onPress={onSelectQualityPress}
       >
         {showQualityPlaceholder && <InteractiveImportRowCellPlaceholder />}
 
         {!showQualityPlaceholder && !!quality && (
-          <EpisodeQuality className={styles.label} quality={quality} />
+          <Box sx={{ cursor: 'pointer' }}>
+            <EpisodeQuality quality={quality} />
+          </Box>
         )}
       </TableRowCellButton>
 
       <TableRowCellButton
-        className={styles.languages}
+        sx={{ textAlign: 'center' }}
         title={translate('ClickToChangeLanguage')}
         onPress={onSelectLanguagePress}
       >
         {showLanguagePlaceholder && <InteractiveImportRowCellPlaceholder />}
 
         {!showLanguagePlaceholder && !!languages && (
-          <EpisodeLanguages className={styles.label} languages={languages} />
+          <Box sx={{ cursor: 'pointer' }}>
+            <EpisodeLanguages languages={languages} />
+          </Box>
         )}
       </TableRowCellButton>
 
@@ -465,9 +471,9 @@ function InteractiveImportRow(props: InteractiveImportRowProps) {
             )}
             title={translate('CustomFormats')}
             body={
-              <div className={styles.customFormatTooltip}>
+              <Box sx={{ maxWidth: 250 }}>
                 <EpisodeFormats formats={customFormats} />
-              </div>
+              </Box>
             }
             position={tooltipPositions.LEFT}
           />

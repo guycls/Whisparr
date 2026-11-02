@@ -1,10 +1,10 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
 import React from 'react';
-import { ColorImpairedConsumer } from 'App/ColorImpairedContext';
 import { Kind } from 'Helpers/Props/kinds';
+import { kindToColor } from 'Helpers/Props/muiKind';
 import { Size } from 'Helpers/Props/sizes';
 import translate from 'Utilities/String/translate';
-import styles from './ProgressBar.css';
 
 interface ProgressBarProps {
   className?: string;
@@ -14,14 +14,27 @@ interface ProgressBarProps {
   precision?: number;
   showText?: boolean;
   text?: string;
-  kind?: Extract<Kind, keyof typeof styles>;
-  size?: Extract<Size, keyof typeof styles>;
+  kind?: Kind;
+  size?: Size;
   width?: number;
 }
 
+function barHeight(size?: Size) {
+  switch (size) {
+    case 'small':
+    case 'extraSmall':
+      return 6;
+    case 'large':
+    case 'extraLarge':
+    case 'extraExtraLarge':
+      return 20;
+    default:
+      return 12;
+  }
+}
+
 function ProgressBar({
-  className = styles.progressBar,
-  containerClassName = styles.container,
+  className,
   title,
   progress,
   precision = 1,
@@ -31,63 +44,40 @@ function ProgressBar({
   size = 'medium',
   width,
 }: ProgressBarProps) {
-  const progressPercent = `${progress.toFixed(precision)}%`;
-  const progressText = text || progressPercent;
-  const actualWidth = width ? `${width}px` : '100%';
+  const progressPercent = Number(progress.toFixed(precision));
+  const progressText = text || `${progressPercent}%`;
+  const color = kindToColor(kind);
 
   return (
-    <ColorImpairedConsumer>
-      {(enableColorImpairedMode) => {
-        return (
-          <div
-            className={classNames(containerClassName, styles[size])}
-            title={title}
-            style={{ width: actualWidth }}
-          >
-            {showText && width ? (
-              <div
-                className={classNames(styles.backTextContainer, styles[kind])}
-                style={{ width: actualWidth }}
-              >
-                <div className={styles.backText}>
-                  <div>{progressText}</div>
-                </div>
-              </div>
-            ) : null}
-
-            <div
-              className={classNames(
-                className,
-                styles[kind],
-                enableColorImpairedMode && 'colorImpaired'
-              )}
-              role="meter"
-              aria-label={translate('ProgressBarProgress', {
-                progress: progress.toFixed(0),
-              })}
-              aria-valuenow={Math.floor(progress)}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              style={{ width: progressPercent }}
-            />
-
-            {showText ? (
-              <div
-                className={classNames(styles.frontTextContainer, styles[kind])}
-                style={{ width: progressPercent }}
-              >
-                <div
-                  className={styles.frontText}
-                  style={{ width: actualWidth }}
-                >
-                  <div>{progressText}</div>
-                </div>
-              </div>
-            ) : null}
-          </div>
-        );
-      }}
-    </ColorImpairedConsumer>
+    <Box
+      className={className}
+      title={title}
+      sx={{ position: 'relative', width: width || '100%' }}
+    >
+      <LinearProgress
+        variant="determinate"
+        value={Math.max(0, Math.min(100, progress))}
+        color={color === 'inherit' ? 'primary' : color}
+        sx={{ height: barHeight(size), borderRadius: 1 }}
+        aria-label={translate('ProgressBarProgress', {
+          progress: progress.toFixed(0),
+        })}
+      />
+      {showText ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 12,
+          }}
+        >
+          {progressText}
+        </Box>
+      ) : null}
+    </Box>
   );
 }
 

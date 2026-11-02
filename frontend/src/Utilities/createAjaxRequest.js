@@ -1,60 +1,177 @@
-import $ from 'jquery';
+import param from './param';
 
 const absUrlRegex = /^(https?:)?\/\//i;
-const apiRoot = window.Whisparr.apiRoot;
 
-function isRelative(ajaxOptions) {
-  return !absUrlRegex.test(ajaxOptions.url);
+function isRelative(url) {
+  return !absUrlRegex.test(url);
 }
 
-function addRootUrl(ajaxOptions) {
-  ajaxOptions.url = apiRoot + ajaxOptions.url;
+function enhance(promise) {
+  const ajaxPromise = {
+    then(onFulfilled, onRejected) {
+      return enhance(promise.then(onFulfilled, onRejected));
+    },
+
+    catch(onRejected) {
+      return enhance(promise.catch(onRejected));
+    },
+
+    finally(onFinally) {
+      return enhance(promise.finally(onFinally));
+    },
+
+    done(onFulfilled) {
+      promise.then((value) => {
+        onFulfilled(value);
+      }, () => {});
+
+      return ajaxPromise;
+    },
+
+    fail(onRejected) {
+      promise.then(undefined, (error) => {
+        onRejected(error);
+      });
+
+      return ajaxPromise;
+    },
+
+    always(onFinally) {
+      promise.finally(onFinally);
+
+      return ajaxPromise;
+    }
+  };
+
+  return ajaxPromise;
 }
 
-function addApiKey(ajaxOptions) {
-  ajaxOptions.headers = ajaxOptions.headers || {};
-  ajaxOptions.headers['X-Api-Key'] = window.Whisparr.apiKey;
+function appendQuery(url, query) {
+  if (!query) {
+    return url;
+  }
+
+  return `${url}${url.includes('?') ? '&' : '?'}${query}`;
 }
 
-function addContentType(ajaxOptions) {
-  if (
-    ajaxOptions.contentType == null &&
-    ajaxOptions.dataType === 'json' &&
-    (ajaxOptions.method === 'PUT' || ajaxOptions.method === 'POST' || ajaxOptions.method === 'DELETE')) {
-    ajaxOptions.contentType = 'application/json';
+function parseBody(text, dataType) {
+  if (!text) {
+    return undefined;
+  }
+
+  if (dataType === 'json') {
+    return JSON.parse(text);
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return text;
   }
 }
 
 export default function createAjaxRequest(originalAjaxOptions) {
-  const requestXHR = new window.XMLHttpRequest();
+  const ajaxOptions = { ...originalAjaxOptions };
+  const controller = new AbortController();
   let aborted = false;
   let complete = false;
 
   function abortRequest() {
     if (!complete) {
       aborted = true;
-      requestXHR.abort();
+      controller.abort();
     }
   }
 
-  const ajaxOptions = { ...originalAjaxOptions };
+  const method = (ajaxOptions.method || 'GET').toUpperCase();
+  let url = ajaxOptions.url;
+  const headers = { ...(ajaxOptions.headers || {}) };
 
-  if (isRelative(ajaxOptions)) {
-    addRootUrl(ajaxOptions);
-    addApiKey(ajaxOptions);
-    addContentType(ajaxOptions);
+  if (isRelative(url)) {
+    url = window.Whisparr.apiRoot + url;
+    headers['X-Api-Key'] = window.Whisparr.apiKey;
   }
 
-  const request = $.ajax({
-    xhr: () => requestXHR,
-    ...ajaxOptions
-  }).then(null, (xhr, textStatus, errorThrown) => {
-    xhr.aborted = aborted;
+  const hasBody = method !== 'GET' && method !== 'HEAD';
+  let body = null;
+  const { data } = ajaxOptions;
 
-    return $.Deferred().reject(xhr, textStatus, errorThrown).promise();
-  }).always(() => {
-    complete = true;
+  if (data != null && !hasBody) {
+    const query = typeof data === 'string' ? data : param(data, !!ajaxOptions.traditional);
+    url = appendQuery(url, query);
+  } else if (data != null && hasBody) {
+    body = typeof data === 'string' ? data : JSON.stringify(data);
+  }
+
+  let { contentType } = ajaxOptions;
+
+  if (
+    contentType == null &&
+    ajaxOptions.dataType === 'json' &&
+    (method === 'PUT' || method === 'POST' || method === 'DELETE')
+  ) {
+    contentType = 'application/json';
+  }
+
+  if (contentType && body != null) {
+    headers['Content-Type'] = contentType;
+  } else if (body != null && typeof data !== 'string' && contentType == null) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const nativeRequest = new Promise((resolve, reject) => {
+    fetch(url, {
+      method,
+      headers,
+      body: body == null ? undefined : body,
+      signal: controller.signal
+    }).then(async(response) => {
+      complete = true;
+      const text = await response.text();
+      let parsed = null;
+
+      try {
+        parsed = parseBody(text, ajaxOptions.dataType);
+      } catch (error) {
+        reject({
+          status: response.status,
+          aborted: false,
+          responseJSON: undefined,
+          responseText: text
+        });
+
+        return;
+      }
+
+      if (!response.ok) {
+        reject({
+          status: response.status,
+          aborted: false,
+          responseJSON: parsed && typeof parsed === 'object' ? parsed : undefined,
+          responseText: text
+        });
+
+        return;
+      }
+
+      resolve(parsed);
+    }).catch((error) => {
+      complete = true;
+
+      reject({
+        status: 0,
+        aborted: aborted || error.name === 'AbortError',
+        responseJSON: undefined,
+        message: error && error.message
+      });
+    });
   });
+
+  // Fire-and-forget callers (for example shutdown) should not surface
+  // an unhandled rejection. .fail() still observes the same rejection.
+  nativeRequest.catch(() => {});
+
+  const request = enhance(nativeRequest);
 
   return {
     request,

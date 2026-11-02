@@ -1,96 +1,164 @@
-import classNames from 'classnames';
+import MuiButton from '@mui/material/Button';
+import MuiLink from '@mui/material/Link';
+import { SxProps, Theme } from '@mui/material/styles';
 import React, {
-  ComponentClass,
-  FunctionComponent,
+  ElementType,
+  HTMLProps,
+  ReactNode,
   SyntheticEvent,
   useCallback,
 } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import styles from './Link.css';
+import { Align } from 'Helpers/Props/align';
+import { Kind } from 'Helpers/Props/kinds';
+import {
+  groupPositionSx,
+  kindToColor,
+  kindToVariant,
+  sizeToButtonSize,
+} from 'Helpers/Props/muiKind';
+import { Size } from 'Helpers/Props/sizes';
 
-interface ReactRouterLinkProps {
-  to?: string;
+const externalUrlRegex = /\w+?:\/\//;
+
+export function withUrlBase(to: string) {
+  return `${window.Whisparr.urlBase}/${to.replace(/^\//, '')}`;
 }
 
-export interface LinkProps extends React.HTMLProps<HTMLAnchorElement> {
+export interface LinkProps
+  extends Omit<HTMLProps<HTMLElement>, 'size' | 'ref' | 'onClick'> {
   className?: string;
-  component?:
-    | string
-    | FunctionComponent<LinkProps>
-    | ComponentClass<LinkProps, unknown>;
+  component?: ElementType;
   to?: string;
   target?: string;
+  type?: string;
   isDisabled?: boolean;
   noRouter?: boolean;
+  kind?: Kind;
+  size?: Size;
+  buttonGroupPosition?: Align;
+  sx?: SxProps<Theme>;
+  children?: ReactNode;
   onPress?(event: SyntheticEvent): void;
 }
+
 function Link(props: LinkProps) {
   const {
     className,
-    component = 'button',
+    component,
     to,
     target,
     type,
     isDisabled,
     noRouter = false,
     onPress,
+    kind,
+    size,
+    buttonGroupPosition,
+    sx: sxProp,
+    children,
     ...otherProps
   } = props;
 
   const onClick = useCallback(
     (event: SyntheticEvent) => {
-      if (!isDisabled && onPress) {
+      if (isDisabled) {
+        event.preventDefault();
+
+        return;
+      }
+
+      if (onPress) {
         onPress(event);
       }
     },
     [isDisabled, onPress]
   );
 
-  const linkProps: React.HTMLProps<HTMLAnchorElement> & ReactRouterLinkProps = {
-    target,
-  };
-  let el = component;
+  const sx = [groupPositionSx(buttonGroupPosition), sxProp].filter(
+    Boolean
+  ) as SxProps<Theme>;
+
+  if (to && externalUrlRegex.test(to)) {
+    return (
+      <MuiLink
+        className={className}
+        href={to}
+        target={target || '_blank'}
+        rel="noreferrer"
+        underline="hover"
+        onClick={onClick}
+        sx={sx}
+        {...otherProps}
+      >
+        {children}
+      </MuiLink>
+    );
+  }
+
+  if (to && noRouter) {
+    return (
+      <MuiLink
+        className={className}
+        href={to}
+        target={target || '_self'}
+        underline="hover"
+        onClick={onClick}
+        sx={sx}
+        {...otherProps}
+      >
+        {children}
+      </MuiLink>
+    );
+  }
 
   if (to) {
-    if (/\w+?:\/\//.test(to)) {
-      el = 'a';
-      linkProps.href = to;
-      linkProps.target = target || '_blank';
-      linkProps.rel = 'noreferrer';
-    } else if (noRouter) {
-      el = 'a';
-      linkProps.href = to;
-      linkProps.target = target || '_self';
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      el = RouterLink;
-      linkProps.to = `${window.Whisparr.urlBase}/${to.replace(/^\//, '')}`;
-      linkProps.target = target;
-    }
+    return (
+      <MuiLink
+        className={className}
+        component={RouterLink}
+        to={withUrlBase(to)}
+        target={target}
+        underline="hover"
+        onClick={onClick}
+        sx={sx}
+        {...otherProps}
+      >
+        {children}
+      </MuiLink>
+    );
   }
 
-  if (el === 'button' || el === 'input') {
-    linkProps.type = type || 'button';
-    linkProps.disabled = isDisabled;
-  }
+  const isNativeButton = !component || component === 'button';
 
-  linkProps.className = classNames(
-    className,
-    styles.link,
-    to && styles.to,
-    isDisabled && 'isDisabled'
-  );
+  const buttonSx = [{ textTransform: 'none' }, sx].flat() as SxProps<Theme>;
 
-  const elementProps = {
+  const buttonProps = {
     ...otherProps,
-    type,
-    ...linkProps,
+    className,
+    type: isNativeButton ? type || 'button' : undefined,
+    disabled: isNativeButton ? !!isDisabled : undefined,
+    'aria-disabled': isNativeButton ? undefined : isDisabled || undefined,
+    variant: kindToVariant(kind),
+    color: kindToColor(kind),
+    size: sizeToButtonSize(size),
+    onClick,
+    sx: buttonSx,
+    children,
   };
 
-  elementProps.onClick = onClick;
+  if (component) {
+    return (
+      <MuiButton
+        {...(buttonProps as React.ComponentProps<typeof MuiButton>)}
+        component={component}
+      />
+    );
+  }
 
-  return React.createElement(el, elementProps);
+  return (
+    <MuiButton {...(buttonProps as React.ComponentProps<typeof MuiButton>)} />
+  );
 }
 
 export default Link;

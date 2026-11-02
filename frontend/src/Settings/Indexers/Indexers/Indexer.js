@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -8,7 +10,6 @@ import TagList from 'Components/TagList';
 import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditIndexerModalConnector from './EditIndexerModalConnector';
-import styles from './Indexer.css';
 
 class Indexer extends Component {
 
@@ -78,25 +79,48 @@ class Indexer extends Component {
     } = this.props;
 
     return (
-      <Card
-        className={styles.indexer}
-        overlayContent={true}
-        onPress={this.onEditIndexerPress}
+      <Box
+        sx={(theme) => ({
+          width: 290,
+          m: theme.spacing(1.25)
+        })}
       >
-        <div className={styles.nameContainer}>
-          <div className={styles.name}>
-            {name}
-          </div>
+        <Card
+          overlayContent={true}
+          onPress={this.onEditIndexerPress}
+        >
+          <Box sx={(theme) => ({ p: theme.spacing(1.25) })}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography
+                sx={(theme) => ({
+                  mb: theme.spacing(2.5),
+                  fontWeight: 300,
+                  fontSize: 24,
+                  overflow: 'hidden',
+                  maxWidth: '100%',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  minWidth: 0
+                })}
+              >
+                {name}
+              </Typography>
 
-          <IconButton
-            className={styles.cloneButton}
-            title={translate('CloneIndexer')}
-            name={icons.CLONE}
-            onPress={this.onCloneIndexerPress}
-          />
-        </div>
+              <IconButton
+                sx={{ height: 36 }}
+                title={translate('CloneIndexer')}
+                name={icons.CLONE}
+                onPress={this.onCloneIndexerPress}
+              />
+            </Box>
 
-        <div className={styles.enabled}>
+            <Box
+              sx={(theme) => ({
+                display: 'flex',
+                flexWrap: 'wrap',
+                mt: theme.spacing(0.625)
+              })}
+            >
 
           {
             supportsRss && enableRss &&
@@ -134,9 +158,9 @@ class Indexer extends Component {
                 {translate('Disabled')}
               </Label>
           }
-        </div>
+            </Box>
 
-        <TagList
+            <TagList
           tags={tags}
           tagList={tagList}
         />
@@ -157,7 +181,9 @@ class Indexer extends Component {
           onConfirm={this.onConfirmDeleteIndexer}
           onCancel={this.onDeleteIndexerModalClose}
         />
-      </Card>
+          </Box>
+        </Card>
+      </Box>
     );
   }
 }

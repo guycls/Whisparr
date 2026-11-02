@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -8,7 +9,42 @@ import Tooltip from 'Components/Tooltip/Tooltip';
 import { icons, kinds, tooltipPositions } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditQualityProfileModalConnector from './EditQualityProfileModalConnector';
-import styles from './QualityProfile.css';
+
+const sxQualityProfile = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxNameContainer = {
+  display: 'flex',
+  justifyContent: 'space-between'
+};
+
+const sxName = (theme) => ({
+  mb: theme.spacing(2.5),
+  fontWeight: 300,
+  fontSize: 24,
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+});
+
+const sxCloneButton = {
+  height: 36
+};
+
+const sxQualities = (theme) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  mt: theme.spacing(0.625),
+  pointerEvents: 'all'
+});
+
+const sxTooltipLabel = {
+  m: 0,
+  border: 'none'
+};
 
 class QualityProfile extends Component {
 
@@ -73,25 +109,24 @@ class QualityProfile extends Component {
     } = this.props;
 
     return (
-      <Card
-        className={styles.qualityProfile}
+      <Box sx={sxQualityProfile}>
+<Card
         overlayContent={true}
         onPress={this.onEditQualityProfilePress}
       >
-        <div className={styles.nameContainer}>
-          <div className={styles.name}>
+        <Box sx={sxNameContainer}>
+          <Box sx={sxName}>
             {name}
-          </div>
+          </Box>
 
           <IconButton
-            className={styles.cloneButton}
             title={translate('CloneProfile')}
             name={icons.CLONE}
             onPress={this.onCloneQualityProfilePress}
-          />
-        </div>
+           sx={sxCloneButton} />
+        </Box>
 
-        <div className={styles.qualities}>
+        <Box sx={sxQualities}>
           {
             items.map((item) => {
               if (!item.allowed) {
@@ -115,9 +150,9 @@ class QualityProfile extends Component {
               const isCutoff = upgradeAllowed && item.id === cutoff;
 
               return (
-                <Tooltip
+                <Box sx={sxTooltipLabel}>
+<Tooltip
                   key={item.id}
-                  className={styles.tooltipLabel}
                   anchor={
                     <Label
                       kind={isCutoff ? kinds.INFO : kinds.DEFAULT}
@@ -146,10 +181,11 @@ class QualityProfile extends Component {
                   kind={kinds.INVERSE}
                   position={tooltipPositions.TOP}
                 />
+</Box>
               );
             })
           }
-        </div>
+        </Box>
 
         <EditQualityProfileModalConnector
           id={id}
@@ -169,6 +205,7 @@ class QualityProfile extends Component {
           onCancel={this.onDeleteQualityProfileModalClose}
         />
       </Card>
+</Box>
     );
   }
 }

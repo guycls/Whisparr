@@ -1,10 +1,9 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import EnhancedSelectInputOption from './EnhancedSelectInputOption';
-import styles from './RootFolderSelectInputOption.css';
 
 function RootFolderSelectInputOption(props) {
   const {
@@ -26,40 +25,55 @@ function RootFolderSelectInputOption(props) {
       isMobile={isMobile}
       {...otherProps}
     >
-      <div className={classNames(
-        styles.optionText,
-        isMobile && styles.isMobile
-      )}
+      <Box
+        sx={{
+          display: isMobile ? 'block' : 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flex: '1 0 0'
+        }}
       >
-        <div className={styles.value}>
+        <Box sx={{ display: 'flex' }}>
           {value}
 
           {
             seriesFolder && id !== 'addNew' ?
-              <div className={styles.seriesFolder}>
+              <Box sx={{ flex: '0 0 auto', color: 'var(--disabledColor)' }}>
                 {slashCharacter}
                 {seriesFolder}
-              </div> :
+              </Box> :
               null
           }
-        </div>
+        </Box>
 
         {
           freeSpace == null ?
             null :
-            <div className={styles.freeSpace}>
+            <Box
+              sx={{
+                ml: isMobile ? 0 : '15px',
+                color: 'var(--darkGray)',
+                fontSize: 12
+              }}
+            >
               {translate('RootFolderSelectFreeSpace', { freeSpace: formatBytes(freeSpace) })}
-            </div>
+            </Box>
         }
 
         {
           isMissing ?
-            <div className={styles.isMissing}>
+            <Box
+              sx={{
+                ml: '15px',
+                color: 'var(--dangerColor)',
+                fontSize: 12
+              }}
+            >
               {translate('Missing')}
-            </div> :
+            </Box> :
             null
         }
-      </div>
+      </Box>
     </EnhancedSelectInputOption>
   );
 }

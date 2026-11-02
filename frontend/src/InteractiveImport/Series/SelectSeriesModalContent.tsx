@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import { throttle } from 'lodash';
 import React, {
   useCallback,
@@ -20,12 +21,10 @@ import VirtualTableRowButton from 'Components/Table/VirtualTableRowButton';
 import { scrollDirections } from 'Helpers/Props';
 import Series from 'Series/Series';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
-import dimensions from 'Styles/Variables/dimensions';
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import SelectSeriesModalTableHeader from './SelectSeriesModalTableHeader';
 import SelectSeriesRow from './SelectSeriesRow';
-import styles from './SelectSeriesModalContent.css';
 
 const columns = [
   {
@@ -45,7 +44,7 @@ const columns = [
   },
 ];
 
-const bodyPadding = parseInt(dimensions.pageContentBodyPadding);
+const bodyPadding = parseInt('20px');
 
 interface SelectSeriesModalContentProps {
   modalTitle: string;
@@ -173,24 +172,19 @@ function SelectSeriesModalContent(props: SelectSeriesModalContentProps) {
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>{modalTitle} - Select Site</ModalHeader>
 
-      <ModalBody
-        className={styles.modalBody}
-        scrollDirection={scrollDirections.NONE}
-      >
-        <TextInput
-          className={styles.filterInput}
-          placeholder={translate('FilterSitesPlaceholder')}
-          name="filter"
-          value={filter}
-          autoFocus={true}
-          onChange={onFilterChange}
-        />
+      <ModalBody scrollDirection={scrollDirections.NONE}>
+        <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column' }}>
+        <Box sx={{ flex: '0 0 auto', mb: '20px' }}>
+          <TextInput
+            placeholder={translate('FilterSitesPlaceholder')}
+            name="filter"
+            value={filter}
+            autoFocus={true}
+            onChange={onFilterChange}
+          />
+        </Box>
 
-        <Scroller
-          className={styles.scroller}
-          autoFocus={false}
-          ref={scrollerRef}
-        >
+        <Scroller sx={{ flex: '1 1 auto' }} autoFocus={false} ref={scrollerRef}>
           <SelectSeriesModalTableHeader columns={columns} />
           <List<RowItemData>
             ref={listRef}
@@ -212,6 +206,7 @@ function SelectSeriesModalContent(props: SelectSeriesModalContentProps) {
             {Row}
           </List>
         </Scroller>
+        </Box>
       </ModalBody>
 
       <ModalFooter>

@@ -1,7 +1,7 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import PageContent from 'Components/Page/PageContent';
 import translate from 'Utilities/String/translate';
-import styles from './NotFound.css';
 
 interface NotFoundProps {
   message?: string;
@@ -12,14 +12,24 @@ function NotFound(props: NotFoundProps) {
 
   return (
     <PageContent title="MIA">
-      <div className={styles.container}>
-        <div className={styles.message}>{message}</div>
+      <Box sx={{ textAlign: 'center' }}>
+        <Box
+          sx={{
+            my: '50px',
+            textAlign: 'center',
+            fontWeight: 300,
+            fontSize: 36,
+          }}
+        >
+          {message}
+        </Box>
 
-        <img
-          className={styles.image}
+        <Box
+          component="img"
           src={`${window.Whisparr.urlBase}/Content/Images/404.png`}
+          sx={{ height: 350 }}
         />
-      </div>
+      </Box>
     </PageContent>
   );
 }

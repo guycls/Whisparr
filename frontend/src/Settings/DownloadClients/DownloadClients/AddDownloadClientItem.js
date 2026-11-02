@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Button from 'Components/Link/Button';
@@ -7,7 +9,6 @@ import MenuContent from 'Components/Menu/MenuContent';
 import { sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import AddDownloadClientPresetMenuItem from './AddDownloadClientPresetMenuItem';
-import styles from './AddDownloadClientItem.css';
 
 class AddDownloadClientItem extends Component {
 
@@ -37,20 +38,64 @@ class AddDownloadClientItem extends Component {
     const hasPresets = !!presets && !!presets.length;
 
     return (
-      <div
-        className={styles.downloadClient}
+      <Box
+        sx={(theme) => ({
+          position: 'relative',
+          width: 300,
+          height: 100,
+          m: theme.spacing(1.25),
+          borderRadius: '3px',
+          bgcolor: theme.palette.background.paper,
+          boxShadow: 1,
+          color: theme.palette.text.primary
+        })}
       >
-        <Link
-          className={styles.underlay}
-          onPress={this.onDownloadClientSelect}
-        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            '& .MuiButton-root': {
+              width: '100%',
+              height: '100%',
+              minWidth: 0,
+              p: 0,
+              borderRadius: 0
+            }
+          }}
+        >
+          <Link
+            onPress={this.onDownloadClientSelect}
+          />
+        </Box>
 
-        <div className={styles.overlay}>
-          <div className={styles.name}>
+        <Box
+          sx={(theme) => ({
+            position: 'absolute',
+            inset: 0,
+            p: theme.spacing(1.25),
+            pointerEvents: 'none',
+            userSelect: 'none',
+            '& a, & button': {
+              pointerEvents: 'all'
+            }
+          })}
+        >
+          <Typography
+            sx={{
+              textAlign: 'center',
+              fontWeight: 300,
+              fontSize: 24
+            }}
+          >
             {implementationName}
-          </div>
+          </Typography>
 
-          <div className={styles.actions}>
+          <Box
+            sx={(theme) => ({
+              mt: theme.spacing(2.5),
+              textAlign: 'right'
+            })}
+          >
             {
               hasPresets &&
                 <span>
@@ -61,13 +106,25 @@ class AddDownloadClientItem extends Component {
                     {translate('Custom')}
                   </Button>
 
-                  <Menu className={styles.presetsMenu}>
-                    <Button
-                      className={styles.presetsMenuButton}
-                      size={sizes.SMALL}
-                    >
-                      {translate('Presets')}
-                    </Button>
+                  <Box
+                    component="span"
+                    sx={(theme) => ({
+                      display: 'inline-block',
+                      mx: theme.spacing(0.625)
+                    })}
+                  >
+                    <Menu>
+                      <Button
+                        size={sizes.SMALL}
+                      >
+                        {translate('Presets')}
+                        <Box
+                          component="span"
+                          sx={(theme) => ({ ml: theme.spacing(0.625) })}
+                        >
+                          {'\u25BE'}
+                        </Box>
+                      </Button>
 
                     <MenuContent>
                       {
@@ -83,7 +140,8 @@ class AddDownloadClientItem extends Component {
                         })
                       }
                     </MenuContent>
-                  </Menu>
+                    </Menu>
+                  </Box>
                 </span>
             }
 
@@ -93,9 +151,9 @@ class AddDownloadClientItem extends Component {
             >
               {translate('MoreInfo')}
             </Button>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 }

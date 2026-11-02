@@ -1,31 +1,33 @@
-import classNames from 'classnames';
+import Chip from '@mui/material/Chip';
 import React, { ComponentProps, ReactNode } from 'react';
 import { kinds, sizes } from 'Helpers/Props';
-import styles from './Label.css';
+import { Kind } from 'Helpers/Props/kinds';
+import { kindToColor, sizeToButtonSize } from 'Helpers/Props/muiKind';
+import { Size } from 'Helpers/Props/sizes';
 
-export interface LabelProps extends ComponentProps<'span'> {
-  kind?: Extract<(typeof kinds.all)[number], keyof typeof styles>;
-  size?: Extract<(typeof sizes.all)[number], keyof typeof styles>;
+export interface LabelProps extends Omit<ComponentProps<'span'>, 'color'> {
+  kind?: Kind;
+  size?: Size;
   outline?: boolean;
   children: ReactNode;
 }
 
 export default function Label({
-  className = styles.label,
+  className,
   kind = kinds.DEFAULT,
   size = sizes.SMALL,
   outline = false,
-  ...otherProps
+  children,
 }: LabelProps) {
+  const color = kindToColor(kind);
+
   return (
-    <span
-      className={classNames(
-        className,
-        styles[kind],
-        styles[size],
-        outline && styles.outline
-      )}
-      {...otherProps}
+    <Chip
+      className={className}
+      label={children}
+      size={sizeToButtonSize(size) === 'large' ? 'medium' : 'small'}
+      color={color === 'inherit' ? 'default' : color}
+      variant={outline || kind === kinds.DEFAULT ? 'outlined' : 'filled'}
     />
   );
 }

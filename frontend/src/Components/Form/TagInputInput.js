@@ -1,8 +1,8 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { kinds } from 'Helpers/Props';
 import tagShape from 'Helpers/Props/Shapes/tagShape';
-import styles from './TagInputInput.css';
 
 class TagInputInput extends Component {
 
@@ -35,10 +35,19 @@ class TagInputInput extends Component {
     } = this.props;
 
     return (
-      <div
+      <Box
         ref={forwardedRef}
         className={className}
         onMouseDown={this.onMouseDown}
+        sx={{
+          inset: '-1px',
+          display: 'flex',
+          alignItems: 'start',
+          flexWrap: 'wrap',
+          padding: '1px 16px',
+          minHeight: 33,
+          cursor: 'default'
+        }}
       >
         {
           tags.map((tag, index) => {
@@ -58,14 +67,14 @@ class TagInputInput extends Component {
         }
 
         <input {...inputProps} />
-      </div>
+      </Box>
     );
   }
 }
 
 TagInputInput.propTypes = {
   forwardedRef: PropTypes.func,
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   tags: PropTypes.arrayOf(PropTypes.shape(tagShape)).isRequired,
   inputProps: PropTypes.object.isRequired,
   kind: PropTypes.oneOf(kinds.all).isRequired,
@@ -75,10 +84,6 @@ TagInputInput.propTypes = {
   onTagDelete: PropTypes.func.isRequired,
   onTagEdit: PropTypes.func.isRequired,
   onInputContainerPress: PropTypes.func.isRequired
-};
-
-TagInputInput.defaultProps = {
-  className: styles.inputContainer
 };
 
 export default TagInputInput;

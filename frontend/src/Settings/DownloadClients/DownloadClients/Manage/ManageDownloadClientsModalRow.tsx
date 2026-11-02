@@ -8,7 +8,6 @@ import TagListConnector from 'Components/TagListConnector';
 import { kinds } from 'Helpers/Props';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
-import styles from './ManageDownloadClientsModalRow.css';
 
 interface ManageDownloadClientsModalRowProps {
   id: number;
@@ -57,29 +56,29 @@ function ManageDownloadClientsModalRow(
         onSelectedChange={onSelectedChangeWrapper}
       />
 
-      <TableRowCell className={styles.name}>{name}</TableRowCell>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>{name}</TableRowCell>
 
-      <TableRowCell className={styles.implementation}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {implementation}
       </TableRowCell>
 
-      <TableRowCell className={styles.enable}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         <Label kind={enable ? kinds.SUCCESS : kinds.DISABLED} outline={!enable}>
           {enable ? translate('Yes') : translate('No')}
         </Label>
       </TableRowCell>
 
-      <TableRowCell className={styles.priority}>{priority}</TableRowCell>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>{priority}</TableRowCell>
 
-      <TableRowCell className={styles.removeCompletedDownloads}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {removeCompletedDownloads ? translate('Yes') : translate('No')}
       </TableRowCell>
 
-      <TableRowCell className={styles.removeFailedDownloads}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {removeFailedDownloads ? translate('Yes') : translate('No')}
       </TableRowCell>
 
-      <TableRowCell className={styles.tags}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         <TagListConnector tags={tags} />
       </TableRowCell>
     </TableRow>

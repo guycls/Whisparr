@@ -13,7 +13,8 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ImportCustomFormatModalContent.css';
+
+const monoSpaceFontFamily = '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace';
 
 class ImportCustomFormatModalContent extends Component {
 
@@ -109,9 +110,9 @@ class ImportCustomFormatModalContent extends Component {
                     </FormLabel>
                     <FormInputGroup
                       key={0}
-                      inputClassName={styles.input}
                       type={inputTypes.TEXT_AREA}
                       name="customFormatJson"
+                      sx={{ fontFamily: monoSpaceFontFamily }}
                       value={json}
                       onChange={this.onChange}
                       placeholder={'{\n  "name": "Custom Format"\n}'}

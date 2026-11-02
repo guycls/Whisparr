@@ -1,11 +1,10 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import * as calendarViews from 'Calendar/calendarViews';
 import isToday from 'Utilities/Date/isToday';
 import CalendarDayConnector from './CalendarDayConnector';
-import styles from './CalendarDays.css';
 
 class CalendarDays extends Component {
 
@@ -131,10 +130,12 @@ class CalendarDays extends Component {
     } = this.props;
 
     return (
-      <div className={classNames(
-        styles.days,
-        styles[view]
-      )}
+      <Box
+        sx={{
+          display: 'flex',
+          borderRight: '1px solid var(--calendarBorderColor)',
+          flexWrap: view === calendarViews.MONTH ? 'wrap' : 'nowrap'
+        }}
       >
         {
           dates.map((date) => {
@@ -148,7 +149,7 @@ class CalendarDays extends Component {
             );
           })
         }
-      </div>
+      </Box>
     );
   }
 }

@@ -11,8 +11,6 @@ import { icons, kinds } from 'Helpers/Props';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import RestoreBackupModalConnector from './RestoreBackupModalConnector';
-import styles from './BackupRow.css';
-
 class BackupRow extends Component {
 
   //
@@ -88,7 +86,7 @@ class BackupRow extends Component {
 
     return (
       <TableRow key={id}>
-        <TableRowCell className={styles.type}>
+        <TableRowCell sx={{ width: 20, textAlign: 'center' }}>
           {
             <Icon
               name={iconClassName}
@@ -114,7 +112,7 @@ class BackupRow extends Component {
           date={time}
         />
 
-        <TableRowCell className={styles.actions}>
+        <TableRowCell sx={{ width: 70 }}>
           <IconButton
             title={translate('RestoreBackup')}
             name={icons.RESTORE}

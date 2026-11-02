@@ -145,7 +145,6 @@ function createMapStateToProps() {
         isRenamingSeriesCommand.body.seriesIds.indexOf(series.id) > -1
       );
 
-      const isUnifiedGridView = view === 'unifiedGrid';
       const isFetching = isEpisodesFetching || isEpisodeFilesFetching;
       const isPopulated = isEpisodesPopulated && isEpisodeFilesPopulated;
       const alternateTitles = filterAlternateTitles(series.alternateTitles, series.title, series.useSceneNumbering);
@@ -398,6 +397,8 @@ SeriesDetailsConnector.propTypes = {
   titleSlug: PropTypes.string.isRequired,
   view: PropTypes.string.isRequired,
   monitorStatusFilter: PropTypes.string.isRequired,
+  rawQualityFilter: PropTypes.object.isRequired,
+  rawRuntimeFilter: PropTypes.object.isRequired,
   qualityFilter: PropTypes.object.isRequired,
   runtimeFilter: PropTypes.object.isRequired,
   maxEpisodeRuntime: PropTypes.number.isRequired,

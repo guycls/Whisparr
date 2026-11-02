@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FieldSet from 'Components/FieldSet';
@@ -12,7 +13,42 @@ import DelayProfile from './DelayProfile';
 import DelayProfileDragPreview from './DelayProfileDragPreview';
 import DelayProfileDragSource from './DelayProfileDragSource';
 import EditDelayProfileModalConnector from './EditDelayProfileModalConnector';
-import styles from './DelayProfiles.css';
+
+const sxHorizontalScroll = (theme) => ({
+  overflowX: 'auto',
+  [theme.breakpoints.down('md')]: {
+    overflowY: 'hidden',
+    width: '100%'
+  }
+});
+
+const sxDelayProfiles = {
+  userSelect: 'none'
+};
+
+const sxDelayProfilesHeader = (theme) => ({
+  display: 'flex',
+  mb: theme.spacing(1.25),
+  fontWeight: 'bold'
+});
+
+const sxColumn = {
+  flex: '0 0 200px'
+};
+
+const sxTags = {
+  flex: '1 0 auto'
+};
+
+const sxAddDelayProfile = {
+  display: 'flex',
+  justifyContent: 'flex-end'
+};
+
+const sxAddButton = {
+  width: 40,
+  textAlign: 'center'
+};
 
 class DelayProfiles extends Component {
 
@@ -73,30 +109,30 @@ class DelayProfiles extends Component {
             errorMessage={translate('DelayProfilesLoadError')}
             {...otherProps}
           >
-            <Scroller
-              className={styles.horizontalScroll}
+            <Box sx={sxHorizontalScroll}>
+<Scroller
               scrollDirection={
                 scrollDirections.HORIZONTAL
               }
               autoFocus={false}
             >
               <div>
-                <div className={styles.delayProfilesHeader}>
-                  <div className={styles.column}>
+                <Box sx={sxDelayProfilesHeader}>
+                  <Box sx={sxColumn}>
                     {translate('PreferredProtocol')}
-                  </div>
-                  <div className={styles.column}>
+                  </Box>
+                  <Box sx={sxColumn}>
                     {translate('UsenetDelay')}
-                  </div>
-                  <div className={styles.column}>
+                  </Box>
+                  <Box sx={sxColumn}>
                     {translate('TorrentDelay')}
-                  </div>
-                  <div className={styles.tags}>
+                  </Box>
+                  <Box sx={sxTags}>
                     {translate('Tags')}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div className={styles.delayProfiles}>
+                <Box sx={sxDelayProfiles}>
                   {
                     items.map((item, index) => {
                       return (
@@ -118,7 +154,7 @@ class DelayProfiles extends Component {
                   <DelayProfileDragPreview
                     width={width}
                   />
-                </div>
+                </Box>
 
                 {
                   defaultProfile ?
@@ -134,15 +170,17 @@ class DelayProfiles extends Component {
                 }
               </div>
             </Scroller>
+</Box>
 
-            <div className={styles.addDelayProfile}>
-              <Link
-                className={styles.addButton}
+            <Box sx={sxAddDelayProfile}>
+              <Box sx={sxAddButton}>
+<Link
                 onPress={this.onAddDelayProfilePress}
               >
                 <Icon name={icons.ADD} />
               </Link>
-            </div>
+</Box>
+            </Box>
 
             <EditDelayProfileModalConnector
               isOpen={isAddDelayProfileModalOpen}

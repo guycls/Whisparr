@@ -9,7 +9,6 @@ import {
   HistoryEventType,
 } from 'typings/History';
 import translate from 'Utilities/String/translate';
-import styles from './HistoryEventTypeCell.css';
 
 function getIconName(eventType: HistoryEventType, data: HistoryData) {
   switch (eventType) {
@@ -80,7 +79,7 @@ function HistoryEventTypeCell({ eventType, data }: HistoryEventTypeCellProps) {
   const tooltip = getTooltip(eventType, data);
 
   return (
-    <TableRowCell className={styles.cell} title={tooltip}>
+    <TableRowCell sx={{ width: 35, textAlign: 'center' }} title={tooltip}>
       <Icon name={iconName} kind={iconKind} />
     </TableRowCell>
   );

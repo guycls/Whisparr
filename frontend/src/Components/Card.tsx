@@ -1,9 +1,9 @@
+import MuiCard from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
 import React from 'react';
 import Link, { LinkProps } from 'Components/Link/Link';
-import styles from './Card.css';
 
 interface CardProps extends Pick<LinkProps, 'onPress'> {
-  // TODO: Consider using different properties for classname depending if it's overlaying content or not
   className?: string;
   overlayClassName?: string;
   overlayContent?: boolean;
@@ -11,28 +11,24 @@ interface CardProps extends Pick<LinkProps, 'onPress'> {
 }
 
 function Card(props: CardProps) {
-  const {
-    className = styles.card,
-    overlayClassName = styles.overlay,
-    overlayContent = false,
-    children,
-    onPress,
-  } = props;
+  const { className, overlayContent = false, children, onPress } = props;
 
   if (overlayContent) {
     return (
-      <div className={className}>
-        <Link className={styles.underlay} onPress={onPress} />
-
-        <div className={overlayClassName}>{children}</div>
-      </div>
+      <MuiCard className={className} sx={{ position: 'relative' }}>
+        <Link
+          onPress={onPress}
+          sx={{ position: 'absolute', inset: 0 }}
+        />
+        {children}
+      </MuiCard>
     );
   }
 
   return (
-    <Link className={className} onPress={onPress}>
-      {children}
-    </Link>
+    <MuiCard className={className}>
+      <CardActionArea onClick={onPress}>{children}</CardActionArea>
+    </MuiCard>
   );
 }
 

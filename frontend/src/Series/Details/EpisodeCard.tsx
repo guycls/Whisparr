@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import React, { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
@@ -15,7 +17,6 @@ import { EpisodeEntities } from 'Episode/useEpisode';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { Image } from 'Series/Series';
 import formatRuntime from 'Utilities/Number/formatRuntime';
-import styles from './EpisodeCard.css';
 
 interface EpisodeCardProps {
   id: number;
@@ -76,29 +77,82 @@ function EpisodeCard(props: EpisodeCardProps) {
   );
 
   return (
-    <div className={styles.card}>
-      <div className={styles.imageContainer}>
-        <Link className={styles.imageLink} onPress={openDetailsModal}>
-          <EpisodeScreenshot
-            className={styles.image}
-            images={images}
-            blur={safeForWorkMode}
-          />
-        </Link>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 1,
+        bgcolor: 'background.paper',
+      }}
+    >
+      <Box
+        sx={{
+          position: 'relative',
+          aspectRatio: '16 / 9',
+          bgcolor: 'action.hover',
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            '& .MuiButton-root': {
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              p: 0,
+              border: 'none',
+              minWidth: 0,
+              '&:hover': { opacity: 0.9 },
+            },
+            '& img': {
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            },
+          }}
+        >
+          <Link onPress={openDetailsModal}>
+            <EpisodeScreenshot images={images} blur={safeForWorkMode} />
+          </Link>
+        </Box>
 
-        <div className={styles.statusOverlay}>
+        <Box sx={{ position: 'absolute', top: 6, left: 6, zIndex: 2 }}>
           <EpisodeStatus
             episodeId={id}
             episodeEntity={episodeEntity}
             episodeFileId={episodeFileId || 0}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className={styles.info}>
-        <div className={styles.title}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          p: { xs: '6px', md: 1 },
+        }}
+      >
+        <Typography
+          sx={{
+            overflowWrap: 'break-word',
+            wordBreak: 'break-word',
+            fontSize: 14,
+            '& a, & span, & .MuiButton-root': {
+              display: 'block',
+              maxWidth: 'none',
+              overflow: 'visible',
+              textOverflow: 'unset',
+              whiteSpace: 'normal',
+            },
+          }}
+        >
           <EpisodeTitleLink
-            className={styles.titleLink}
             episodeId={id}
             seriesId={seriesId}
             episodeTitle={title}
@@ -107,29 +161,64 @@ function EpisodeCard(props: EpisodeCardProps) {
             renderModal={false}
             onModalOpen={openDetailsModal}
           />
-        </div>
+        </Typography>
 
-        <div className={styles.meta}>
-          <RelativeDateCell
-            className={styles.metaDate}
-            date={releaseDate}
-            component="span"
-          />
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+            pt: '4px',
+            borderTop: 1,
+            borderColor: 'divider',
+            color: 'text.secondary',
+            fontSize: 12,
+          }}
+        >
+          <Box sx={{ minWidth: 0, p: 0 }}>
+            <RelativeDateCell date={releaseDate} component="span" />
+          </Box>
 
           {!!runtime && (
-            <span className={styles.runtime}>{formatRuntime(runtime)}</span>
+            <Box component="span" sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+              {formatRuntime(runtime)}
+            </Box>
           )}
-        </div>
+        </Box>
 
         {!!joinedPerformers && (
           <Tooltip
-            anchor={<div className={styles.actors}>{joinedPerformers}</div>}
+            anchor={
+              <Box
+                sx={{
+                  overflow: 'hidden',
+                  maxWidth: '100%',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  color: 'text.secondary',
+                  fontSize: 12,
+                }}
+              >
+                {joinedPerformers}
+              </Box>
+            }
             tooltip={joinedPerformers}
           />
         )}
-      </div>
+      </Box>
 
-      <div className={styles.actionsRow}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          py: '4px',
+          px: 1,
+          borderTop: 1,
+          borderColor: 'divider',
+        }}
+      >
         <MonitorToggleButton
           monitored={monitored}
           isDisabled={!seriesMonitored}
@@ -138,15 +227,16 @@ function EpisodeCard(props: EpisodeCardProps) {
           onPress={handleMonitorPress}
         />
 
-        <EpisodeSearchActions
-          className={styles.actions}
-          episodeId={id}
-          episodeEntity={episodeEntity}
-          seriesId={seriesId}
-          episodeTitle={title}
-          isSmallScreen={isSmallScreen}
-        />
-      </div>
+        <Box sx={{ flexShrink: 0 }}>
+          <EpisodeSearchActions
+            episodeId={id}
+            episodeEntity={episodeEntity}
+            seriesId={seriesId}
+            episodeTitle={title}
+            isSmallScreen={isSmallScreen}
+          />
+        </Box>
+      </Box>
 
       <EpisodeDetailsModal
         isOpen={isDetailsModalOpen}
@@ -156,7 +246,7 @@ function EpisodeCard(props: EpisodeCardProps) {
         episodeTitle={title}
         onModalClose={closeDetailsModal}
       />
-    </div>
+    </Box>
   );
 }
 

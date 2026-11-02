@@ -1,46 +1,77 @@
-import classNames from 'classnames';
+import MenuItem from '@mui/material/MenuItem';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import Link from 'Components/Link/Link';
-import styles from './MenuItem.css';
+import React, { useContext } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+import { withUrlBase } from 'Components/Link/Link';
+import { MenuCloseContext } from './Menu';
 
-class MenuItem extends Component {
+const externalUrlRegex = /\w+?:\/\//;
 
-  //
-  // Render
+function AppMenuItem(props) {
+  const {
+    className,
+    children,
+    isDisabled,
+    onPress,
+    to,
+    target,
+    noRouter,
+    ...otherProps
+  } = props;
 
-  render() {
-    const {
-      className,
-      children,
-      isDisabled,
-      ...otherProps
-    } = this.props;
+  const close = useContext(MenuCloseContext);
 
-    return (
-      <Link
-        className={classNames(
-          className,
-          isDisabled && styles.isDisabled
-        )}
-        isDisabled={isDisabled}
-        {...otherProps}
-      >
-        {children}
-      </Link>
-    );
+  const onClick = (event) => {
+    if (isDisabled) {
+      event.preventDefault();
+
+      return;
+    }
+
+    if (onPress) {
+      onPress(event);
+    }
+
+    close();
+  };
+
+  const linkProps = {};
+
+  if (to && (externalUrlRegex.test(to) || noRouter)) {
+    linkProps.component = 'a';
+    linkProps.href = to;
+    linkProps.target = target || (externalUrlRegex.test(to) ? '_blank' : undefined);
+    linkProps.rel = externalUrlRegex.test(to) ? 'noreferrer' : undefined;
+  } else if (to) {
+    linkProps.component = RouterLink;
+    linkProps.to = withUrlBase(to);
   }
+
+  return (
+    <MenuItem
+      className={className}
+      disabled={isDisabled}
+      onClick={onClick}
+      {...linkProps}
+      {...otherProps}
+    >
+      {children}
+    </MenuItem>
+  );
 }
 
-MenuItem.propTypes = {
+AppMenuItem.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node.isRequired,
-  isDisabled: PropTypes.bool.isRequired
+  isDisabled: PropTypes.bool.isRequired,
+  onPress: PropTypes.func,
+  to: PropTypes.string,
+  target: PropTypes.string,
+  noRouter: PropTypes.bool
 };
 
-MenuItem.defaultProps = {
-  className: styles.menuItem,
+AppMenuItem.defaultProps = {
   isDisabled: false
 };
 
-export default MenuItem;
+export default AppMenuItem;

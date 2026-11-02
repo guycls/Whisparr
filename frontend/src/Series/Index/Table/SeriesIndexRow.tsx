@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
@@ -8,7 +8,6 @@ import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
-import VirtualTableRowCell from 'Components/Table/Cells/VirtualTableRowCell';
 import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import Column from 'Components/Table/Column';
 import TagListConnector from 'Components/TagListConnector';
@@ -28,7 +27,79 @@ import hasGrowableColumns from './hasGrowableColumns';
 import SeasonsCell from './SeasonsCell';
 import selectTableOptions from './selectTableOptions';
 import SeriesStatusCell from './SeriesStatusCell';
-import styles from './SeriesIndexRow.css';
+
+const rowCellBase = {
+  display: 'flex',
+  alignItems: 'center',
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  flexGrow: 0,
+  flexShrink: 1,
+  minWidth: 0,
+};
+
+const rowColumnFlex: Record<string, Record<string, unknown>> = {
+  status: { flex: '0 0 60px' },
+  sortTitle: { flex: '4 0 110px' },
+  network: { flex: '2 0 90px' },
+  originalLanguage: { flex: '1 0 125px' },
+  qualityProfileId: { flex: '1 0 125px' },
+  releaseGroups: { flex: '0 0 180px' },
+  nextAiring: { flex: '0 0 180px' },
+  previousAiring: { flex: '0 0 180px' },
+  added: { flex: '0 0 180px' },
+  genres: { flex: '0 0 180px' },
+  seasonCount: { flex: '0 0 100px' },
+  certification: { flex: '0 0 100px' },
+  seasonFolder: { width: 150 },
+  episodeProgress: {
+    justifyContent: 'center',
+    flex: '0 0 150px',
+    flexDirection: 'column',
+  },
+  latestSeason: {
+    justifyContent: 'center',
+    flex: '0 0 150px',
+    flexDirection: 'column',
+  },
+  episodeCount: { flex: '0 0 130px' },
+  year: { flex: '0 0 80px' },
+  path: { flex: '1 0 150px' },
+  sizeOnDisk: { flex: '0 0 120px' },
+  tags: { flex: '1 0 60px' },
+  useSceneNumbering: { flex: '0 0 145px' },
+  actions: { flex: '0 1 90px', minWidth: 60 },
+};
+
+function rowCellSx(name: string, extra?: Record<string, unknown>) {
+  return {
+    ...rowCellBase,
+    ...rowColumnFlex[name],
+    ...extra,
+  };
+}
+
+function dateCell(name: string) {
+  return function DateCell({
+    className,
+    children,
+  }: {
+    className?: string;
+    children?: React.ReactNode;
+  }) {
+    return (
+      <Box className={className} sx={rowCellSx(name)}>
+        {children}
+      </Box>
+    );
+  };
+}
+
+const NextAiringCell = dateCell('nextAiring');
+const PreviousAiringCell = dateCell('previousAiring');
+const AddedCell = dateCell('added');
 
 interface SeriesIndexRowProps {
   seriesId: number;
@@ -169,70 +240,98 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
           return (
             <SeriesStatusCell
               key={name}
-              className={styles[name]}
+              sx={rowCellSx(name)}
               seriesId={seriesId}
               monitored={monitored}
               status={status}
               isSelectMode={isSelectMode}
               isSaving={isSaving}
-              component={VirtualTableRowCell}
             />
           );
         }
 
         if (name === 'sortTitle') {
           return (
-            <VirtualTableRowCell
+            <Box
               key={name}
-              className={classNames(
-                styles[name],
-                showBanners && styles.banner,
-                showBanners && !hasGrowableColumns(columns) && styles.bannerGrow
+              sx={rowCellSx(
+                name,
+                showBanners
+                  ? {
+                      flex: '0 0 379px',
+                      ...(hasGrowableColumns(columns) ? {} : { flexGrow: 1 }),
+                    }
+                  : undefined
               )}
             >
               {showBanners ? (
-                <Link className={styles.link} to={`/site/${titleSlug}`}>
+                <Link
+                  to={`/site/${titleSlug}`}
+                  sx={{
+                    position: 'relative',
+                    display: 'block',
+                    height: 70,
+                    bgcolor: 'text.primary',
+                  }}
+                >
                   <SeriesBanner
-                    className={styles.bannerImage}
                     images={images}
                     lazy={false}
                     overflow={true}
                     onError={onBannerLoadError}
                     onLoad={onBannerLoad}
+                    style={{ width: 379, height: 70 }}
                   />
 
                   {hasBannerError && (
-                    <div className={styles.overlayTitle}>{title}</div>
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        p: '5px',
+                        width: '100%',
+                        height: '100%',
+                        color: 'common.white',
+                        textAlign: 'center',
+                        fontSize: 20,
+                      }}
+                    >
+                      {title}
+                    </Box>
                   )}
                 </Link>
               ) : (
                 <SeriesTitleLink titleSlug={titleSlug} title={title} />
               )}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'network') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               {network}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'originalLanguage') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               {originalLanguage.name}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'qualityProfileId') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               {qualityProfile?.name ?? ''}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
@@ -242,9 +341,9 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
             // @ts-ignore ts(2739)
             <RelativeDateCell
               key={name}
-              className={styles[name]}
+              className=""
               date={nextAiring}
-              component={VirtualTableRowCell}
+              component={NextAiringCell}
             />
           );
         }
@@ -255,9 +354,9 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
             // @ts-ignore ts(2739)
             <RelativeDateCell
               key={name}
-              className={styles[name]}
+              className=""
               date={previousAiring}
-              component={VirtualTableRowCell}
+              component={PreviousAiringCell}
             />
           );
         }
@@ -268,9 +367,9 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
             // @ts-ignore ts(2739)
             <RelativeDateCell
               key={name}
-              className={styles[name]}
+              className=""
               date={added}
-              component={VirtualTableRowCell}
+              component={AddedCell}
             />
           );
         }
@@ -279,7 +378,7 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
           return (
             <SeasonsCell
               key={name}
-              className={styles[name]}
+              sx={rowCellSx(name)}
               seriesId={seriesId}
               seasonCount={seasonCount}
               seasons={seasons}
@@ -290,20 +389,20 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
 
         if (name === 'seasonFolder') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               <CheckInput
                 name="seasonFolder"
                 value={seasonFolder}
                 isDisabled={true}
                 onChange={checkInputCallback}
               />
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'episodeProgress') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               <SeriesIndexProgressBar
                 seriesId={seriesId}
                 monitored={monitored}
@@ -315,13 +414,13 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
                 detailedProgressBar={true}
                 isStandalone={true}
               />
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'latestSeason') {
           if (!latestSeason) {
-            return <VirtualTableRowCell key={name} className={styles[name]} />;
+            return <Box key={name} sx={rowCellSx(name)} />;
           }
 
           const {
@@ -331,7 +430,7 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
           } = latestSeason.statistics ?? {};
 
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               <SeriesIndexProgressBar
                 seriesId={seriesId}
                 seasonNumber={latestSeason.seasonNumber}
@@ -344,39 +443,39 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
                 detailedProgressBar={true}
                 isStandalone={true}
               />
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'episodeCount') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               {totalEpisodeCount}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'year') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               {year}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'path') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               {path}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'sizeOnDisk') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               {formatBytes(sizeOnDisk)}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
@@ -384,17 +483,17 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
           const joinedGenres = genres.join(', ');
 
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               <span title={joinedGenres}>{joinedGenres}</span>
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'certification') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               {certification}
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
@@ -406,37 +505,36 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
               : joinedReleaseGroups;
 
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               <span title={joinedReleaseGroups}>{truncatedReleaseGroups}</span>
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'tags') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               <TagListConnector tags={tags} />
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'useSceneNumbering') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               <CheckInput
-                className={styles.checkInput}
                 name="useSceneNumbering"
                 value={useSceneNumbering}
                 isDisabled={true}
                 onChange={checkInputCallback}
               />
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 
         if (name === 'actions') {
           return (
-            <VirtualTableRowCell key={name} className={styles[name]}>
+            <Box key={name} sx={rowCellSx(name)}>
               <SpinnerIconButton
                 name={icons.REFRESH}
                 title={translate('RefreshSite')}
@@ -458,7 +556,7 @@ function SeriesIndexRow(props: SeriesIndexRowProps) {
                 title={translate('EditSite')}
                 onPress={onEditSeriesPress}
               />
-            </VirtualTableRowCell>
+            </Box>
           );
         }
 

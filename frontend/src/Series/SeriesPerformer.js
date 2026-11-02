@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import EditImportListModalConnector from 'Settings/ImportLists/ImportLists/EditImportListModalConnector';
-import styles from './SeriesPerformer.css';
 
 class SeriesPerformer extends Component {
 
@@ -44,7 +43,12 @@ class SeriesPerformer extends Component {
     return (
       <div>
         <MonitorToggleButton
-          className={styles.monitorToggleButton}
+          sx={{
+            width: 15,
+            '&:hover': {
+              color: 'text.secondary'
+            }
+          }}
           monitored={monitored}
           isSaving={isSaving}
           size={15}

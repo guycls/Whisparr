@@ -1,9 +1,0 @@
-.rating {
-  display: inline-flex;
-  align-items: center;
-}
-
-.heart {
-  margin-right: 4px;
-  color: var(--dangerColor);
-}

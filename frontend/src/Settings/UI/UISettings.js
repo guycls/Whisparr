@@ -11,9 +11,10 @@ import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import { inputTypes, kinds } from 'Helpers/Props';
 import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
-import themes from 'Styles/Themes';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
+
+const themeNames = ['auto', 'dark', 'light'];
 
 export const firstDayOfWeekOptions = [
   {
@@ -73,8 +74,10 @@ class UISettings extends Component {
       ...otherProps
     } = this.props;
 
-    const themeOptions = Object.keys(themes)
-      .map((theme) => ({ key: theme, value: titleCase(theme) }));
+    const themeOptions = themeNames.map((theme) => ({
+      key: theme,
+      value: titleCase(theme)
+    }));
 
     return (
       <PageContent title={translate('UiSettings')}>

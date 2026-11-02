@@ -24,7 +24,6 @@ import { HistoryData, HistoryEventType } from 'typings/History';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import HistoryDetailsModal from './Details/HistoryDetailsModal';
 import HistoryEventTypeCell from './HistoryEventTypeCell';
-import styles from './HistoryRow.css';
 
 interface HistoryRowProps {
   id: number;
@@ -170,7 +169,7 @@ function HistoryRow(props: HistoryRowProps) {
             .join(', ');
 
           return (
-            <TableRowCell key={name} className={styles.actors}>
+            <TableRowCell key={name} sx={{ width: 400 }}>
               <span title={joinedPerformers}>{joinedPerformers}</span>
             </TableRowCell>
           );
@@ -209,7 +208,7 @@ function HistoryRow(props: HistoryRowProps) {
 
         if (name === 'downloadClient') {
           return (
-            <TableRowCell key={name} className={styles.downloadClient}>
+            <TableRowCell key={name} sx={{ width: 120 }}>
               {'downloadClient' in data ? data.downloadClient : ''}
             </TableRowCell>
           );
@@ -217,7 +216,7 @@ function HistoryRow(props: HistoryRowProps) {
 
         if (name === 'indexer') {
           return (
-            <TableRowCell key={name} className={styles.indexer}>
+            <TableRowCell key={name} sx={{ width: 80 }}>
               {'indexer' in data ? data.indexer : ''}
             </TableRowCell>
           );
@@ -225,7 +224,7 @@ function HistoryRow(props: HistoryRowProps) {
 
         if (name === 'customFormatScore') {
           return (
-            <TableRowCell key={name} className={styles.customFormatScore}>
+            <TableRowCell key={name} sx={{ width: 55 }}>
               <Tooltip
                 anchor={formatCustomFormatScore(
                   customFormatScore,
@@ -240,7 +239,7 @@ function HistoryRow(props: HistoryRowProps) {
 
         if (name === 'releaseGroup') {
           return (
-            <TableRowCell key={name} className={styles.releaseGroup}>
+            <TableRowCell key={name} sx={{ width: 110 }}>
               {'releaseGroup' in data ? data.releaseGroup : ''}
             </TableRowCell>
           );
@@ -252,7 +251,7 @@ function HistoryRow(props: HistoryRowProps) {
 
         if (name === 'details') {
           return (
-            <TableRowCell key={name} className={styles.details}>
+            <TableRowCell key={name} sx={{ width: 30 }}>
               <IconButton name={icons.INFO} onPress={handleDetailsPress} />
             </TableRowCell>
           );

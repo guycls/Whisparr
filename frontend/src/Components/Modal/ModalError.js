@@ -7,7 +7,6 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import translate from 'Utilities/String/translate';
-import styles from './ModalError.css';
 
 function ModalError(props) {
   const {
@@ -23,8 +22,16 @@ function ModalError(props) {
 
       <ModalBody>
         <ErrorBoundaryError
-          messageClassName={styles.message}
-          detailsClassName={styles.details}
+          messageSx={{
+            m: 0,
+            mb: '30px',
+            fontWeight: 'normal',
+            fontSize: 26
+          }}
+          detailsSx={{
+            m: 0,
+            mt: '20px'
+          }}
           {...otherProps}
           message={translate('ErrorLoadingItem')}
         />

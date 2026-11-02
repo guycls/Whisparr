@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import React, {
   Fragment,
   useCallback,
@@ -30,7 +32,6 @@ import formatDate from 'Utilities/Date/formatDate';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import translate from 'Utilities/String/translate';
 import UpdateChanges from './UpdateChanges';
-import styles from './Updates.css';
 
 const VERSION_REGEX = /\d+\.\d+\.\d+\.\d+/i;
 
@@ -148,7 +149,7 @@ function Updates() {
         ) : null}
 
         {hasUpdateToInstall ? (
-          <div className={styles.messageContainer}>
+          <Box sx={{ display: 'flex', mb: '20px' }}>
             {updateMechanism === 'builtIn' || updateMechanism === 'script' ? (
               <SpinnerButton
                 kind={kinds.PRIMARY}
@@ -161,7 +162,7 @@ function Updates() {
               <Fragment>
                 <Icon name={icons.WARNING} kind={kinds.WARNING} size={30} />
 
-                <div className={styles.message}>
+                <Typography sx={{ pl: '5px', fontSize: 18, lineHeight: '30px' }}>
                   {externalUpdaterPrefix}{' '}
                   <InlineMarkdown
                     data={
@@ -170,57 +171,77 @@ function Updates() {
                       externalUpdaterMessages.external
                     }
                   />
-                </div>
+                </Typography>
               </Fragment>
             )}
 
             {isFetching ? (
-              <LoadingIndicator className={styles.loading} size={20} />
+              <Box sx={{ mt: '5px', ml: 'auto' }}>
+                <LoadingIndicator size={20} />
+              </Box>
             ) : null}
-          </div>
+          </Box>
         ) : null}
 
         {noUpdateToInstall && (
-          <div className={styles.messageContainer}>
-            <Icon
-              className={styles.upToDateIcon}
-              name={icons.CHECK_CIRCLE}
-              size={30}
-            />
-            <div className={styles.message}>{translate('OnLatestVersion')}</div>
+          <Box sx={{ display: 'flex', mb: '20px' }}>
+            <Box component="span" sx={{ color: '#37bc9b', display: 'inline-flex' }}>
+              <Icon name={icons.CHECK_CIRCLE} size={30} />
+            </Box>
+            <Typography sx={{ pl: '5px', fontSize: 18, lineHeight: '30px' }}>
+              {translate('OnLatestVersion')}
+            </Typography>
 
             {isFetching && (
-              <LoadingIndicator className={styles.loading} size={20} />
+              <Box sx={{ mt: '5px', ml: 'auto' }}>
+                <LoadingIndicator size={20} />
+              </Box>
             )}
-          </div>
+          </Box>
         )}
 
         {hasUpdates && (
           <div>
             {items.map((update) => {
               return (
-                <div key={update.version} className={styles.update}>
-                  <div className={styles.info}>
-                    <div className={styles.version}>{update.version}</div>
-                    <div className={styles.space}>&mdash;</div>
-                    <div
-                      className={styles.date}
+                <Box key={update.version} sx={{ mt: '20px' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: '10px',
+                      pb: '5px',
+                      borderBottom: '1px solid #e5e5e5',
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 21 }}>{update.version}</Typography>
+                    <Box sx={{ px: '5px' }}>&mdash;</Box>
+                    <Typography
                       title={formatDateTime(
                         update.releaseDate,
                         longDateFormat,
                         timeFormat
                       )}
+                      sx={{ fontSize: 16 }}
                     >
                       {formatDate(update.releaseDate, shortDateFormat)}
-                    </div>
+                    </Typography>
 
                     {update.branch === 'main' ? null : (
-                      <Label className={styles.label}>{update.branch}</Label>
+                      <Box
+                        component="span"
+                        sx={{ ml: '10px', '& .MuiChip-root': { fontSize: 14 } }}
+                      >
+                        <Label>{update.branch}</Label>
+                      </Box>
                     )}
 
                     {update.version === currentVersion ? (
+                      <Box
+                        component="span"
+                        sx={{ ml: '10px', '& .MuiChip-root': { fontSize: 14 } }}
+                      >
                       <Label
-                        className={styles.label}
                         kind={kinds.SUCCESS}
                         title={formatDateTime(
                           update.installedOn,
@@ -230,11 +251,15 @@ function Updates() {
                       >
                         {translate('CurrentlyInstalled')}
                       </Label>
+                      </Box>
                     ) : null}
 
                     {update.version !== currentVersion && update.installedOn ? (
+                      <Box
+                        component="span"
+                        sx={{ ml: '10px', '& .MuiChip-root': { fontSize: 14 } }}
+                      >
                       <Label
-                        className={styles.label}
                         kind={kinds.INVERSE}
                         title={formatDateTime(
                           update.installedOn,
@@ -244,8 +269,9 @@ function Updates() {
                       >
                         {translate('PreviouslyInstalled')}
                       </Label>
+                      </Box>
                     ) : null}
-                  </div>
+                  </Box>
 
                   {update.changes ? (
                     <div>
@@ -262,7 +288,7 @@ function Updates() {
                   ) : (
                     <div>{translate('MaintenanceRelease')}</div>
                   )}
-                </div>
+                </Box>
               );
             })}
           </div>

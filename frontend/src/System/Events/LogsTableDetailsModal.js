@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Button from 'Components/Link/Button';
@@ -9,7 +10,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import Scroller from 'Components/Scroller/Scroller';
 import { scrollDirections } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './LogsTableDetailsModal.css';
 
 function LogsTableDetailsModal(props) {
   const {
@@ -36,12 +36,27 @@ function LogsTableDetailsModal(props) {
             {translate('Message')}
           </div>
 
-          <Scroller
-            className={styles.detailsText}
+          <Box
+            component={Scroller}
             scrollDirection={scrollDirections.HORIZONTAL}
+            sx={{
+              display: 'block',
+              mb: '10.5px',
+              p: '10px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              backgroundColor: 'var(--logEventsBackgroundColor)',
+              color: 'var(--textColor)',
+              whiteSpace: 'pre',
+              overflowWrap: 'break-word',
+              wordBreak: 'break-all',
+              fontSize: 13,
+              fontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace',
+              lineHeight: 1.52857143
+            }}
           >
             {message}
-          </Scroller>
+          </Box>
 
           {
             !!exception &&
@@ -49,12 +64,27 @@ function LogsTableDetailsModal(props) {
                 <div>
                   {translate('Exception')}
                 </div>
-                <Scroller
-                  className={styles.detailsText}
+                <Box
+                  component={Scroller}
                   scrollDirection={scrollDirections.HORIZONTAL}
+                  sx={{
+                    display: 'block',
+                    mb: '10.5px',
+                    p: '10px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--logEventsBackgroundColor)',
+                    color: 'var(--textColor)',
+                    whiteSpace: 'pre',
+                    overflowWrap: 'break-word',
+                    wordBreak: 'break-all',
+                    fontSize: 13,
+                    fontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace',
+                    lineHeight: 1.52857143
+                  }}
                 >
                   {exception}
-                </Scroller>
+                </Box>
               </div>
           }
         </ModalBody>

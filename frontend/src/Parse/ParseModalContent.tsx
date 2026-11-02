@@ -1,3 +1,6 @@
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import TextInput from 'Components/Form/TextInput';
@@ -14,7 +17,6 @@ import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import ParseResult from './ParseResult';
 import parseStateSelector from './parseStateSelector';
-import styles from './ParseModalContent.css';
 
 interface ParseModalContentProps {
   onModalClose: () => void;
@@ -62,40 +64,88 @@ function ParseModalContent(props: ParseModalContentProps) {
       <ModalHeader>{translate('TestParsing')}</ModalHeader>
 
       <ModalBody>
-        <div className={styles.inputContainer}>
-          <div className={styles.inputIconContainer}>
+        <Stack direction="row" sx={{ mb: '10px' }}>
+          <Box
+            sx={{
+              width: 58,
+              height: 46,
+              border: '1px solid var(--inputBorderColor)',
+              borderRight: 'none',
+              borderRadius: '4px 0 0 4px',
+              backgroundColor: 'var(--inputIconContainerBackgroundColor)',
+              textAlign: 'center',
+              lineHeight: '46px',
+            }}
+          >
             <Icon name={icons.PARSE} size={20} />
-          </div>
+          </Box>
 
-          <TextInput
-            className={styles.input}
-            name="title"
-            value={title}
-            placeholder="eg. Site.Title.23.02.05.Episode.Title.720p.HDTV-RlsGroup"
-            autoFocus={true}
-            onChange={onInputChange}
-          />
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              '& .MuiInputBase-root': {
+                height: 46,
+                borderRadius: 0,
+                fontSize: 18,
+              },
+            }}
+          >
+            <TextInput
+              name="title"
+              value={title}
+              placeholder="eg. Site.Title.23.02.05.Episode.Title.720p.HDTV-RlsGroup"
+              autoFocus={true}
+              onChange={onInputChange}
+            />
+          </Box>
 
-          <Button className={styles.clearButton} onPress={onClearPress}>
-            <Icon name={icons.REMOVE} size={20} />
-          </Button>
-        </div>
+          <Box
+            sx={{
+              '& .MuiButton-root': {
+                height: 46,
+                border: '1px solid var(--inputBorderColor)',
+                borderLeft: 'none',
+                borderRadius: '0 4px 4px 0',
+                boxShadow: 'inset 0 1px 1px rgba(0, 0, 0, 0.075)',
+              },
+            }}
+          >
+            <Button onPress={onClearPress}>
+              <Icon name={icons.REMOVE} size={20} />
+            </Button>
+          </Box>
+        </Stack>
 
         {isFetching ? <LoadingIndicator /> : null}
 
         {!isFetching && !!error ? (
-          <div className={styles.message}>
-            <div className={styles.helpText}>
+          <Box
+            sx={{
+              mt: '30px',
+              textAlign: 'center',
+              fontWeight: 300,
+              fontSize: 16,
+            }}
+          >
+            <Typography sx={{ mb: '10px', fontSize: 24, fontWeight: 300 }}>
               {translate('ParseModalErrorParsing')}
-            </div>
+            </Typography>
             <div>{getErrorMessage(error)}</div>
-          </div>
+          </Box>
         ) : null}
 
         {!isFetching && title && !error && !item.parsedEpisodeInfo ? (
-          <div className={styles.message}>
+          <Typography
+            sx={{
+              mt: '30px',
+              textAlign: 'center',
+              fontWeight: 300,
+              fontSize: 16,
+            }}
+          >
             {translate('ParseModalUnableToParse')}
-          </div>
+          </Typography>
         ) : null}
 
         {!isFetching && !error && item.parsedEpisodeInfo ? (
@@ -103,12 +153,19 @@ function ParseModalContent(props: ParseModalContentProps) {
         ) : null}
 
         {title ? null : (
-          <div className={styles.message}>
-            <div className={styles.helpText}>
+          <Box
+            sx={{
+              mt: '30px',
+              textAlign: 'center',
+              fontWeight: 300,
+              fontSize: 16,
+            }}
+          >
+            <Typography sx={{ mb: '10px', fontSize: 24, fontWeight: 300 }}>
               {translate('ParseModalHelpText')}
-            </div>
+            </Typography>
             <div>{translate('ParseModalHelpTextDetails')}</div>
-          </div>
+          </Box>
         )}
       </ModalBody>
 

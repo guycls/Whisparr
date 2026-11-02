@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import { uniq } from 'lodash';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -17,7 +18,6 @@ import Series from 'Series/Series';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
 import createTagsSelector from 'Store/Selectors/createTagsSelector';
 import translate from 'Utilities/String/translate';
-import styles from './TagsModalContent.css';
 
 interface TagsModalContentProps {
   seriesIds: number[];
@@ -119,7 +119,7 @@ function TagsModalContent(props: TagsModalContentProps) {
           <FormGroup>
             <FormLabel>{translate('Result')}</FormLabel>
 
-            <div className={styles.result}>
+            <Box sx={{ pt: '4px' }}>
               {seriesTags.map((id) => {
                 const tag = tagList.find((t) => t.id === id);
 
@@ -170,7 +170,7 @@ function TagsModalContent(props: TagsModalContentProps) {
                     </Label>
                   );
                 })}
-            </div>
+            </Box>
           </FormGroup>
         </Form>
       </ModalBody>

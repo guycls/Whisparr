@@ -20,7 +20,19 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import formatRuntime from 'Utilities/Number/formatRuntime';
 import translate from 'Utilities/String/translate';
-import styles from './EpisodeRow.css';
+
+const episodeCellSx = {
+  p: 1,
+  lineHeight: 1.52857143,
+  whiteSpace: { xs: 'nowrap', md: 'normal' }
+};
+
+function episodeColumnSx(width) {
+  return {
+    ...episodeCellSx,
+    width
+  };
+}
 
 class EpisodeRow extends Component {
 
@@ -92,7 +104,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.monitored}
+                  sx={episodeColumnSx(42)}
                 >
                   <MonitorToggleButton
                     monitored={monitored}
@@ -117,7 +129,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.title}
+                  sx={{ ...episodeCellSx, whiteSpace: 'nowrap' }}
                 >
                   <EpisodeTitleLink
                     episodeId={id}
@@ -136,7 +148,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.actors}
+                  sx={episodeColumnSx(400)}
                 >
                   <span title={joinedPerformers}>
                     {joinedPerformers}
@@ -178,7 +190,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.runtime}
+                  sx={episodeColumnSx(80)}
                 >
                   { formatRuntime(runtime) }
                 </TableRowCell>
@@ -199,7 +211,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.customFormatScore}
+                  sx={episodeColumnSx(55)}
                 >
                   <Tooltip
                     anchor={formatCustomFormatScore(
@@ -217,7 +229,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.languages}
+                  sx={episodeColumnSx(100)}
                 >
                   <EpisodeFileLanguageConnector
                     episodeFileId={episodeFileId}
@@ -230,7 +242,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.audio}
+                  sx={episodeColumnSx(100)}
                 >
                   <MediaInfoConnector
                     type={mediaInfoTypes.AUDIO}
@@ -244,7 +256,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.audioLanguages}
+                  sx={episodeColumnSx(165)}
                 >
                   <MediaInfoConnector
                     type={mediaInfoTypes.AUDIO_LANGUAGES}
@@ -258,7 +270,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.subtitles}
+                  sx={episodeColumnSx(165)}
                 >
                   <MediaInfoConnector
                     type={mediaInfoTypes.SUBTITLES}
@@ -272,7 +284,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.video}
+                  sx={episodeColumnSx(100)}
                 >
                   <MediaInfoConnector
                     type={mediaInfoTypes.VIDEO}
@@ -286,7 +298,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.videoDynamicRangeType}
+                  sx={episodeColumnSx(165)}
                 >
                   <MediaInfoConnector
                     type={mediaInfoTypes.VIDEO_DYNAMIC_RANGE_TYPE}
@@ -300,7 +312,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.size}
+                  sx={episodeColumnSx(100)}
                 >
                   {!!episodeFileSize && formatBytes(episodeFileSize)}
                 </TableRowCell>
@@ -311,7 +323,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.releaseGroup}
+                  sx={episodeColumnSx(120)}
                 >
                   {releaseGroup}
                 </TableRowCell>
@@ -322,7 +334,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.indexerFlags}
+                  sx={episodeColumnSx(50)}
                 >
                   {indexerFlags ? (
                     <Popover
@@ -340,7 +352,7 @@ class EpisodeRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.status}
+                  sx={episodeColumnSx(100)}
                 >
                   <EpisodeStatus
                     episodeId={id}

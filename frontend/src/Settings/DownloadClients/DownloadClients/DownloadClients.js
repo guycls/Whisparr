@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -9,7 +10,6 @@ import translate from 'Utilities/String/translate';
 import AddDownloadClientModal from './AddDownloadClientModal';
 import DownloadClient from './DownloadClient';
 import EditDownloadClientModalConnector from './EditDownloadClientModalConnector';
-import styles from './DownloadClients.css';
 
 class DownloadClients extends Component {
 
@@ -65,7 +65,7 @@ class DownloadClients extends Component {
           errorMessage={translate('DownloadClientsLoadError')}
           {...otherProps}
         >
-          <div className={styles.downloadClients}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
             {
               items.map((item) => {
                 return (
@@ -79,18 +79,42 @@ class DownloadClients extends Component {
               })
             }
 
-            <Card
-              className={styles.addDownloadClient}
-              onPress={this.onAddDownloadClientPress}
+            <Box
+              sx={(theme) => ({
+                width: 290,
+                m: theme.spacing(1.25)
+              })}
             >
-              <div className={styles.center}>
-                <Icon
-                  name={icons.ADD}
-                  size={45}
-                />
-              </div>
-            </Card>
-          </div>
+              <Card
+                onPress={this.onAddDownloadClientPress}
+              >
+                <Box
+                  sx={(theme) => ({
+                    p: theme.spacing(1.25),
+                    bgcolor: theme.palette.action.hover,
+                    color: theme.palette.text.secondary,
+                    textAlign: 'center'
+                  })}
+                >
+                  <Box
+                    sx={(theme) => ({
+                      display: 'inline-block',
+                      pt: theme.spacing(0.625),
+                      px: theme.spacing(2.5),
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: 1,
+                      bgcolor: theme.palette.background.paper
+                    })}
+                  >
+                    <Icon
+                      name={icons.ADD}
+                      size={45}
+                    />
+                  </Box>
+                </Box>
+              </Card>
+            </Box>
+          </Box>
 
           <AddDownloadClientModal
             isOpen={isAddDownloadClientModalOpen}

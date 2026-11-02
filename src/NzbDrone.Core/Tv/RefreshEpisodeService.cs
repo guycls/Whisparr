@@ -40,6 +40,7 @@ namespace NzbDrone.Core.Tv
             var existingEpisodes = _episodeService.GetEpisodeBySeries(series.Id);
             var seasons = series.Seasons;
             var hasExisting = existingEpisodes.Any();
+            var duplicateEpisodes = RemoveDuplicateEpisodes(existingEpisodes);
 
             var updateList = new List<Episode>();
             var newList = new List<Episode>();
@@ -104,7 +105,7 @@ namespace NzbDrone.Core.Tv
             allEpisodes.AddRange(newList);
             allEpisodes.AddRange(updateList);
 
-            _episodeService.DeleteMany(existingEpisodes);
+            _episodeService.DeleteMany(existingEpisodes.Concat(duplicateEpisodes).ToList());
             _episodeService.UpdateMany(updateList);
             _episodeService.InsertMany(newList);
 
@@ -176,7 +177,72 @@ namespace NzbDrone.Core.Tv
 
         private Episode GetEpisodeToUpdate(Series series, Episode episode, List<Episode> existingEpisodes)
         {
+            if (episode.TvdbId > 0)
+            {
+                var matchedByTvdbId = existingEpisodes.FirstOrDefault(e => e.TvdbId == episode.TvdbId);
+
+                if (matchedByTvdbId != null)
+                {
+                    return matchedByTvdbId;
+                }
+            }
+
+            if (episode.ExternalId.IsNotNullOrWhiteSpace())
+            {
+                var matchedByExternalId = existingEpisodes.FirstOrDefault(e => e.ExternalId == episode.ExternalId);
+
+                if (matchedByExternalId != null)
+                {
+                    return matchedByExternalId;
+                }
+            }
+
             return existingEpisodes.FirstOrDefault(e => e.SeasonNumber == episode.SeasonNumber && e.AirDate == episode.AirDate);
+        }
+
+        private static List<Episode> RemoveDuplicateEpisodes(List<Episode> existingEpisodes)
+        {
+            var duplicates = new List<Episode>();
+            var groups = existingEpisodes
+                .GroupBy(GetDuplicateKey)
+                .Where(group => group.Count() > 1)
+                .ToList();
+
+            foreach (var group in groups)
+            {
+                var keeper = group
+                    .OrderByDescending(episode => episode.EpisodeFileId > 0)
+                    .ThenBy(episode => episode.Id)
+                    .First();
+
+                foreach (var extra in group)
+                {
+                    if (ReferenceEquals(extra, keeper))
+                    {
+                        continue;
+                    }
+
+                    duplicates.Add(extra);
+                    existingEpisodes.Remove(extra);
+                }
+            }
+
+            return duplicates;
+        }
+
+        private static string GetDuplicateKey(Episode episode)
+        {
+            if (episode.TvdbId > 0)
+            {
+                return $"tvdb:{episode.TvdbId}";
+            }
+
+            if (episode.ExternalId.IsNotNullOrWhiteSpace())
+            {
+                return $"external:{episode.ExternalId}";
+            }
+
+            return $"title:{episode.SeasonNumber}|{episode.AirDate}|{episode.Title}";
         }
 
         private bool ShouldPreserveExistingImages(Episode existingEpisode, Episode remoteEpisode)

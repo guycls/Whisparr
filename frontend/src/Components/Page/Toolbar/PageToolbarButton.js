@@ -1,10 +1,9 @@
-import classNames from 'classnames';
+import Stack from '@mui/material/Stack';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
-import { icons } from 'Helpers/Props';
-import styles from './PageToolbarButton.css';
+import Button from 'Components/Link/Button';
+import { icons, kinds } from 'Helpers/Props';
 
 function PageToolbarButton(props) {
   const {
@@ -17,13 +16,38 @@ function PageToolbarButton(props) {
   } = props;
 
   return (
-    <Link
-      className={classNames(
-        styles.toolbarButton,
-        isDisabled && styles.isDisabled
-      )}
+    <Button
+      kind={kinds.DEFAULT}
       isDisabled={isDisabled || isSpinning}
       {...otherProps}
+      sx={{
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '2px',
+        width: 72,
+        minWidth: 72,
+        maxWidth: 72,
+        height: 56,
+        minHeight: 56,
+        m: 0,
+        p: '6px 4px 4px',
+        border: 'none',
+        borderRadius: 1,
+        color: 'inherit',
+        lineHeight: 1,
+        overflow: 'hidden',
+        textTransform: 'none',
+        whiteSpace: 'normal',
+        '&.MuiButton-outlined': {
+          border: 'none'
+        },
+        '&:hover': {
+          border: 'none',
+          backgroundColor: 'action.hover',
+          color: 'primary.main'
+        }
+      }}
     >
       <Icon
         name={isSpinning ? (spinningName || iconName) : iconName}
@@ -31,12 +55,25 @@ function PageToolbarButton(props) {
         size={21}
       />
 
-      <div className={styles.labelContainer}>
-        <div className={styles.label}>
-          {label}
-        </div>
-      </div>
-    </Link>
+      <Stack
+        component="span"
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: 24,
+          px: '3px',
+          overflow: 'hidden',
+          color: 'text.secondary',
+          fontSize: 11,
+          lineHeight: '12px',
+          textAlign: 'center',
+          whiteSpace: 'normal'
+        }}
+      >
+        {label}
+      </Stack>
+    </Button>
   );
 }
 

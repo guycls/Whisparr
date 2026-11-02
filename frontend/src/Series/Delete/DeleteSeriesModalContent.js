@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
@@ -13,7 +15,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons, inputTypes, kinds } from 'Helpers/Props';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './DeleteSeriesModalContent.css';
 
 class DeleteSeriesModalContent extends Component {
 
@@ -73,14 +74,15 @@ class DeleteSeriesModalContent extends Component {
         </ModalHeader>
 
         <ModalBody>
-          <div className={styles.pathContainer}>
-            <Icon
-              className={styles.pathIcon}
-              name={icons.FOLDER}
-            />
+          <Box sx={{ mb: '20px' }}>
+            <Box component="span" sx={{ mr: 1, display: 'inline-flex' }}>
+              <Icon
+                name={icons.FOLDER}
+              />
+            </Box>
 
             {path}
-          </div>
+          </Box>
 
           <FormGroup>
             <FormLabel>{translate('AddListExclusion')}</FormLabel>
@@ -109,17 +111,19 @@ class DeleteSeriesModalContent extends Component {
 
           {
             deleteFiles ?
-              <div className={styles.deleteFilesMessage}>
-                <div><InlineMarkdown data={translate('DeleteSiteFolderConfirmation', { path })} blockClassName={styles.folderPath} /></div>
+              <Box sx={{ mt: '20px', color: 'error.main' }}>
+                <Box sx={{ '& code': { fontWeight: 'bold', fontFamily: 'inherit' } }}>
+                  <InlineMarkdown data={translate('DeleteSiteFolderConfirmation', { path })} />
+                </Box>
 
                 {
                   episodeFileCount ?
-                    <div className={styles.deleteCount}>
+                    <Typography sx={{ mt: '20px', color: 'warning.main' }}>
                       {translate('DeleteSiteFolderEpisodeCount', { episodeFileCount, size: formatBytes(sizeOnDisk) })}
-                    </div> :
+                    </Typography> :
                     null
                 }
-              </div> :
+              </Box> :
               null
           }
         </ModalBody>

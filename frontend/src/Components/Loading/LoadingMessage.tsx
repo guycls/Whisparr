@@ -1,5 +1,5 @@
+import Box from '@mui/material/Box';
 import React from 'react';
-import styles from './LoadingMessage.css';
 
 const messages = [
   'Downloading more RAM',
@@ -30,7 +30,18 @@ function LoadingMessage() {
     message = messages[index];
   }
 
-  return <div className={styles.loadingMessage}>{message}</div>;
+  return (
+    <Box
+      sx={{
+        m: '10px 10px 0',
+        textAlign: 'center',
+        fontWeight: 300,
+        fontSize: 36,
+      }}
+    >
+      {message}
+    </Box>
+  );
 }
 
 export default LoadingMessage;

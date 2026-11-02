@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -28,7 +29,6 @@ import EpisodeRowConnector from './EpisodeRowConnector';
 import SeasonInfo from './SeasonInfo';
 import SeasonProgressLabel from './SeasonProgressLabel';
 import SeriesDetailsEpisodeGrid from './SeriesDetailsEpisodeGrid';
-import styles from './SeriesDetailsSeason.css';
 
 function getSeasonStatistics(episodes) {
   let episodeCount = 0;
@@ -119,7 +119,6 @@ class SeriesDetailsSeason extends Component {
   componentDidUpdate(prevProps) {
     const {
       seriesId,
-      items,
       allItems
     } = this.props;
 
@@ -242,9 +241,9 @@ class SeriesDetailsSeason extends Component {
 
     if (!items.length) {
       return (
-        <div className={styles.noEpisodes}>
+        <Box sx={{ mb: '15px', textAlign: 'center' }}>
           {translate('NoEpisodesInThisYear')}
-        </div>
+        </Box>
       );
     }
 
@@ -293,7 +292,6 @@ class SeriesDetailsSeason extends Component {
       path,
       monitored,
       seasonNumber,
-      items,
       allItems,
       statistics,
       isSaving,
@@ -327,14 +325,41 @@ class SeriesDetailsSeason extends Component {
     const title = seasonNumber === 0 ? translate('Specials') : translate('SeasonNumberToken', { seasonNumber });
 
     return (
-      <div
-        className={styles.season}
+      <Box
+        sx={(theme) => ({
+          mb: '20px',
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 1,
+          bgcolor: 'background.paper',
+          '&:last-of-type': { mb: 0 },
+          [theme.breakpoints.down('md')]: {
+            borderRight: 0,
+            borderLeft: 0,
+            borderRadius: 0
+          }
+        })}
       >
-        <div
-          className={styles.header}
+        <Box
           ref={this._headerRef}
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            fontSize: 24
+          }}
         >
-          <div className={styles.left}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flex: '0 1 350px',
+              py: '15px',
+              px: '10px',
+              '& .episode-count-tooltip': { display: 'flex' }
+            }}
+          >
             <MonitorToggleButton
               monitored={monitored}
               isDisabled={!seriesMonitored}
@@ -343,12 +368,12 @@ class SeriesDetailsSeason extends Component {
               onPress={onMonitorSeasonPress}
             />
 
-            <span className={styles.seasonNumber}>
+            <Box component="span" sx={{ mr: '10px', ml: '5px' }}>
               {title}
-            </span>
+            </Box>
 
             <Popover
-              className={styles.episodeCountTooltip}
+              className="episode-count-tooltip"
               canFlip={true}
               anchor={
                 <SeasonProgressLabel
@@ -376,110 +401,124 @@ class SeriesDetailsSeason extends Component {
 
             {
               sizeOnDisk ?
-                <div className={styles.sizeOnDisk}>
+                <Box
+                  sx={{
+                    ml: '10px',
+                    color: 'text.secondary',
+                    fontSize: 14,
+                    display: { xs: 'none', md: 'block' }
+                  }}
+                >
                   {formatBytes(sizeOnDisk)}
-                </div> :
+                </Box> :
                 null
             }
-          </div>
+          </Box>
 
-          <Link
-            className={styles.expandButton}
-            onPress={this.onExpandPress}
-          >
-            <Icon
-              className={styles.expandButtonIcon}
-              name={isExpanded ? icons.COLLAPSE : icons.EXPAND}
-              title={isExpanded ? translate('HideEpisodes') : translate('ShowEpisodes')}
-              size={24}
-            />
-            {
-              !isSmallScreen &&
-                <span>&nbsp;</span>
-            }
-          </Link>
+          <Box sx={{ flexGrow: 1, mx: '20px', textAlign: 'center' }}>
+            <Link
+              onPress={this.onExpandPress}
+            >
+              <Box
+                sx={{
+                  width: 30,
+                  position: { xs: 'static', md: 'absolute' },
+                  top: { md: '50%' },
+                  left: { md: '50%' },
+                  mt: { xs: 0, md: '-12px' },
+                  ml: { xs: 0, md: '-12px' }
+                }}
+              >
+                <Icon
+                  name={isExpanded ? icons.COLLAPSE : icons.EXPAND}
+                  title={isExpanded ? translate('HideEpisodes') : translate('ShowEpisodes')}
+                  size={24}
+                />
+              </Box>
+              {
+                !isSmallScreen &&
+                  <span>&nbsp;</span>
+              }
+            </Link>
+          </Box>
 
           {
             isSmallScreen ?
-              <Menu
-                className={styles.actionsMenu}
-                alignMenu={align.RIGHT}
-                enforceMaxHeight={false}
-              >
-                <MenuButton>
-                  <Icon
-                    name={icons.ACTIONS}
-                    size={22}
-                  />
-                </MenuButton>
-
-                <MenuContent className={styles.actionsMenuContent}>
-                  <MenuItem
-                    isDisabled={isSearching || !hasMonitoredEpisodes || !seriesMonitored}
-                    onPress={onSearchPress}
-                  >
-                    <SpinnerIcon
-                      className={styles.actionMenuIcon}
-                      name={icons.SEARCH}
-                      isSpinning={isSearching}
-                    />
-
-                    {translate('Search')}
-                  </MenuItem>
-
-                  <MenuItem
-                    onPress={this.onInteractiveSearchPress}
-                    isDisabled={!totalEpisodeCount}
-                  >
+              <Box sx={{ flex: '0 0 45px', '& svg': { mr: 1 } }}>
+                <Menu
+                  alignMenu={align.RIGHT}
+                  enforceMaxHeight={false}
+                >
+                  <MenuButton>
                     <Icon
-                      className={styles.actionMenuIcon}
-                      name={icons.INTERACTIVE}
+                      name={icons.ACTIONS}
+                      size={22}
                     />
+                  </MenuButton>
 
-                    {translate('InteractiveSearch')}
-                  </MenuItem>
+                  <MenuContent>
+                    <MenuItem
+                      isDisabled={isSearching || !hasMonitoredEpisodes || !seriesMonitored}
+                      onPress={onSearchPress}
+                    >
+                      <SpinnerIcon
+                        name={icons.SEARCH}
+                        isSpinning={isSearching}
+                      />
 
-                  <MenuItem
-                    onPress={this.onOrganizePress}
-                    isDisabled={!episodeFileCount}
-                  >
-                    <Icon
-                      className={styles.actionMenuIcon}
-                      name={icons.ORGANIZE}
-                    />
+                      {translate('Search')}
+                    </MenuItem>
 
-                    {translate('PreviewRename')}
-                  </MenuItem>
+                    <MenuItem
+                      onPress={this.onInteractiveSearchPress}
+                      isDisabled={!totalEpisodeCount}
+                    >
+                      <Icon
+                        name={icons.INTERACTIVE}
+                      />
 
-                  <MenuItem
-                    onPress={this.onManageEpisodesPress}
-                    isDisabled={!episodeFileCount}
-                  >
-                    <Icon
-                      className={styles.actionMenuIcon}
-                      name={icons.EPISODE_FILE}
-                    />
+                      {translate('InteractiveSearch')}
+                    </MenuItem>
 
-                    {translate('ManageEpisodes')}
-                  </MenuItem>
+                    <MenuItem
+                      onPress={this.onOrganizePress}
+                      isDisabled={!episodeFileCount}
+                    >
+                      <Icon
+                        name={icons.ORGANIZE}
+                      />
 
-                  <MenuItem
-                    onPress={this.onHistoryPress}
-                    isDisabled={!totalEpisodeCount}
-                  >
-                    <Icon
-                      className={styles.actionMenuIcon}
-                      name={icons.HISTORY}
-                    />
+                      {translate('PreviewRename')}
+                    </MenuItem>
 
-                    {translate('History')}
-                  </MenuItem>
-                </MenuContent>
-              </Menu> :
+                    <MenuItem
+                      onPress={this.onManageEpisodesPress}
+                      isDisabled={!episodeFileCount}
+                    >
+                      <Icon
+                        name={icons.EPISODE_FILE}
+                      />
 
-              <div className={styles.actions}>
+                      {translate('ManageEpisodes')}
+                    </MenuItem>
+
+                    <MenuItem
+                      onPress={this.onHistoryPress}
+                      isDisabled={!totalEpisodeCount}
+                    >
+                      <Icon
+                        name={icons.HISTORY}
+                      />
+
+                      {translate('History')}
+                    </MenuItem>
+                  </MenuContent>
+                </Menu>
+              </Box> :
+
+              <Box sx={{ py: '15px', px: '10px' }}>
                 <SpinnerIconButton
-                  className={styles.actionButton}
+                  sx={{ width: 30 }}
                   name={icons.SEARCH}
                   title={hasMonitoredEpisodes && seriesMonitored ? translate('SearchForMonitoredEpisodesSeason') : translate('NoMonitoredEpisodesSeason')}
                   size={24}
@@ -489,7 +528,7 @@ class SeriesDetailsSeason extends Component {
                 />
 
                 <IconButton
-                  className={styles.actionButton}
+                  sx={{ width: 30 }}
                   name={icons.INTERACTIVE}
                   title={translate('InteractiveSearchSeason')}
                   size={24}
@@ -498,7 +537,7 @@ class SeriesDetailsSeason extends Component {
                 />
 
                 <IconButton
-                  className={styles.actionButton}
+                  sx={{ width: 30 }}
                   name={icons.ORGANIZE}
                   title={translate('PreviewRenameSeason')}
                   size={24}
@@ -507,7 +546,7 @@ class SeriesDetailsSeason extends Component {
                 />
 
                 <IconButton
-                  className={styles.actionButton}
+                  sx={{ width: 30 }}
                   name={icons.EPISODE_FILE}
                   title={translate('ManageEpisodesSeason')}
                   size={24}
@@ -516,33 +555,47 @@ class SeriesDetailsSeason extends Component {
                 />
 
                 <IconButton
-                  className={styles.actionButton}
+                  sx={{ width: 30 }}
                   name={icons.HISTORY}
                   title={translate('HistorySeason')}
                   size={24}
                   isDisabled={!totalEpisodeCount}
                   onPress={this.onHistoryPress}
                 />
-              </div>
+              </Box>
           }
 
-        </div>
+        </Box>
 
         <div>
           {
             isExpanded &&
-              <div className={styles.episodes}>
+              <Box sx={{ pt: '15px', borderTop: 1, borderColor: 'divider' }}>
                 {this.renderEpisodes()}
-                <div className={styles.collapseButtonContainer}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: '10px',
+                    px: '15px',
+                    width: '100%',
+                    borderTop: 1,
+                    borderColor: 'divider',
+                    borderBottomRightRadius: 4,
+                    borderBottomLeftRadius: 4,
+                    bgcolor: 'background.default',
+                    '& svg': { mb: '-4px' }
+                  }}
+                >
                   <IconButton
-                    iconClassName={styles.collapseButtonIcon}
                     name={icons.COLLAPSE}
                     size={20}
                     title={translate('HideEpisodes')}
                     onPress={this.onExpandPress}
                   />
-                </div>
-              </div>
+                </Box>
+              </Box>
           }
         </div>
 
@@ -582,7 +635,7 @@ class SeriesDetailsSeason extends Component {
           seasonNumber={seasonNumber}
           onModalClose={this.onInteractiveSearchModalClose}
         />
-      </div>
+      </Box>
     );
   }
 }

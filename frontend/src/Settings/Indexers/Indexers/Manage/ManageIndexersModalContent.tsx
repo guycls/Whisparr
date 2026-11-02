@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IndexerAppState } from 'App/State/SettingsAppState';
@@ -28,7 +29,6 @@ import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import ManageIndexersEditModal from './Edit/ManageIndexersEditModal';
 import ManageIndexersModalRow from './ManageIndexersModalRow';
 import TagsModal from './Tags/TagsModal';
-import styles from './ManageIndexersModalContent.css';
 
 // TODO: This feels janky to do, but not sure of a better way currently
 type OnSelectedChangeCallback = React.ComponentProps<
@@ -249,7 +249,13 @@ function ManageIndexersModalContent(props: ManageIndexersModalContentProps) {
       </ModalBody>
 
       <ModalFooter>
-        <div className={styles.leftButtons}>
+        <Box
+          sx={{
+            display: 'flex',
+            flex: '1 0 50%',
+            flexWrap: 'wrap',
+          }}
+        >
           <SpinnerButton
             kind={kinds.DANGER}
             isSpinning={isDeleting}
@@ -274,7 +280,7 @@ function ManageIndexersModalContent(props: ManageIndexersModalContentProps) {
           >
             {translate('SetTags')}
           </SpinnerButton>
-        </div>
+        </Box>
 
         <Button onPress={onModalClose}>{translate('Close')}</Button>
       </ModalFooter>

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -7,7 +8,37 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditSpecificationModalConnector from './EditSpecificationModal';
-import styles from './Specification.css';
+
+const sxCustomFormat = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxNameContainer = {
+  display: 'flex',
+  justifyContent: 'space-between'
+};
+
+const sxName = (theme) => ({
+  mb: theme.spacing(2.5),
+  fontWeight: 300,
+  fontSize: 24,
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+});
+
+const sxCloneButton = {
+  height: 36
+};
+
+const sxLabels = (theme) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  mt: theme.spacing(0.625),
+  pointerEvents: 'all'
+});
 
 class Specification extends Component {
 
@@ -66,25 +97,24 @@ class Specification extends Component {
     } = this.props;
 
     return (
-      <Card
-        className={styles.customFormat}
+      <Box sx={sxCustomFormat}>
+<Card
         overlayContent={true}
         onPress={this.onEditSpecificationPress}
       >
-        <div className={styles.nameContainer}>
-          <div className={styles.name}>
+        <Box sx={sxNameContainer}>
+          <Box sx={sxName}>
             {name}
-          </div>
+          </Box>
 
           <IconButton
-            className={styles.cloneButton}
             title={translate('CloneCondition')}
             name={icons.CLONE}
             onPress={this.onCloneSpecificationPress}
-          />
-        </div>
+           sx={sxCloneButton} />
+        </Box>
 
-        <div className={styles.labels}>
+        <Box sx={sxLabels}>
           <Label kind={kinds.DEFAULT}>
             {implementationName}
           </Label>
@@ -102,7 +132,7 @@ class Specification extends Component {
                 {translate('Required')}
               </Label>
           }
-        </div>
+        </Box>
 
         <EditSpecificationModalConnector
           id={id}
@@ -121,6 +151,7 @@ class Specification extends Component {
           onCancel={this.onDeleteSpecificationModalClose}
         />
       </Card>
+</Box>
     );
   }
 }

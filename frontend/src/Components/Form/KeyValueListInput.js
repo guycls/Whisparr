@@ -1,8 +1,7 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import KeyValueListInputItem from './KeyValueListInputItem';
-import styles from './KeyValueListInput.css';
 
 class KeyValueListInput extends Component {
 
@@ -106,12 +105,20 @@ class KeyValueListInput extends Component {
     const { isFocused } = this.state;
 
     return (
-      <div className={classNames(
-        className,
-        isFocused && styles.isFocused,
-        hasError && styles.hasError,
-        hasWarning && styles.hasWarning
-      )}
+      <Box
+        className={className}
+        sx={{
+          position: 'relative',
+          minHeight: 35,
+          height: 'auto',
+          ...(isFocused ? {
+            outline: 0,
+            borderColor: 'var(--inputFocusBorderColor)',
+            boxShadow: 'inset 0 1px 1px var(--inputBoxShadowColor), 0 0 8px var(--inputFocusBoxShadowColor)'
+          } : null),
+          ...(hasError ? { borderColor: 'var(--inputErrorBorderColor)' } : null),
+          ...(hasWarning ? { borderColor: 'var(--inputWarningBorderColor)' } : null)
+        }}
       >
         {
           [...value, { key: '', value: '' }].map((v, index) => {
@@ -132,13 +139,13 @@ class KeyValueListInput extends Component {
             );
           })
         }
-      </div>
+      </Box>
     );
   }
 }
 
 KeyValueListInput.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   name: PropTypes.string.isRequired,
   value: PropTypes.arrayOf(PropTypes.object).isRequired,
   hasError: PropTypes.bool,
@@ -149,7 +156,6 @@ KeyValueListInput.propTypes = {
 };
 
 KeyValueListInput.defaultProps = {
-  className: styles.inputContainer,
   value: []
 };
 

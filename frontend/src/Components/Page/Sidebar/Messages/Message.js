@@ -1,9 +1,8 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
-import styles from './Message.css';
 
 function getIconName(name) {
   switch (name) {
@@ -32,6 +31,13 @@ function getIconName(name) {
   }
 }
 
+const typeBorderColor = {
+  error: 'var(--dangerColor)',
+  info: 'var(--infoColor)',
+  success: 'var(--successColor)',
+  warning: 'var(--warningColor)'
+};
+
 function Message(props) {
   const {
     name,
@@ -40,24 +46,43 @@ function Message(props) {
   } = props;
 
   return (
-    <div className={classNames(
-      styles.message,
-      styles[type]
-    )}
+    <Box
+      sx={{
+        display: 'flex',
+        borderLeft: `3px solid ${typeBorderColor[type] || 'var(--infoColor)'}`
+      }}
     >
-      <div className={styles.iconContainer}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          flex: '0 0 25px',
+          ml: '24px',
+          py: '10px',
+          color: 'var(--sidebarColor)'
+        }}
+      >
         <Icon
           name={getIconName(name)}
           title={name}
         />
-      </div>
+      </Box>
 
-      <div
-        className={styles.text}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          py: '2px',
+          mr: '24px',
+          color: 'var(--sidebarColor)',
+          fontSize: 13
+        }}
       >
         {message}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

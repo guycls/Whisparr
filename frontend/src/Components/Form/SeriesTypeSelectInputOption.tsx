@@ -1,7 +1,6 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React from 'react';
 import EnhancedSelectInputOption from './EnhancedSelectInputOption';
-import styles from './SeriesTypeSelectInputOption.css';
 
 interface SeriesTypeSelectInputOptionProps {
   key: string;
@@ -15,13 +14,28 @@ function SeriesTypeSelectInputOption(props: SeriesTypeSelectInputOptionProps) {
 
   return (
     <EnhancedSelectInputOption id={key} isMobile={isMobile} {...otherProps}>
-      <div
-        className={classNames(styles.optionText, isMobile && styles.isMobile)}
+      <Box
+        sx={{
+          display: isMobile ? 'block' : 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flex: '1 0 0',
+        }}
       >
-        <div className={styles.value}>{value}</div>
+        <Box sx={{ display: 'flex' }}>{value}</Box>
 
-        {format == null ? null : <div className={styles.format}>{format}</div>}
-      </div>
+        {format == null ? null : (
+          <Box
+            sx={{
+              ml: isMobile ? 0 : '15px',
+              color: 'var(--darkGray)',
+              fontSize: 12,
+            }}
+          >
+            {format}
+          </Box>
+        )}
+      </Box>
     </EnhancedSelectInputOption>
   );
 }

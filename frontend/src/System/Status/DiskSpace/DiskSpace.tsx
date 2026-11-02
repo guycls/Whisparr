@@ -15,8 +15,6 @@ import { Kind } from 'Helpers/Props/kinds';
 import { fetchDiskSpace } from 'Store/Actions/systemActions';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './DiskSpace.css';
-
 const columns: Column[] = [
   {
     name: 'path',
@@ -84,15 +82,15 @@ function DiskSpace() {
                     {item.label && ` (${item.label})`}
                   </TableRowCell>
 
-                  <TableRowCell className={styles.space}>
+                  <TableRowCell sx={{ width: 150 }}>
                     {formatBytes(freeSpace)}
                   </TableRowCell>
 
-                  <TableRowCell className={styles.space}>
+                  <TableRowCell sx={{ width: 150 }}>
                     {formatBytes(totalSpace)}
                   </TableRowCell>
 
-                  <TableRowCell className={styles.space}>
+                  <TableRowCell sx={{ width: 150 }}>
                     <ProgressBar
                       progress={diskUsage}
                       kind={diskUsageKind}

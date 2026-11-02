@@ -1,11 +1,9 @@
-import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
 import { findDOMNode } from 'react-dom';
 import { TABLE_COLUMN } from 'Helpers/dragTypes';
 import TableOptionsColumn from './TableOptionsColumn';
-import styles from './TableOptionsColumnDragSource.css';
 
 const columnDragSource = {
   beginDrag(column) {
@@ -94,19 +92,18 @@ class TableOptionsColumnDragSource extends Component {
 
     return connectDropTarget(
       <div
-        className={classNames(
-          styles.columnDragSource,
-          isBefore && styles.isDraggingUp,
-          isAfter && styles.isDraggingDown
-        )}
+        style={{ padding: '4px 0' }}
       >
         {
           isBefore &&
             <div
-              className={classNames(
-                styles.columnPlaceholder,
-                styles.columnPlaceholderBefore
-              )}
+              style={{
+                width: '100%',
+                height: 36,
+                border: '1px dotted #aaa',
+                borderRadius: 4,
+                marginBottom: 8
+              }}
             />
         }
 
@@ -125,10 +122,13 @@ class TableOptionsColumnDragSource extends Component {
         {
           isAfter &&
             <div
-              className={classNames(
-                styles.columnPlaceholder,
-                styles.columnPlaceholderAfter
-              )}
+              style={{
+                width: '100%',
+                height: 36,
+                border: '1px dotted #aaa',
+                borderRadius: 4,
+                marginTop: 8
+              }}
             />
         }
       </div>

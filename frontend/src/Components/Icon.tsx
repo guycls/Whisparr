@@ -2,11 +2,10 @@ import {
   FontAwesomeIcon,
   FontAwesomeIconProps,
 } from '@fortawesome/react-fontawesome';
-import classNames from 'classnames';
+import { Theme, useTheme } from '@mui/material/styles';
 import React, { ComponentProps } from 'react';
 import { kinds } from 'Helpers/Props';
 import { Kind } from 'Helpers/Props/kinds';
-import styles from './Icon.css';
 
 export interface IconProps
   extends Omit<
@@ -15,10 +14,32 @@ export interface IconProps
   > {
   containerClassName?: ComponentProps<'span'>['className'];
   name: FontAwesomeIconProps['icon'];
-  kind?: Extract<Kind, keyof typeof styles>;
+  kind?: Kind;
   size?: number;
   isSpinning?: FontAwesomeIconProps['spin'];
   title?: string | (() => string);
+  darken?: boolean;
+}
+
+function kindColor(kind: Kind, palette: Theme['palette']) {
+  switch (kind) {
+    case kinds.DANGER:
+      return palette.error.main;
+    case kinds.SUCCESS:
+      return palette.success.main;
+    case kinds.WARNING:
+      return palette.warning.main;
+    case kinds.INFO:
+      return palette.info.main;
+    case kinds.PRIMARY:
+    case kinds.PINK:
+    case kinds.PURPLE:
+      return palette.primary.main;
+    case kinds.DISABLED:
+      return palette.text.disabled;
+    default:
+      return 'inherit';
+  }
 }
 
 export default function Icon({
@@ -30,16 +51,20 @@ export default function Icon({
   title,
   isSpinning = false,
   fixedWidth = false,
+  darken = false,
   ...otherProps
 }: IconProps) {
+  const theme = useTheme();
   const icon = (
     <FontAwesomeIcon
-      className={classNames(className, styles[kind])}
+      className={className}
       icon={name}
       spin={isSpinning}
       fixedWidth={fixedWidth}
       style={{
         fontSize: `${size}px`,
+        color: kindColor(kind, theme.palette),
+        opacity: darken ? 0.7 : undefined,
       }}
       {...otherProps}
     />

@@ -1,11 +1,28 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
 import { findDOMNode } from 'react-dom';
 import { DELAY_PROFILE } from 'Helpers/dragTypes';
 import DelayProfile from './DelayProfile';
-import styles from './DelayProfileDragSource.css';
+
+const sxDelayProfileDragSource = (theme) => ({
+  padding: theme.spacing(0.5, 0)
+});
+
+const sxDelayProfilePlaceholder = (theme) => ({
+  width: '100%',
+  height: 30,
+  borderBottom: `1px dotted ${theme.palette.divider}`
+});
+
+const sxDelayProfilePlaceholderBefore = (theme) => ({
+  mb: theme.spacing(1)
+});
+
+const sxDelayProfilePlaceholderAfter = (theme) => ({
+  mt: theme.spacing(1)
+});
 
 const delayProfileDragSource = {
   beginDrag(item) {
@@ -84,21 +101,12 @@ class DelayProfileDragSource extends Component {
     // }
 
     return connectDropTarget(
-      <div
-        className={classNames(
-          styles.delayProfileDragSource,
-          isBefore && styles.isDraggingUp,
-          isAfter && styles.isDraggingDown
-        )}
-      >
+      <Box
+       sx={sxDelayProfileDragSource}>
         {
           isBefore &&
-            <div
-              className={classNames(
-                styles.delayProfilePlaceholder,
-                styles.delayProfilePlaceholderBefore
-              )}
-            />
+            <Box
+             sx={[sxDelayProfilePlaceholder, sxDelayProfilePlaceholderBefore]} />
         }
 
         <DelayProfile
@@ -112,14 +120,10 @@ class DelayProfileDragSource extends Component {
 
         {
           isAfter &&
-            <div
-              className={classNames(
-                styles.delayProfilePlaceholder,
-                styles.delayProfilePlaceholderAfter
-              )}
-            />
+            <Box
+             sx={[sxDelayProfilePlaceholder, sxDelayProfilePlaceholderAfter]} />
         }
-      </div>
+      </Box>
     );
   }
 }

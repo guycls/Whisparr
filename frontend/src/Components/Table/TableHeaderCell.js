@@ -1,9 +1,9 @@
+import TableCell from '@mui/material/TableCell';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons, sortDirections } from 'Helpers/Props';
-import styles from './TableHeaderCell.css';
 
 class TableHeaderCell extends Component {
 
@@ -29,6 +29,7 @@ class TableHeaderCell extends Component {
   render() {
     const {
       className,
+      sx,
       name,
       label,
       columnLabel,
@@ -50,28 +51,48 @@ class TableHeaderCell extends Component {
 
     return (
       isSortable ?
-        <Link
-          {...otherProps}
+        <TableCell
           component="th"
           className={className}
-          label={typeof label === 'function' ? label() : label}
-          title={typeof columnLabel === 'function' ? columnLabel() : columnLabel}
-          onPress={this.onPress}
+          sx={sx}
+        >
+          <Link
+            {...otherProps}
+            title={typeof columnLabel === 'function' ? columnLabel() : columnLabel}
+            onPress={this.onPress}
+            sx={{
+              minWidth: 0,
+              justifyContent: 'flex-start',
+              p: 0,
+              color: 'text.secondary',
+              fontSize: 12,
+              fontWeight: 600,
+              lineHeight: 1.4,
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: 'transparent',
+                color: 'primary.main',
+              },
+            }}
+          >
+            {children}
+
+            {
+              isSorting &&
+                <Icon
+                  name={sortIcon}
+                />
+            }
+          </Link>
+        </TableCell> :
+
+        <TableCell
+          component="th"
+          className={className}
+          sx={sx}
         >
           {children}
-
-          {
-            isSorting &&
-              <Icon
-                name={sortIcon}
-                className={styles.sortIcon}
-              />
-          }
-        </Link> :
-
-        <th className={className}>
-          {children}
-        </th>
+        </TableCell>
     );
   }
 }
@@ -92,7 +113,6 @@ TableHeaderCell.propTypes = {
 };
 
 TableHeaderCell.defaultProps = {
-  className: styles.headerCell,
   isSortable: false
 };
 

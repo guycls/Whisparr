@@ -1,6 +1,6 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import Tooltip, { TooltipProps } from './Tooltip';
-import styles from './Popover.css';
 
 interface PopoverProps extends Omit<TooltipProps, 'tooltip' | 'bodyClassName'> {
   title: string;
@@ -11,13 +11,30 @@ function Popover({ title, body, ...otherProps }: PopoverProps) {
   return (
     <Tooltip
       {...otherProps}
-      bodyClassName={styles.tooltipBody}
+      bodySx={{ p: 0 }}
       tooltip={
-        <div>
-          <div className={styles.title}>{title}</div>
+        <Box>
+          <Box
+            sx={{
+              padding: '10px 20px',
+              borderBottom: '1px solid var(--popoverTitleBorderColor)',
+              backgroundColor: 'var(--popoverTitleBackgroundColor)',
+              fontSize: 16,
+            }}
+          >
+            {title}
+          </Box>
 
-          <div className={styles.body}>{body}</div>
-        </div>
+          <Box
+            sx={{
+              overflow: 'auto',
+              p: '10px',
+              backgroundColor: 'var(--popoverBodyBackgroundColor)',
+            }}
+          >
+            {body}
+          </Box>
+        </Box>
       }
     />
   );

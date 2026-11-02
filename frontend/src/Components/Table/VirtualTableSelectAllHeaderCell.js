@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import CheckInput from 'Components/Form/CheckInput';
 import VirtualTableHeaderCell from './VirtualTableHeaderCell';
-import styles from './VirtualTableSelectAllHeaderCell.css';
 
 function getValue(allSelected, allUnselected) {
   if (allSelected) {
@@ -25,11 +24,10 @@ function VirtualTableSelectAllHeaderCell(props) {
 
   return (
     <VirtualTableHeaderCell
-      className={styles.selectAllHeaderCell}
+      sx={{ flex: '0 0 36px' }}
       name="selectAll"
     >
       <CheckInput
-        className={styles.input}
         name="selectAll"
         value={value}
         onChange={onSelectAllChange}

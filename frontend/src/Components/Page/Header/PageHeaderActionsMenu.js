@@ -8,7 +8,6 @@ import MenuItem from 'Components/Menu/MenuItem';
 import MenuItemSeparator from 'Components/Menu/MenuItemSeparator';
 import { align, icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './PageHeaderActionsMenu.css';
 
 function PageHeaderActionsMenu(props) {
   const {
@@ -21,9 +20,20 @@ function PageHeaderActionsMenu(props) {
   return (
     <div>
       <Menu alignMenu={align.RIGHT}>
-        <MenuButton className={styles.menuButton} aria-label="Menu Button">
+        <MenuButton
+          aria-label="Menu Button"
+          sx={{
+            minWidth: 40,
+            width: 40,
+            height: 40,
+            p: 0,
+            borderRadius: '50%',
+            color: 'inherit'
+          }}
+        >
           <Icon
             name={icons.INTERACTIVE}
+            size={18}
             title={translate('Menu')}
           />
         </MenuButton>
@@ -31,7 +41,6 @@ function PageHeaderActionsMenu(props) {
         <MenuContent>
           <MenuItem onPress={onKeyboardShortcutsPress}>
             <Icon
-              className={styles.itemIcon}
               name={icons.KEYBOARD}
             />
             {translate('KeyboardShortcuts')}
@@ -41,7 +50,6 @@ function PageHeaderActionsMenu(props) {
 
           <MenuItem onPress={onRestartPress}>
             <Icon
-              className={styles.itemIcon}
               name={icons.RESTART}
             />
             {translate('Restart')}
@@ -49,7 +57,6 @@ function PageHeaderActionsMenu(props) {
 
           <MenuItem onPress={onShutdownPress}>
             <Icon
-              className={styles.itemIcon}
               name={icons.SHUTDOWN}
               kind={kinds.DANGER}
             />
@@ -58,7 +65,7 @@ function PageHeaderActionsMenu(props) {
 
           {
             formsAuth &&
-              <div className={styles.separator} />
+              <MenuItemSeparator />
           }
 
           {
@@ -68,7 +75,6 @@ function PageHeaderActionsMenu(props) {
                 noRouter={true}
               >
                 <Icon
-                  className={styles.itemIcon}
                   name={icons.LOGOUT}
                 />
                 {translate('Logout')}

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -8,7 +9,37 @@ import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
 import { sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import QualityProfileFormatItem from './QualityProfileFormatItem';
-import styles from './QualityProfileFormatItems.css';
+
+const sxFormats = (theme) => ({
+  mt: theme.spacing(1.25),
+  userSelect: 'none'
+});
+
+const sxHeaderContainer = {
+  display: 'flex',
+  fontWeight: 'bold',
+  lineHeight: 35
+};
+
+const sxHeaderTitle = {
+  display: 'flex',
+  flexGrow: 1
+};
+
+const sxHeaderScore = (theme) => ({
+  display: 'flex',
+  flexGrow: 0,
+  pl: theme.spacing(2),
+  width: 100
+});
+
+const sxAddCustomFormatMessage = (theme) => ({
+  maxWidth: 550,
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
+  fontWeight: 300,
+  fontSize: 20
+});
 
 function calcOrder(profileFormatItems) {
   const items = profileFormatItems.reduce((acc, cur, index) => {
@@ -68,7 +99,9 @@ class QualityProfileFormatItems extends Component {
 
     if (profileFormatItems.length < 1) {
       return (
-        <InlineMarkdown className={styles.addCustomFormatMessage} data={translate('WantMoreControlAddACustomFormat')} />
+        <Box sx={sxAddCustomFormatMessage}>
+<InlineMarkdown data={translate('WantMoreControlAddACustomFormat')} />
+</Box>
       );
     }
 
@@ -109,15 +142,15 @@ class QualityProfileFormatItems extends Component {
             })
           }
 
-          <div className={styles.formats}>
-            <div className={styles.headerContainer}>
-              <div className={styles.headerTitle}>
+          <Box sx={sxFormats}>
+            <Box sx={sxHeaderContainer}>
+              <Box sx={sxHeaderTitle}>
                 {translate('CustomFormat')}
-              </div>
-              <div className={styles.headerScore}>
+              </Box>
+              <Box sx={sxHeaderScore}>
                 {translate('Score')}
-              </div>
-            </div>
+              </Box>
+            </Box>
             {
               order.map((index) => {
                 const {
@@ -136,7 +169,7 @@ class QualityProfileFormatItems extends Component {
                 );
               })
             }
-          </div>
+          </Box>
         </div>
       </FormGroup>
     );

@@ -1,4 +1,5 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
+import { SxProps, Theme } from '@mui/material/styles';
 import React, {
   useCallback,
   useEffect,
@@ -10,23 +11,118 @@ import { Manager, Popper, Reference } from 'react-popper';
 import Portal from 'Components/Portal';
 import { kinds, tooltipPositions } from 'Helpers/Props';
 import { Kind } from 'Helpers/Props/kinds';
-import dimensions from 'Styles/Variables/dimensions';
 import { isMobile as isMobileUtil } from 'Utilities/browser';
-import styles from './Tooltip.css';
 
 export interface TooltipProps {
   className?: string;
   bodyClassName?: string;
+  bodySx?: SxProps<Theme>;
   anchor: React.ReactNode;
   tooltip: string | React.ReactNode;
-  kind?: Extract<Kind, keyof typeof styles>;
+  kind?: Kind;
   position?: (typeof tooltipPositions.all)[number];
   canFlip?: boolean;
 }
+
+function arrowSx(placement: string, kind?: Kind): SxProps<Theme> {
+  const color =
+    kind === kinds.INVERSE
+      ? 'var(--popoverArrowBorderInverseColor)'
+      : 'var(--popoverArrowBorderColor)';
+
+  const after = {
+    position: 'absolute',
+    display: 'block',
+    width: 0,
+    height: 0,
+    borderWidth: '10px',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    content: '""',
+  };
+
+  const base = {
+    position: 'absolute',
+    display: 'block',
+    width: 0,
+    height: 0,
+    borderWidth: '11px',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+  };
+
+  if (placement === 'bottom') {
+    return {
+      ...base,
+      top: -11,
+      marginLeft: '-11px',
+      borderTopWidth: 0,
+      borderBottomColor: color,
+      '&::after': {
+        ...after,
+        top: 1,
+        marginLeft: '-10px',
+        borderTopWidth: 0,
+        borderBottomColor: color,
+      },
+    };
+  }
+
+  if (placement === 'left') {
+    return {
+      ...base,
+      right: -11,
+      marginTop: '-11px',
+      borderRightWidth: 0,
+      borderLeftColor: color,
+      '&::after': {
+        ...after,
+        right: 1,
+        bottom: -10,
+        borderRightWidth: 0,
+        borderLeftColor: color,
+      },
+    };
+  }
+
+  if (placement === 'right') {
+    return {
+      ...base,
+      left: -11,
+      marginTop: '-11px',
+      borderLeftWidth: 0,
+      borderRightColor: color,
+      '&::after': {
+        ...after,
+        bottom: -10,
+        left: 1,
+        borderLeftWidth: 0,
+        borderRightColor: color,
+      },
+    };
+  }
+
+  return {
+    ...base,
+    bottom: -11,
+    marginLeft: '-11px',
+    borderBottomWidth: 0,
+    borderTopColor: color,
+    '&::after': {
+      ...after,
+      bottom: 1,
+      marginLeft: '-10px',
+      borderBottomWidth: 0,
+      borderTopColor: color,
+    },
+  };
+}
+
 function Tooltip(props: TooltipProps) {
   const {
     className,
-    bodyClassName = styles.body,
+    bodyClassName,
+    bodySx,
     anchor,
     tooltip,
     kind = kinds.DEFAULT,
@@ -84,11 +180,11 @@ function Tooltip(props: TooltipProps) {
   const maxWidth = useMemo(() => {
     const windowWidth = window.innerWidth;
 
-    if (windowWidth >= parseInt(dimensions.breakpointLarge)) {
+    if (windowWidth >= parseInt('1200px')) {
       return 800;
-    } else if (windowWidth >= parseInt(dimensions.breakpointMedium)) {
+    } else if (windowWidth >= parseInt('992px')) {
       return 650;
-    } else if (windowWidth >= parseInt(dimensions.breakpointSmall)) {
+    } else if (windowWidth >= parseInt('768px')) {
       return 500;
     }
 
@@ -134,19 +230,22 @@ function Tooltip(props: TooltipProps) {
     };
   }, []);
 
+  const inverse = kind === kinds.INVERSE;
+
   return (
     <Manager>
       <Reference>
         {({ ref }) => (
-          <span
+          <Box
             ref={ref}
             className={className}
+            component="span"
             onClick={handleClick}
             onMouseEnter={handleMouseEnterAnchor}
             onMouseLeave={handleMouseLeave}
           >
             {anchor}
-          </span>
+          </Box>
         )}
       </Reference>
 
@@ -183,38 +282,56 @@ function Tooltip(props: TooltipProps) {
               popperPlacement === 'top' || popperPlacement === 'bottom';
 
             return (
-              <div
+              <Box
                 ref={ref}
-                className={classNames(
-                  styles.tooltipContainer,
-                  vertical
-                    ? styles.verticalContainer
-                    : styles.horizontalContainer
-                )}
                 style={style}
+                sx={{
+                  zIndex: 2000,
+                  m: '10px',
+                  maxHeight: vertical ? 300 : undefined,
+                  maxWidth: vertical ? undefined : 'calc(480px - 20px)',
+                  '@media (min-width: 480px)': vertical
+                    ? undefined
+                    : { maxWidth: 'calc(768px * 0.8)' },
+                  '@media (min-width: 768px)': vertical
+                    ? undefined
+                    : { maxWidth: 'calc(992px * 0.8)' },
+                  '@media (min-width: 992px)': vertical
+                    ? undefined
+                    : { maxWidth: 'calc(1200px * 0.8)' },
+                }}
                 onMouseEnter={handleMouseEnterTooltip}
                 onMouseLeave={handleMouseLeave}
               >
-                <div
+                <Box
                   ref={arrowProps.ref}
-                  className={
-                    isOpen
-                      ? classNames(
-                          styles.arrow,
-                          styles[kind],
-                          // @ts-expect-error - is a string that may not exist in styles
-                          styles[popperPlacement]
-                        )
-                      : styles.arrowDisabled
-                  }
                   style={arrowProps.style}
+                  sx={
+                    isOpen ? arrowSx(popperPlacement, kind) : { display: 'none' }
+                  }
                 />
                 {isOpen ? (
-                  <div className={classNames(styles.tooltip, styles[kind])}>
-                    <div className={bodyClassName}>{tooltip}</div>
-                  </div>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      backgroundColor: inverse
+                        ? 'var(--themeDarkColor)'
+                        : 'var(--popoverBodyBackgroundColor)',
+                      boxShadow: inverse
+                        ? '0 5px 10px var(--popoverShadowInverseColor)'
+                        : '0 5px 10px var(--popoverShadowColor)',
+                      color: inverse ? 'var(--white)' : undefined,
+                    }}
+                  >
+                    <Box
+                      className={bodyClassName}
+                      sx={[{ p: '5px' }, ...(Array.isArray(bodySx) ? bodySx : [bodySx])]}
+                    >
+                      {tooltip}
+                    </Box>
+                  </Box>
                 ) : null}
-              </div>
+              </Box>
             );
           }}
         </Popper>

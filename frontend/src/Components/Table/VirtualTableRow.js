@@ -1,34 +1,44 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
-import styles from './VirtualTableRow.css';
 
 function VirtualTableRow(props) {
   const {
     className,
     children,
     style,
+    sx,
     ...otherProps
   } = props;
 
   return (
-    <div
+    <Box
       className={className}
       style={style}
+      sx={[
+        {
+          display: 'flex',
+          transition: 'background-color 500ms',
+          '&:hover': {
+            backgroundColor: 'var(--tableRowHoverBackgroundColor)'
+          },
+          '@media (max-width: 992px)': {
+            overflowX: 'visible !important'
+          }
+        },
+        ...(Array.isArray(sx) ? sx : [sx])
+      ]}
       {...otherProps}
     >
       {children}
-    </div>
+    </Box>
   );
 }
 
 VirtualTableRow.propTypes = {
-  className: PropTypes.string.isRequired,
-  style: PropTypes.object.isRequired,
+  className: PropTypes.string,
+  style: PropTypes.object,
   children: PropTypes.node
-};
-
-VirtualTableRow.defaultProps = {
-  className: styles.row
 };
 
 export default VirtualTableRow;

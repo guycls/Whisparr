@@ -8,7 +8,6 @@ import formatTimeSpan from 'Utilities/Date/formatTimeSpan';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './TimeleftCell.css';
 
 interface TimeleftCellProps {
   estimatedCompletionTime?: string;
@@ -44,7 +43,7 @@ function TimeleftCell(props: TimeleftCellProps) {
     });
 
     return (
-      <TableRowCell className={styles.timeleft}>
+      <TableRowCell sx={{ width: 100 }}>
         <Tooltip
           anchor={<Icon name={icons.INFO} />}
           tooltip={translate('DelayingDownloadUntil', { date, time })}
@@ -66,7 +65,7 @@ function TimeleftCell(props: TimeleftCellProps) {
     });
 
     return (
-      <TableRowCell className={styles.timeleft}>
+      <TableRowCell sx={{ width: 100 }}>
         <Tooltip
           anchor={<Icon name={icons.INFO} />}
           tooltip={translate('RetryingDownloadOn', { date, time })}
@@ -78,7 +77,7 @@ function TimeleftCell(props: TimeleftCellProps) {
   }
 
   if (!timeleft || status === 'completed' || status === 'failed') {
-    return <TableRowCell className={styles.timeleft}>-</TableRowCell>;
+    return <TableRowCell sx={{ width: 100 }}>-</TableRowCell>;
   }
 
   const totalSize = formatBytes(size);
@@ -86,7 +85,7 @@ function TimeleftCell(props: TimeleftCellProps) {
 
   return (
     <TableRowCell
-      className={styles.timeleft}
+      sx={{ width: 100 }}
       title={`${remainingSize} / ${totalSize}`}
     >
       {formatTimeSpan(timeleft)}

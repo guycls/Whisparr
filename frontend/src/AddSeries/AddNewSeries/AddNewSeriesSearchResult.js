@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
@@ -8,7 +9,6 @@ import { icons, kinds, sizes } from 'Helpers/Props';
 import SeriesPoster from 'Series/SeriesPoster';
 import translate from 'Utilities/String/translate';
 import AddNewSeriesModal from './AddNewSeriesModal';
-import styles from './AddNewSeriesSearchResult.css';
 
 class AddNewSeriesSearchResult extends Component {
 
@@ -70,59 +70,129 @@ class AddNewSeriesSearchResult extends Component {
     const linkProps = isExistingSeries ? { to: `/site/${titleSlug}` } : { onPress: this.onPress };
 
     return (
-      <div className={styles.searchResult}>
+      <Box sx={{ position: 'relative', my: '20px', p: '20px', width: '100%', color: 'inherit' }}>
         <Link
-          className={styles.underlay}
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'var(--addSeriesBackgroundColor)',
+            transition: 'background 500ms',
+            '&:hover': {
+              backgroundColor: 'var(--pageBackground)',
+              boxShadow: '0 0 12px var(--black)',
+              color: 'inherit',
+              textDecoration: 'none',
+              transition: 'all 200ms ease-in'
+            }
+          }}
           {...linkProps}
         />
 
-        <div className={styles.overlay}>
+        <Box
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            '& a, & button': {
+              pointerEvents: 'all'
+            }
+          }}
+        >
           {
             isSmallScreen ?
               null :
-              <SeriesPoster
-                className={styles.poster}
-                images={images}
-                blur={safeForWorkMode}
-                size={250}
-                overflow={true}
-                lazy={false}
-              />
+              <Box
+                sx={{
+                  flex: '0 0 170px',
+                  mr: '20px',
+                  maxWidth: 250,
+                  maxHeight: 250,
+                  '& img': {
+                    objectFit: 'contain',
+                    maxWidth: 250,
+                    maxHeight: 250
+                  }
+                }}
+              >
+                <SeriesPoster
+                  images={images}
+                  blur={safeForWorkMode}
+                  size={250}
+                  overflow={true}
+                  lazy={false}
+                />
+              </Box>
           }
 
-          <div className={styles.content}>
-            <div className={styles.titleRow}>
-              <div className={styles.titleContainer}>
-                <div className={styles.title}>
+          <Box
+            sx={{
+              display: 'flex',
+              flex: '0 1 100%',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: { xs: 'space-between', lg: 'flex-start' },
+                overflow: { xs: 'hidden', lg: 'visible' }
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  flex: '0 1 auto'
+                }}
+              >
+                <Box sx={{ fontWeight: 300, fontSize: 36 }}>
                   {title}
-                </div>
-              </div>
+                </Box>
+              </Box>
 
-              <div className={styles.icons}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flex: '1 0 auto',
+                  height: 55
+                }}
+              >
                 {
                   isExistingSeries ?
-                    <Icon
-                      className={styles.alreadyExistsIcon}
-                      name={icons.CHECK_CIRCLE}
-                      size={36}
-                      title={translate('AlreadyInYourLibrary')}
-                    /> :
+                    <Box
+                      component="span"
+                      sx={{ ml: '10px', color: '#37bc9b', pointerEvents: 'all', display: 'inline-flex' }}
+                    >
+                      <Icon
+                        name={icons.CHECK_CIRCLE}
+                        size={36}
+                        title={translate('AlreadyInYourLibrary')}
+                      />
+                    </Box> :
                     null
                 }
 
                 <Link
-                  className={styles.tvdbLink}
+                  sx={{ mt: '-4px', ml: 'auto', color: 'var(--textColor)' }}
                   to={`https://theporndb.net/sites/${tvdbId}`}
                   onPress={this.onTVDBLinkPress}
                 >
-                  <Icon
-                    className={styles.tvdbLinkIcon}
-                    name={icons.EXTERNAL_LINK}
-                    size={28}
-                  />
+                  <Box component="span" sx={{ ml: '10px', display: 'inline-flex' }}>
+                    <Icon
+                      name={icons.EXTERNAL_LINK}
+                      size={28}
+                    />
+                  </Box>
                 </Link>
-              </div>
-            </div>
+              </Box>
+            </Box>
 
             <div>
 
@@ -157,13 +227,18 @@ class AddNewSeriesSearchResult extends Component {
               }
             </div>
 
-            <div className={styles.overview}>
+            <Box
+              sx={{
+                mt: '20px',
+                mb: { xs: '20px', lg: 0 }
+              }}
+            >
               {overview}
-            </div>
+            </Box>
 
             <MetadataAttribution />
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         <AddNewSeriesModal
           isOpen={isNewAddSeriesModalOpen && !isExistingSeries}
@@ -175,7 +250,7 @@ class AddNewSeriesSearchResult extends Component {
           images={images}
           onModalClose={this.onAddSeriesModalClose}
         />
-      </div>
+      </Box>
     );
   }
 }

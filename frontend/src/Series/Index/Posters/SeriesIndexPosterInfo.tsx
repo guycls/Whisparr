@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import TagListConnector from 'Components/TagListConnector';
 import Language from 'Language/Language';
@@ -6,7 +7,6 @@ import formatDateTime from 'Utilities/Date/formatDateTime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './SeriesIndexPosterInfo.css';
 
 interface SeriesIndexPosterInfoProps {
   originalLanguage?: Language;
@@ -26,6 +26,26 @@ interface SeriesIndexPosterInfoProps {
   timeFormat: string;
   showTags: boolean;
 }
+
+const infoSx = {
+  bgcolor: 'background.paper',
+  textAlign: 'center',
+  fontSize: 12,
+};
+
+const tagsSx = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-around',
+  px: '3px',
+  height: 21,
+  bgcolor: 'background.paper',
+};
+
+const tagsListSx = {
+  display: 'flex',
+  overflow: 'hidden',
+};
 
 function SeriesIndexPosterInfo(props: SeriesIndexPosterInfoProps) {
   const {
@@ -49,17 +69,17 @@ function SeriesIndexPosterInfo(props: SeriesIndexPosterInfoProps) {
 
   if (sortKey === 'network' && network) {
     return (
-      <div className={styles.info} title={translate('Network')}>
+      <Box sx={infoSx} title={translate('Network')}>
         {network}
-      </div>
+      </Box>
     );
   }
 
   if (sortKey === 'originalLanguage' && !!originalLanguage?.name) {
     return (
-      <div className={styles.info} title={translate('OriginalLanguage')}>
+      <Box sx={infoSx} title={translate('OriginalLanguage')}>
         {originalLanguage.name}
-      </div>
+      </Box>
     );
   }
 
@@ -69,16 +89,16 @@ function SeriesIndexPosterInfo(props: SeriesIndexPosterInfoProps) {
     !!qualityProfile?.name
   ) {
     return (
-      <div className={styles.info} title={translate('QualityProfile')}>
+      <Box sx={infoSx} title={translate('QualityProfile')}>
         {qualityProfile.name}
-      </div>
+      </Box>
     );
   }
 
   if (sortKey === 'previousAiring' && previousAiring) {
     return (
-      <div
-        className={styles.info}
+      <Box
+        sx={infoSx}
         title={`${translate('PreviousAiring')}: ${formatDateTime(
           previousAiring,
           longDateFormat,
@@ -92,7 +112,7 @@ function SeriesIndexPosterInfo(props: SeriesIndexPosterInfoProps) {
           timeFormat,
           timeForToday: true,
         })}
-      </div>
+      </Box>
     );
   }
 
@@ -106,12 +126,12 @@ function SeriesIndexPosterInfo(props: SeriesIndexPosterInfoProps) {
     });
 
     return (
-      <div
-        className={styles.info}
+      <Box
+        sx={infoSx}
         title={formatDateTime(added, longDateFormat, timeFormat)}
       >
         {translate('Added')}: {addedDate}
-      </div>
+      </Box>
     );
   }
 
@@ -124,32 +144,32 @@ function SeriesIndexPosterInfo(props: SeriesIndexPosterInfoProps) {
       seasons = translate('CountSeasons', { count: seasonCount });
     }
 
-    return <div className={styles.info}>{seasons}</div>;
+    return <Box sx={infoSx}>{seasons}</Box>;
   }
 
   if (!showTags && sortKey === 'tags' && tags.length) {
     return (
-      <div className={styles.tags}>
-        <div className={styles.tagsList}>
+      <Box sx={tagsSx}>
+        <Box sx={tagsListSx}>
           <TagListConnector tags={tags} />
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   if (sortKey === 'path') {
     return (
-      <div className={styles.info} title={translate('Path')}>
+      <Box sx={infoSx} title={translate('Path')}>
         {path}
-      </div>
+      </Box>
     );
   }
 
   if (sortKey === 'sizeOnDisk') {
     return (
-      <div className={styles.info} title={translate('SizeOnDisk')}>
+      <Box sx={infoSx} title={translate('SizeOnDisk')}>
         {formatBytes(sizeOnDisk)}
-      </div>
+      </Box>
     );
   }
 

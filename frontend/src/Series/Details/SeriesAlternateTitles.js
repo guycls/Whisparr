@@ -1,27 +1,35 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React from 'react';
-import styles from './SeriesAlternateTitles.css';
 
 function SeriesAlternateTitles({ alternateTitles }) {
   return (
-    <ul>
+    <Box component="ul">
       {
         alternateTitles.map((alternateTitle) => {
           return (
-            <li
+            <Box
+              component="li"
               key={alternateTitle.title}
-              className={styles.alternateTitle}
+              sx={{ whiteSpace: 'nowrap' }}
             >
               {alternateTitle.title}
               {
                 alternateTitle.comment &&
-                  <span className={styles.comment}> {alternateTitle.comment}</span>
+                  <Typography
+                    component="span"
+                    sx={{ color: 'text.secondary', fontSize: 12 }}
+                  >
+                    {' '}
+                    {alternateTitle.comment}
+                  </Typography>
               }
-            </li>
+            </Box>
           );
         })
       }
-    </ul>
+    </Box>
   );
 }
 

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,7 +29,42 @@ import translate from 'Utilities/String/translate';
 import AddSpecificationModal from './Specifications/AddSpecificationModal';
 import EditSpecificationModal from './Specifications/EditSpecificationModal';
 import Specification from './Specifications/Specification';
-import styles from './EditAutoTaggingModalContent.css';
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
+
+const sxRightButtons = {
+  justifyContent: 'flex-end',
+  mr: 'auto'
+};
+
+const sxAddSpecification = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxAddSpecificationContent = (theme) => ({
+  p: theme.spacing(1.25),
+  bgcolor: theme.palette.action.hover,
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
+  fontSize: 45
+});
+
+const sxCenter = (theme) => ({
+  display: 'inline-block',
+  pt: theme.spacing(0.625),
+  px: theme.spacing(2.5),
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 1,
+  bgcolor: theme.palette.background.paper
+});
+
+const sxAutoTaggings = {
+  display: 'flex',
+  flexWrap: 'wrap'
+};
 
 export default function EditAutoTaggingModalContent(props) {
   const {
@@ -173,7 +209,7 @@ export default function EditAutoTaggingModalContent(props) {
                 </Form>
 
                 <FieldSet legend={translate('Conditions')}>
-                  <div className={styles.autoTaggings}>
+                  <Box sx={sxAutoTaggings}>
                     {
                       specifications.map((tag) => {
                         return (
@@ -187,18 +223,21 @@ export default function EditAutoTaggingModalContent(props) {
                       })
                     }
 
-                    <Card
-                      className={styles.addSpecification}
-                      onPress={onAddSpecificationPress}
-                    >
-                      <div className={styles.center}>
-                        <Icon
-                          name={icons.ADD}
-                          size={45}
-                        />
-                      </div>
-                    </Card>
-                  </div>
+                    <Box sx={sxAddSpecification}>
+                      <Card
+                        onPress={onAddSpecificationPress}
+                      >
+                        <Box sx={sxAddSpecificationContent}>
+                          <Box sx={sxCenter}>
+                            <Icon
+                              name={icons.ADD}
+                              size={45}
+                            />
+                          </Box>
+                        </Box>
+                      </Card>
+</Box>
+                  </Box>
                 </FieldSet>
 
                 <AddSpecificationModal
@@ -222,26 +261,28 @@ export default function EditAutoTaggingModalContent(props) {
         </div>
       </ModalBody>
       <ModalFooter>
-        <div className={styles.rightButtons}>
+        <Box sx={sxRightButtons}>
           {
             id ?
-              <Button
-                className={styles.deleteButton}
+              <Box sx={sxDeleteButton}>
+<Button
                 kind={kinds.DANGER}
                 onPress={onDeleteAutoTaggingPress}
               >
                 {translate('Delete')}
-              </Button> :
+              </Button>
+</Box> :
               null
           }
 
-          {/* <Button
-            className={styles.deleteButton}
+          {/* <Box sx={sxDeleteButton}>
+<Button
             onPress={onImportPress}
           >
             Import
-          </Button> */}
-        </div>
+          </Button>
+</Box> */}
+        </Box>
 
         <Button
           onPress={onModalClose}

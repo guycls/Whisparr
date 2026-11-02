@@ -39,8 +39,6 @@ import translate from 'Utilities/String/translate';
 import QueueStatusCell from './QueueStatusCell';
 import RemoveQueueItemModal, { RemovePressProps } from './RemoveQueueItemModal';
 import TimeleftCell from './TimeleftCell';
-import styles from './QueueRow.css';
-
 interface QueueRowProps {
   id: number;
   seriesId?: number;
@@ -287,7 +285,7 @@ function QueueRow(props: QueueRowProps) {
 
         if (name === 'customFormatScore') {
           return (
-            <TableRowCell key={name} className={styles.customFormatScore}>
+            <TableRowCell key={name} sx={{ width: 55 }}>
               <Tooltip
                 anchor={formatCustomFormatScore(
                   customFormatScore,
@@ -346,7 +344,7 @@ function QueueRow(props: QueueRowProps) {
 
         if (name === 'progress') {
           return (
-            <TableRowCell key={name} className={styles.progress}>
+            <TableRowCell key={name} sx={{ width: 150 }}>
               {!!progress && (
                 <ProgressBar
                   progress={progress}
@@ -363,7 +361,10 @@ function QueueRow(props: QueueRowProps) {
 
         if (name === 'actions') {
           return (
-            <TableRowCell key={name} className={styles.actions}>
+            <TableRowCell
+              key={name}
+              sx={{ width: 70, textAlign: 'right' }}
+            >
               {showInteractiveImport ? (
                 <IconButton
                   name={icons.INTERACTIVE}

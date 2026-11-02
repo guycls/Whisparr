@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Link from 'Components/Link/Link';
-import styles from './PageJumpBarItem.css';
 
 class PageJumpBarItem extends Component {
 
@@ -23,7 +22,18 @@ class PageJumpBarItem extends Component {
   render() {
     return (
       <Link
-        className={styles.jumpBarItem}
+        sx={{
+          flex: '1 1 25px',
+          borderBottom: '1px solid var(--borderColor)',
+          textAlign: 'center',
+          fontWeight: 'bold',
+          '&:hover': {
+            color: '#777'
+          },
+          '&:last-child': {
+            border: 'none'
+          }
+        }}
         onPress={this.onPress}
       >
         {this.props.label.toUpperCase()}

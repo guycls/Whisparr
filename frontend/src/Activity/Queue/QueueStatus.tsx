@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import Icon from 'Components/Icon';
 import Popover from 'Components/Tooltip/Popover';
@@ -10,24 +11,20 @@ import {
   StatusMessage,
 } from 'typings/Queue';
 import translate from 'Utilities/String/translate';
-import styles from './QueueStatus.css';
 
 function getDetailedPopoverBody(statusMessages: StatusMessage[]) {
   return (
     <div>
       {statusMessages.map(({ title, messages }) => {
         return (
-          <div
-            key={title}
-            className={messages.length ? undefined : styles.noMessages}
-          >
+          <Box key={title} sx={{ mb: messages.length ? 0 : '10px' }}>
             {title}
             <ul>
               {messages.map((message) => {
                 return <li key={message}>{message}</li>;
               })}
             </ul>
-          </div>
+          </Box>
         );
       })}
     </div>

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -12,7 +13,12 @@ import { kinds } from 'Helpers/Props';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import AddImportListItem from './AddImportListItem';
-import styles from './AddImportListModalContent.css';
+
+const sxLists = {
+  display: 'flex',
+  justifyContent: 'center',
+  flexWrap: 'wrap'
+};
 
 class AddImportListModalContent extends Component {
 
@@ -69,7 +75,7 @@ class AddImportListModalContent extends Component {
                         typeOfList: titleCase(key)
                       })}
                       >
-                        <div className={styles.lists}>
+                        <Box sx={sxLists}>
                           {
                             listGroups[key].map((list) => {
                               return (
@@ -82,7 +88,7 @@ class AddImportListModalContent extends Component {
                               );
                             })
                           }
-                        </div>
+                        </Box>
                       </FieldSet>
                     );
                   })

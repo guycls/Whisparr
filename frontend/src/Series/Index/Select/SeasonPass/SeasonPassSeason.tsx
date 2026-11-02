@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
@@ -6,7 +6,6 @@ import formatSeason from 'Season/formatSeason';
 import { Statistics } from 'Series/Series';
 import { toggleSeasonMonitored } from 'Store/Actions/seriesActions';
 import translate from 'Utilities/String/translate';
-import styles from './SeasonPassSeason.css';
 
 interface SeasonPassSeasonProps {
   seriesId: number;
@@ -38,9 +37,23 @@ function SeasonPassSeason(props: SeasonPassSeasonProps) {
     );
   }, [seriesId, seasonNumber, monitored, dispatch]);
 
+  const allEpisodes = percentOfEpisodes === 100;
+
   return (
-    <div className={styles.season}>
-      <div className={styles.info}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'stretch',
+        overflow: 'hidden',
+        m: '2px 4px',
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 1,
+        bgcolor: 'background.paper',
+        cursor: 'default',
+      }}
+    >
+      <Box sx={{ px: '4px' }}>
         <MonitorToggleButton
           monitored={monitored}
           isSaving={isSaving}
@@ -48,23 +61,24 @@ function SeasonPassSeason(props: SeasonPassSeasonProps) {
         />
 
         <span>{formatSeason(seasonNumber, true)}</span>
-      </div>
+      </Box>
 
-      <div
-        className={classNames(
-          styles.episodes,
-          percentOfEpisodes === 100 && styles.allEpisodes
-        )}
+      <Box
         title={translate('SeasonPassEpisodesDownloaded', {
           episodeFileCount,
           totalEpisodeCount,
         })}
+        sx={{
+          px: '4px',
+          bgcolor: allEpisodes ? '#e0ffe0' : 'action.hover',
+          color: allEpisodes ? 'text.secondary' : 'text.primary',
+        }}
       >
         {totalEpisodeCount === 0
           ? '0/0'
           : `${episodeFileCount}/${totalEpisodeCount}`}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

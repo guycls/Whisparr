@@ -8,7 +8,6 @@ import TagListConnector from 'Components/TagListConnector';
 import { createQualityProfileSelectorForHook } from 'Store/Selectors/createQualityProfileSelector';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
-import styles from './ManageImportListsModalRow.css';
 
 interface ManageImportListsModalRowProps {
   id: number;
@@ -57,25 +56,25 @@ function ManageImportListsModalRow(props: ManageImportListsModalRowProps) {
         onSelectedChange={onSelectedChangeWrapper}
       />
 
-      <TableRowCell className={styles.name}>{name}</TableRowCell>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>{name}</TableRowCell>
 
-      <TableRowCell className={styles.implementation}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {implementation}
       </TableRowCell>
 
-      <TableRowCell className={styles.qualityProfileId}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {qualityProfile?.name ?? translate('None')}
       </TableRowCell>
 
-      <TableRowCell className={styles.rootFolderPath}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {rootFolderPath}
       </TableRowCell>
 
-      <TableRowCell className={styles.enableAutomaticAdd}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {enableAutomaticAdd ? translate('Yes') : translate('No')}
       </TableRowCell>
 
-      <TableRowCell className={styles.tags}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         <TagListConnector tags={tags} />
       </TableRowCell>
     </TableRow>

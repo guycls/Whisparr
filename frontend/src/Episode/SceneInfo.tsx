@@ -1,10 +1,10 @@
+import Box from '@mui/material/Box';
 import React, { useMemo } from 'react';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
 import { AlternateTitle } from 'Series/Series';
 import padNumber from 'Utilities/Number/padNumber';
 import translate from 'Utilities/String/translate';
-import styles from './SceneInfo.css';
 
 interface SceneInfoProps {
   seasonNumber?: number;
@@ -107,11 +107,20 @@ function SceneInfo(props: SceneInfoProps) {
   ]);
 
   return (
-    <DescriptionList className={styles.descriptionList}>
+    <Box
+      sx={{
+        mr: '10px',
+        '& dt': {
+          width: { md: '80px !important' },
+        },
+        '& dd': {
+          marginLeft: { md: '100px !important' },
+        },
+      }}
+    >
+    <DescriptionList>
       {sceneSeasonNumber === undefined ? null : (
         <DescriptionListItem
-          titleClassName={styles.title}
-          descriptionClassName={styles.description}
           title={translate('Season')}
           data={sceneSeasonNumber}
         />
@@ -119,8 +128,6 @@ function SceneInfo(props: SceneInfoProps) {
 
       {sceneEpisodeNumber === undefined ? null : (
         <DescriptionListItem
-          titleClassName={styles.title}
-          descriptionClassName={styles.description}
           title={translate('Episode')}
           data={sceneEpisodeNumber}
         />
@@ -128,8 +135,6 @@ function SceneInfo(props: SceneInfoProps) {
 
       {seriesType === 'anime' && sceneAbsoluteEpisodeNumber !== undefined ? (
         <DescriptionListItem
-          titleClassName={styles.title}
-          descriptionClassName={styles.description}
           title={translate('Absolute')}
           data={sceneAbsoluteEpisodeNumber}
         />
@@ -137,8 +142,6 @@ function SceneInfo(props: SceneInfoProps) {
 
       {alternateTitles.length ? (
         <DescriptionListItem
-          titleClassName={styles.title}
-          descriptionClassName={styles.description}
           title={
             groupedAlternateTitles.length === 1
               ? translate('Title')
@@ -152,7 +155,13 @@ function SceneInfo(props: SceneInfoProps) {
                     {title}
                     {suffix && <span> ({suffix})</span>}
                     {comment ? (
-                      <span className={styles.comment}> {comment}</span>
+                      <Box
+                        component="span"
+                        sx={{ color: 'var(--darkGray)', fontSize: 12 }}
+                      >
+                        {' '}
+                        {comment}
+                      </Box>
                     ) : null}
                   </div>
                 );
@@ -162,6 +171,7 @@ function SceneInfo(props: SceneInfoProps) {
         />
       ) : null}
     </DescriptionList>
+    </Box>
   );
 }
 

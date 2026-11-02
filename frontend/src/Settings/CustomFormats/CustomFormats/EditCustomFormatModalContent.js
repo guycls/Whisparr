@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -21,7 +22,42 @@ import ImportCustomFormatModal from './ImportCustomFormatModal';
 import AddSpecificationModal from './Specifications/AddSpecificationModal';
 import EditSpecificationModalConnector from './Specifications/EditSpecificationModalConnector';
 import Specification from './Specifications/Specification';
-import styles from './EditCustomFormatModalContent.css';
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
+
+const sxRightButtons = {
+  justifyContent: 'flex-end',
+  mr: 'auto'
+};
+
+const sxAddSpecification = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxAddSpecificationContent = (theme) => ({
+  p: theme.spacing(1.25),
+  bgcolor: theme.palette.action.hover,
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
+  fontSize: 45
+});
+
+const sxCenter = (theme) => ({
+  display: 'inline-block',
+  pt: theme.spacing(0.625),
+  px: theme.spacing(2.5),
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 1,
+  bgcolor: theme.palette.background.paper
+});
+
+const sxCustomFormats = {
+  display: 'flex',
+  flexWrap: 'wrap'
+};
 
 class EditCustomFormatModalContent extends Component {
 
@@ -156,7 +192,7 @@ class EditCustomFormatModalContent extends Component {
                         {translate('CustomFormatsSettingsTriggerInfo')}
                       </div>
                     </Alert>
-                    <div className={styles.customFormats}>
+                    <Box sx={sxCustomFormats}>
                       {
                         specifications.map((tag) => {
                           return (
@@ -170,18 +206,21 @@ class EditCustomFormatModalContent extends Component {
                         })
                       }
 
-                      <Card
-                        className={styles.addSpecification}
-                        onPress={this.onAddSpecificationPress}
-                      >
-                        <div className={styles.center}>
-                          <Icon
-                            name={icons.ADD}
-                            size={45}
-                          />
-                        </div>
-                      </Card>
-                    </div>
+                      <Box sx={sxAddSpecification}>
+                        <Card
+                          onPress={this.onAddSpecificationPress}
+                        >
+                          <Box sx={sxAddSpecificationContent}>
+                            <Box sx={sxCenter}>
+                              <Icon
+                                name={icons.ADD}
+                                size={45}
+                              />
+                            </Box>
+                          </Box>
+                        </Card>
+                      </Box>
+                    </Box>
                   </FieldSet>
 
                   <AddSpecificationModal
@@ -204,25 +243,27 @@ class EditCustomFormatModalContent extends Component {
           </div>
         </ModalBody>
         <ModalFooter>
-          <div className={styles.rightButtons}>
+          <Box sx={sxRightButtons}>
             {
               id &&
-                <Button
-                  className={styles.deleteButton}
+                <Box sx={sxDeleteButton}>
+<Button
                   kind={kinds.DANGER}
                   onPress={onDeleteCustomFormatPress}
                 >
                   {translate('Delete')}
                 </Button>
+</Box>
             }
 
-            <Button
-              className={styles.deleteButton}
+            <Box sx={sxDeleteButton}>
+<Button
               onPress={this.onImportPress}
             >
               {translate('Import')}
             </Button>
-          </div>
+</Box>
+          </Box>
 
           <Button
             onPress={onModalClose}

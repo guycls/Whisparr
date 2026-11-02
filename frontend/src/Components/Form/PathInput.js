@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FileBrowserModal from 'Components/FileBrowser/FileBrowserModal';
@@ -5,7 +6,6 @@ import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
 import AutoSuggestInput from './AutoSuggestInput';
 import FormInputButton from './FormInputButton';
-import styles from './PathInput.css';
 
 class PathInput extends Component {
 
@@ -49,9 +49,9 @@ class PathInput extends Component {
 
     return (
       <span>
-        <span className={styles.pathMatch}>
+        <Box component="span" sx={{ fontWeight: 'bold' }}>
           {path.substr(0, lastSeparatorIndex)}
-        </span>
+        </Box>
         {path.substr(lastSeparatorIndex)}
       </span>
     );
@@ -132,10 +132,9 @@ class PathInput extends Component {
     } = this.state;
 
     return (
-      <div className={className}>
+      <Box className={className} sx={{ display: 'flex' }}>
         <AutoSuggestInput
           {...otherProps}
-          className={hasFileBrowser ? styles.hasFileBrowser : undefined}
           name={name}
           value={value}
           suggestions={paths}
@@ -153,7 +152,7 @@ class PathInput extends Component {
           hasFileBrowser &&
             <div>
               <FormInputButton
-                className={styles.fileBrowserButton}
+                sx={{ height: 35 }}
                 onPress={this.onFileBrowserOpenPress}
               >
                 <Icon name={icons.FOLDER_OPEN} />
@@ -169,7 +168,7 @@ class PathInput extends Component {
               />
             </div>
         }
-      </div>
+      </Box>
     );
   }
 }
@@ -187,7 +186,6 @@ PathInput.propTypes = {
 };
 
 PathInput.defaultProps = {
-  className: styles.inputWrapper,
   value: '',
   hasFileBrowser: true
 };

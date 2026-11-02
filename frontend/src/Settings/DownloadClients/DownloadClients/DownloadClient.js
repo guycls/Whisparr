@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -7,7 +9,6 @@ import TagList from 'Components/TagList';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditDownloadClientModalConnector from './EditDownloadClientModalConnector';
-import styles from './DownloadClient.css';
 
 class DownloadClient extends Component {
 
@@ -63,16 +64,38 @@ class DownloadClient extends Component {
     } = this.props;
 
     return (
-      <Card
-        className={styles.downloadClient}
-        overlayContent={true}
-        onPress={this.onEditDownloadClientPress}
+      <Box
+        sx={(theme) => ({
+          width: 290,
+          m: theme.spacing(1.25)
+        })}
       >
-        <div className={styles.name}>
-          {name}
-        </div>
+        <Card
+          overlayContent={true}
+          onPress={this.onEditDownloadClientPress}
+        >
+          <Box sx={(theme) => ({ p: theme.spacing(1.25) })}>
+            <Typography
+              sx={(theme) => ({
+                mb: theme.spacing(2.5),
+                fontWeight: 300,
+                fontSize: 24,
+                overflow: 'hidden',
+                maxWidth: '100%',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              })}
+            >
+              {name}
+            </Typography>
 
-        <div className={styles.enabled}>
+            <Box
+              sx={(theme) => ({
+                display: 'flex',
+                flexWrap: 'wrap',
+                mt: theme.spacing(0.625)
+              })}
+            >
           {
             enable ?
               <Label kind={kinds.SUCCESS}>
@@ -95,9 +118,9 @@ class DownloadClient extends Component {
                 {translate('PrioritySettings', { priority })}
               </Label>
           }
-        </div>
+            </Box>
 
-        <TagList
+            <TagList
           tags={tags}
           tagList={tagList}
         />
@@ -118,7 +141,9 @@ class DownloadClient extends Component {
           onConfirm={this.onConfirmDeleteDownloadClient}
           onCancel={this.onDeleteDownloadClientModalClose}
         />
-      </Card>
+          </Box>
+        </Card>
+      </Box>
     );
   }
 }

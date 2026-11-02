@@ -1,10 +1,70 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons, sizes } from 'Helpers/Props';
-import styles from './NamingOption.css';
+
+const sxOption = (theme) => ({
+  display: 'flex',
+  alignItems: 'stretch',
+  flexWrap: 'wrap',
+  m: theme.spacing(0.375),
+  border: `1px solid ${theme.palette.divider}`,
+  '&:hover .naming-token': {
+    bgcolor: theme.palette.action.hover
+  },
+  '&:hover .naming-example': {
+    bgcolor: theme.palette.action.selected
+  }
+});
+
+const sxSmall = (theme) => ({
+  width: 480,
+  [theme.breakpoints.down('md')]: {
+    width: '100%'
+  }
+});
+
+const sxLarge = {
+  width: '100%'
+};
+
+const sxToken = (theme) => ({
+  flex: '0 0 50%',
+  padding: theme.spacing(0.75, 2),
+  bgcolor: theme.palette.action.selected,
+  fontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace',
+  [theme.breakpoints.down('sm')]: {
+    flex: '1 0 auto'
+  }
+});
+
+const sxExample = (theme) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flex: '0 0 50%',
+  padding: theme.spacing(0.75, 2),
+  bgcolor: theme.palette.background.default,
+  [theme.breakpoints.down('sm')]: {
+    flex: '1 0 auto'
+  }
+});
+
+const sxLower = {
+  textTransform: 'lowercase'
+};
+
+const sxUpper = {
+  textTransform: 'uppercase'
+};
+
+const sxFullFilename = {
+  '& .naming-token, & .naming-example': {
+    flex: '1 0 auto'
+  }
+};
 
 class NamingOption extends Component {
 
@@ -48,26 +108,44 @@ class NamingOption extends Component {
 
     return (
       <Link
-        className={classNames(
-          styles.option,
-          styles[size],
-          styles[tokenCase],
-          isFullFilename && styles.isFullFilename
-        )}
         onPress={this.onPress}
       >
-        <div className={styles.token}>
-          {token.replace(/ /g, tokenSeparator)}
-        </div>
+        <Box
+          sx={[
+            sxOption,
+            size === sizes.LARGE ? sxLarge : sxSmall,
+            tokenCase === 'lower' && sxLower,
+            tokenCase === 'upper' && sxUpper,
+            isFullFilename && sxFullFilename
+          ]}
+        >
+          <Box
+            className="naming-token"
+            sx={sxToken}
+          >
+            {token.replace(/ /g, tokenSeparator)}
+          </Box>
 
-        <div className={styles.example}>
-          {example.replace(/ /g, tokenSeparator)}
+          <Box
+            className="naming-example"
+            sx={sxExample}
+          >
+            {example.replace(/ /g, tokenSeparator)}
 
-          {
-            footNote !== 0 &&
-              <Icon className={styles.footNote} name={icons.FOOTNOTE} />
-          }
-        </div>
+            {
+              footNote !== 0 &&
+                <Box
+                  component="span"
+                  sx={(theme) => ({
+                    p: '2px',
+                    color: theme.palette.text.disabled
+                  })}
+                >
+                  <Icon name={icons.FOOTNOTE} />
+                </Box>
+            }
+          </Box>
+        </Box>
       </Link>
     );
   }

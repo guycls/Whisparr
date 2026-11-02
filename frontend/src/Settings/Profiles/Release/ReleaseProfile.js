@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -9,7 +10,25 @@ import TagList from 'Components/TagList';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditReleaseProfileModalConnector from './EditReleaseProfileModalConnector';
-import styles from './ReleaseProfile.css';
+
+const sxReleaseProfile = (theme) => ({
+  width: 290,
+  m: theme.spacing(1.25)
+});
+
+const sxName = (theme) => ({
+  mb: theme.spacing(2.5),
+  fontWeight: 300,
+  fontSize: 24,
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+});
+
+const sxLabel = {
+  maxWidth: '100%'
+};
 
 class ReleaseProfile extends Component {
 
@@ -75,16 +94,16 @@ class ReleaseProfile extends Component {
     const indexer = indexerId !== 0 && _.find(indexerList, { id: indexerId });
 
     return (
-      <Card
-        className={styles.releaseProfile}
+      <Box sx={sxReleaseProfile}>
+<Card
         overlayContent={true}
         onPress={this.onEditReleaseProfilePress}
       >
         {
           name ?
-            <div className={styles.name}>
+            <Box sx={sxName}>
               {name}
-            </div> :
+            </Box> :
             null
         }
 
@@ -96,8 +115,8 @@ class ReleaseProfile extends Component {
               }
 
               return (
-                <Label
-                  className={styles.label}
+                <Box sx={sxLabel}>
+<Label
                   key={item}
                   kind={kinds.SUCCESS}
                 >
@@ -107,6 +126,7 @@ class ReleaseProfile extends Component {
                     end={10}
                   />
                 </Label>
+</Box>
               );
             })
           }
@@ -120,8 +140,8 @@ class ReleaseProfile extends Component {
               }
 
               return (
-                <Label
-                  className={styles.label}
+                <Box sx={sxLabel}>
+<Label
                   key={item}
                   kind={kinds.DANGER}
                 >
@@ -131,6 +151,7 @@ class ReleaseProfile extends Component {
                     end={10}
                   />
                 </Label>
+</Box>
               );
             })
           }
@@ -180,6 +201,7 @@ class ReleaseProfile extends Component {
           onCancel={this.onDeleteReleaseProfileModalClose}
         />
       </Card>
+</Box>
     );
   }
 }

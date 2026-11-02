@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -6,7 +7,18 @@ import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import TagDetailsModal from './Details/TagDetailsModal';
 import TagInUse from './TagInUse';
-import styles from './Tag.css';
+
+const sxTag = (theme) => ({
+  flex: '150px 0 1',
+  m: theme.spacing(1.25)
+});
+
+const sxLabel = (theme) => ({
+  mb: theme.spacing(2.5),
+  whiteSpace: 'nowrap',
+  fontWeight: 300,
+  fontSize: 24
+});
 
 class Tag extends Component {
 
@@ -81,14 +93,14 @@ class Tag extends Component {
     );
 
     return (
-      <Card
-        className={styles.tag}
+      <Box sx={sxTag}>
+<Card
         overlayContent={true}
         onPress={this.onShowDetailsPress}
       >
-        <div className={styles.label}>
+        <Box sx={sxLabel}>
           {label}
-        </div>
+        </Box>
 
         {
           isTagUsed ?
@@ -175,6 +187,7 @@ class Tag extends Component {
           onCancel={this.onDeleteTagModalClose}
         />
       </Card>
+</Box>
     );
   }
 }

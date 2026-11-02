@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
@@ -10,7 +11,10 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ResetQualityDefinitionsModalContent.css';
+
+const sxMessageContainer = (theme) => ({
+  mb: theme.spacing(2.5)
+});
 
 class ResetQualityDefinitionsModalContent extends Component {
 
@@ -59,9 +63,9 @@ class ResetQualityDefinitionsModalContent extends Component {
         </ModalHeader>
 
         <ModalBody>
-          <div className={styles.messageContainer}>
+          <Box sx={sxMessageContainer}>
             {translate('ResetQualityDefinitionsMessageText')}
-          </div>
+          </Box>
 
           <FormGroup>
             <FormLabel>

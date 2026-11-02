@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -18,7 +18,6 @@ import getUniqueElememtId from 'Utilities/getUniqueElementId';
 import HintedSelectInputOption from './HintedSelectInputOption';
 import HintedSelectInputSelectedValue from './HintedSelectInputSelectedValue';
 import TextInput from './TextInput';
-import styles from './EnhancedSelectInput.css';
 
 function isArrowKey(keyCode) {
   return keyCode === keyCodes.UP_ARROW || keyCode === keyCodes.DOWN_ARROW;
@@ -309,7 +308,6 @@ class EnhancedSelectInput extends Component {
   render() {
     const {
       className,
-      disabledClassName,
       name,
       value,
       values,
@@ -355,9 +353,7 @@ class EnhancedSelectInput extends Component {
                 >
                   {
                     isEditable ?
-                      <div
-                        className={styles.editableContainer}
-                      >
+                      <Box sx={{ width: '100%', position: 'relative' }}>
                         <TextInput
                           className={className}
                           name={name}
@@ -370,18 +366,22 @@ class EnhancedSelectInput extends Component {
                           onChange={onChange}
                         />
                         <Link
-                          className={classNames(
-                            styles.dropdownArrowContainerEditable,
-                            isDisabled ?
-                              styles.dropdownArrowContainerDisabled :
-                              styles.dropdownArrowContainer)
-                          }
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            pr: '17px',
+                            width: '30%',
+                            height: 35,
+                            textAlign: 'right',
+                            ml: '12px',
+                            color: isDisabled ? 'var(--disabledInputColor)' : undefined
+                          }}
                           onPress={this.onPress}
                         >
                           {
                             isFetching ?
                               <LoadingIndicator
-                                className={styles.loading}
                                 size={20}
                               /> :
                               null
@@ -395,15 +395,29 @@ class EnhancedSelectInput extends Component {
                               />
                           }
                         </Link>
-                      </div> :
+                      </Box> :
                       <Link
-                        className={classNames(
-                          className,
-                          hasError && styles.hasError,
-                          hasWarning && styles.hasWarning,
-                          isDisabled && disabledClassName
-                        )}
+                        className={className}
                         isDisabled={isDisabled}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '6px 16px',
+                          width: '100%',
+                          minHeight: 35,
+                          border: '1px solid',
+                          borderColor: hasError ?
+                            'var(--inputErrorBorderColor)' :
+                            (hasWarning ? 'var(--inputWarningBorderColor)' : 'var(--inputBorderColor)'),
+                          borderRadius: '4px',
+                          backgroundColor: 'var(--inputBackgroundColor)',
+                          boxShadow: 'inset 0 1px 1px var(--inputBoxShadowColor)',
+                          color: 'var(--textColor)',
+                          textTransform: 'none',
+                          justifyContent: 'flex-start',
+                          opacity: isDisabled ? 0.7 : undefined,
+                          cursor: isDisabled ? 'not-allowed' : undefined
+                        }}
                         onBlur={this.onBlur}
                         onKeyDown={this.onKeyDown}
                         onPress={this.onPress}
@@ -419,17 +433,16 @@ class EnhancedSelectInput extends Component {
                           {selectedOption ? selectedOption.value : null}
                         </SelectedValueComponent>
 
-                        <div
-                          className={isDisabled ?
-                            styles.dropdownArrowContainerDisabled :
-                            styles.dropdownArrowContainer
-                          }
+                        <Box
+                          sx={{
+                            ml: '12px',
+                            color: isDisabled ? 'var(--disabledInputColor)' : undefined
+                          }}
                         >
 
                           {
                             isFetching ?
                               <LoadingIndicator
-                                className={styles.loading}
                                 size={20}
                               /> :
                               null
@@ -442,7 +455,7 @@ class EnhancedSelectInput extends Component {
                                 name={icons.CARET_DOWN}
                               />
                           }
-                        </div>
+                        </Box>
                       </Link>
                   }
                 </Measure>
@@ -464,10 +477,13 @@ class EnhancedSelectInput extends Component {
                 this._scheduleUpdate = scheduleUpdate;
 
                 return (
-                  <div
+                  <Box
                     ref={ref}
                     id={this._optionsId}
-                    className={styles.optionsContainer}
+                    sx={{
+                      zIndex: 2000,
+                      width: 'auto'
+                    }}
                     style={{
                       ...style,
                       minWidth: width
@@ -476,7 +492,11 @@ class EnhancedSelectInput extends Component {
                     {
                       isOpen && !isMobile ?
                         <Scroller
-                          className={styles.options}
+                          sx={{
+                            border: '1px solid var(--inputBorderColor)',
+                            borderRadius: '4px',
+                            backgroundColor: 'var(--inputBackgroundColor)'
+                          }}
                           style={{
                             maxHeight: style.maxHeight
                           }}
@@ -507,7 +527,7 @@ class EnhancedSelectInput extends Component {
                         </Scroller> :
                         null
                     }
-                  </div>
+                  </Box>
                 );
               }
               }
@@ -518,20 +538,46 @@ class EnhancedSelectInput extends Component {
         {
           isMobile ?
             <Modal
-              className={styles.optionsModal}
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                maxWidth: '90%',
+                maxHeight: '100%',
+                width: 350,
+                height: 'auto'
+              }}
               size={sizes.EXTRA_SMALL}
               isOpen={isOpen}
               onModalClose={this.onOptionsModalClose}
             >
               <ModalBody
-                className={styles.optionsModalBody}
-                innerClassName={styles.optionsInnerModalBody}
                 scrollDirection={scrollDirections.NONE}
               >
-                <Scroller className={styles.optionsModalScroller}>
-                  <div className={styles.mobileCloseButtonContainer}>
+                <Scroller
+                  sx={{
+                    border: '1px solid var(--inputBorderColor)',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--inputBackgroundColor)'
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      height: 40,
+                      borderBottom: '1px solid var(--borderColor)'
+                    }}
+                  >
                     <Link
-                      className={styles.mobileCloseButton}
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        textAlign: 'center',
+                        lineHeight: '40px',
+                        '&:hover': {
+                          color: 'var(--modalCloseButtonHoverColor)'
+                        }
+                      }}
                       onPress={this.onOptionsModalClose}
                     >
                       <Icon
@@ -539,7 +585,7 @@ class EnhancedSelectInput extends Component {
                         size={18}
                       />
                     </Link>
-                  </div>
+                  </Box>
 
                   {
                     values.map((v, index) => {
@@ -594,8 +640,6 @@ EnhancedSelectInput.propTypes = {
 };
 
 EnhancedSelectInput.defaultProps = {
-  className: styles.enhancedSelect,
-  disabledClassName: styles.isDisabled,
   isDisabled: false,
   isFetching: false,
   isEditable: false,

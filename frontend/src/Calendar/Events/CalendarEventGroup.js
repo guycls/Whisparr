@@ -1,14 +1,14 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import CalendarEventConnector from 'Calendar/Events/CalendarEventConnector';
+import calendarStatusSx from 'Calendar/calendarStatusSx';
 import getStatusStyle from 'Calendar/getStatusStyle';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './CalendarEventGroup.css';
 
 function getEventsInfo(series, events) {
   let files = 0;
@@ -112,8 +112,13 @@ class CalendarEventGroup extends Component {
           }
 
           <Link
-            className={styles.collapseContainer}
             component="div"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 5
+            }}
             onPress={this.onExpandPress}
           >
             <Icon
@@ -125,38 +130,57 @@ class CalendarEventGroup extends Component {
     }
 
     return (
-      <div
-        className={classNames(
-          styles.eventGroup,
-          styles[statusStyle],
-          colorImpairedMode && 'colorImpaired',
-          fullColorEvents && 'fullColor'
-        )}
+      <Box
+        sx={{
+          overflowX: 'hidden',
+          m: '4px 2px',
+          p: '5px',
+          borderBottom: '1px solid var(--borderColor)',
+          borderLeft: '4px solid var(--borderColor)',
+          fontSize: 12,
+          ...calendarStatusSx(statusStyle, fullColorEvents, colorImpairedMode)
+        }}
       >
-        <div className={styles.info}>
-          <div className={styles.seriesTitle}>
+        <Box sx={{ display: 'flex' }}>
+          <Box
+            sx={{
+              overflow: 'hidden',
+              maxWidth: '100%',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              flex: '1 0 1px',
+              mr: '10px',
+              color: 'var(--calendarTextDimAlternate)',
+              fontSize: 14
+            }}
+          >
             {series.title}
-          </div>
+          </Box>
 
           {
             anyDownloading &&
-              <Icon
-                containerClassName={styles.statusIcon}
-                name={icons.DOWNLOADING}
-                title={translate('AnEpisodeIsDownloading')}
-              />
+              <Box sx={{ ml: '3px' }}>
+                <Icon
+                  name={icons.DOWNLOADING}
+                  title={translate('AnEpisodeIsDownloading')}
+                />
+              </Box>
           }
-        </div>
+        </Box>
 
-        <div className={styles.airingInfo}>
+        <Box sx={{ display: 'flex' }}>
           {
             showEpisodeInformation ?
-              <div className={styles.episodeInfo}>
+              <Box sx={{ ml: '10px', color: 'var(--calendarTextDim)' }}>
                 {seasonNumber}
-              </div> :
+              </Box> :
               <Link
-                className={styles.expandContainerInline}
                 component="div"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  flex: '1 0 20px'
+                }}
                 onPress={this.onExpandPress}
               >
                 <Icon
@@ -164,13 +188,17 @@ class CalendarEventGroup extends Component {
                 />
               </Link>
           }
-        </div>
+        </Box>
 
         {
           showEpisodeInformation ?
             <Link
-              className={styles.expandContainer}
               component="div"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
               onPress={this.onExpandPress}
             >
               &nbsp;
@@ -181,7 +209,7 @@ class CalendarEventGroup extends Component {
             </Link> :
             null
         }
-      </div>
+      </Box>
     );
   }
 }

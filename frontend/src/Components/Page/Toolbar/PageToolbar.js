@@ -1,33 +1,38 @@
+import Toolbar from '@mui/material/Toolbar';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import styles from './PageToolbar.css';
+import React from 'react';
 
-class PageToolbar extends Component {
+function PageToolbar(props) {
+  const {
+    className,
+    children
+  } = props;
 
-  //
-  // Render
-
-  render() {
-    const {
-      className,
-      children
-    } = this.props;
-
-    return (
-      <div className={className}>
-        {children}
-      </div>
-    );
-  }
+  return (
+    <Toolbar
+      className={className}
+      variant="dense"
+      disableGutters={true}
+      sx={{
+        flex: '0 0 auto',
+        height: 56,
+        minHeight: 56,
+        justifyContent: 'space-between',
+        alignItems: 'stretch',
+        borderBottom: 1,
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        px: { xs: '10px', md: '12px' }
+      }}
+    >
+      {children}
+    </Toolbar>
+  );
 }
 
 PageToolbar.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node.isRequired
-};
-
-PageToolbar.defaultProps = {
-  className: styles.toolbar
 };
 
 export default PageToolbar;

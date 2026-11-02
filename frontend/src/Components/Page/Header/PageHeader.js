@@ -1,3 +1,6 @@
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import keyboardShortcuts, { shortcuts } from 'Components/keyboardShortcuts';
@@ -9,7 +12,6 @@ import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import PageHeaderActionsMenuConnector from './PageHeaderActionsMenuConnector';
 import SafeForWorkButtonConnector from './SafeForWorkButtonConnector';
 import SeriesSearchInputConnector from './SeriesSearchInputConnector';
-import styles from './PageHeader.css';
 
 class PageHeader extends Component {
 
@@ -47,60 +49,82 @@ class PageHeader extends Component {
 
   render() {
     const {
+      isSmallScreen,
       onSidebarToggle
     } = this.props;
 
     return (
-      <div className={styles.header}>
-        <div className={styles.logoContainer}>
+      <AppBar
+        position="static"
+        color="default"
+        elevation={0}
+        sx={{ borderBottom: 1, borderColor: 'divider' }}
+      >
+        <Toolbar
+          disableGutters={true}
+          sx={{ px: { xs: '10px', md: '12px' }, minHeight: 56, gap: 1 }}
+        >
           <Link
-            className={styles.logoLink}
-            to={'/'}
+            to="/"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexShrink: 0
+            }}
           >
             <img
-              className={styles.logo}
               src={`${window.Whisparr.urlBase}/Content/Images/logo.svg`}
               alt="Whisparr Logo"
+              style={{ width: 32, height: 32 }}
             />
           </Link>
-        </div>
 
-        <div className={styles.sidebarToggleContainer}>
-          <IconButton
-            id="sidebar-toggle-button"
-            name={icons.NAVBAR_COLLAPSE}
-            onPress={onSidebarToggle}
-          />
-        </div>
+          {
+            isSmallScreen &&
+              <IconButton
+                id="sidebar-toggle-button"
+                name={icons.NAVBAR_COLLAPSE}
+                onPress={onSidebarToggle}
+              />
+          }
 
-        <SeriesSearchInputConnector />
+          <SeriesSearchInputConnector />
 
-        <div className={styles.right}>
-
-          <SafeForWorkButtonConnector />
-          <IconButton
-            className={styles.donate}
-            name={icons.HEART}
-            aria-label={translate('Donate')}
-            to="https://whisparr.com/donate.html"
-            size={14}
-            title={translate('Donate')}
-          />
-          <PageHeaderActionsMenuConnector
-            onKeyboardShortcutsPress={this.onOpenKeyboardShortcutsModal}
-          />
-        </div>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexShrink: 0,
+              gap: 0.5,
+              ml: 'auto'
+            }}
+          >
+            <SafeForWorkButtonConnector />
+            <IconButton
+              name={icons.HEART}
+              aria-label={translate('Donate')}
+              to="https://whisparr.com/donate.html"
+              size={18}
+              title={translate('Donate')}
+              sx={{ display: { xs: 'none', md: 'inline-flex' }, width: 40, height: 40 }}
+            />
+            <PageHeaderActionsMenuConnector
+              onKeyboardShortcutsPress={this.onOpenKeyboardShortcutsModal}
+            />
+          </Box>
+        </Toolbar>
 
         <KeyboardShortcutsModal
           isOpen={this.state.isKeyboardShortcutsModalOpen}
           onModalClose={this.onKeyboardShortcutsModalClose}
         />
-      </div>
+      </AppBar>
     );
   }
 }
 
 PageHeader.propTypes = {
+  isSmallScreen: PropTypes.bool.isRequired,
   onSidebarToggle: PropTypes.func.isRequired,
   bindShortcut: PropTypes.func.isRequired
 };

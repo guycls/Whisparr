@@ -1,32 +1,24 @@
+import DialogActions from '@mui/material/DialogActions';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import styles from './ModalFooter.css';
+import React from 'react';
 
-class ModalFooter extends Component {
+function ModalFooter(props) {
+  const {
+    children,
+    ...otherProps
+  } = props;
 
-  //
-  // Render
-
-  render() {
-    const {
-      children,
-      ...otherProps
-    } = this.props;
-
-    return (
-      <div
-        className={styles.modalFooter}
-        {...otherProps}
-      >
-        {children}
-      </div>
-    );
-  }
-
+  return (
+    <DialogActions {...otherProps}>
+      {children}
+    </DialogActions>
+  );
 }
 
 ModalFooter.propTypes = {
-  children: PropTypes.node
+  className: PropTypes.string,
+  children: PropTypes.node,
+  sx: PropTypes.any
 };
 
 export default ModalFooter;

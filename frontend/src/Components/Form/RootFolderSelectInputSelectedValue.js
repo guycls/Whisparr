@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import EnhancedSelectInputSelectedValue from './EnhancedSelectInputSelectedValue';
-import styles from './RootFolderSelectInputSelectedValue.css';
 
 function RootFolderSelectInputSelectedValue(props) {
   const {
@@ -19,29 +19,59 @@ function RootFolderSelectInputSelectedValue(props) {
 
   return (
     <EnhancedSelectInputSelectedValue
-      className={styles.selectedValue}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        overflow: 'hidden'
+      }}
       {...otherProps}
     >
-      <div className={styles.pathContainer}>
-        <div className={styles.path}>
+      <Box
+        sx={{
+          display: 'flex',
+          flex: '1 0 0',
+          overflow: 'hidden',
+          maxWidth: '100%',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }}
+      >
+        <Box sx={{ flex: '0 1 auto' }}>
           {value}
-        </div>
+        </Box>
 
         {
           seriesFolder ?
-            <div className={styles.seriesFolder}>
+            <Box
+              sx={{
+                flex: '0 1 auto',
+                color: 'var(--disabledColor)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
               {slashCharacter}
               {seriesFolder}
-            </div> :
+            </Box> :
             null
         }
-      </div>
+      </Box>
 
       {
         freeSpace != null && includeFreeSpace &&
-          <div className={styles.freeSpace}>
+          <Box
+            sx={{
+              flex: '0 0 auto',
+              ml: '15px',
+              color: 'var(--gray)',
+              textAlign: 'right',
+              fontSize: 12
+            }}
+          >
             {translate('RootFolderSelectFreeSpace', { freeSpace: formatBytes(freeSpace) })}
-          </div>
+          </Box>
       }
     </EnhancedSelectInputSelectedValue>
   );

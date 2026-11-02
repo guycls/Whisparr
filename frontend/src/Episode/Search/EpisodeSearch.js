@@ -1,10 +1,10 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
 import { icons, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './EpisodeSearch.css';
 
 function EpisodeSearch(props) {
   const {
@@ -14,36 +14,40 @@ function EpisodeSearch(props) {
 
   return (
     <div>
-      <div className={styles.buttonContainer}>
-        <Button
-          className={styles.button}
-          size={sizes.LARGE}
-          onPress={onQuickSearchPress}
-        >
-          <Icon
-            className={styles.buttonIcon}
-            name={icons.QUICK}
-          />
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: '10px' }}>
+        <Box sx={{ width: 300, '& .MuiButton-root': { width: '100%' } }}>
+          <Button
+            size={sizes.LARGE}
+            onPress={onQuickSearchPress}
+          >
+            <Box component="span" sx={{ mr: '5px' }}>
+              <Icon
+                name={icons.QUICK}
+              />
+            </Box>
 
           {translate('QuickSearch')}
-        </Button>
-      </div>
+          </Button>
+        </Box>
+      </Box>
 
-      <div className={styles.buttonContainer}>
-        <Button
-          className={styles.button}
-          kind={kinds.PRIMARY}
-          size={sizes.LARGE}
-          onPress={onInteractiveSearchPress}
-        >
-          <Icon
-            className={styles.buttonIcon}
-            name={icons.INTERACTIVE}
-          />
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: '10px' }}>
+        <Box sx={{ width: 300, '& .MuiButton-root': { width: '100%' } }}>
+          <Button
+            kind={kinds.PRIMARY}
+            size={sizes.LARGE}
+            onPress={onInteractiveSearchPress}
+          >
+            <Box component="span" sx={{ mr: '5px' }}>
+              <Icon
+                name={icons.INTERACTIVE}
+              />
+            </Box>
 
           {translate('InteractiveSearch')}
-        </Button>
-      </div>
+          </Button>
+        </Box>
+      </Box>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
@@ -10,7 +12,6 @@ import {
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
 import SeriesDetailsEpisodeGrid from './SeriesDetailsEpisodeGrid';
-import styles from './SeriesDetailsUnifiedGrid.css';
 
 function createMapStateToProps() {
   return createSelector(
@@ -74,17 +75,17 @@ function SeriesDetailsUnifiedGridConnector(props) {
 
   if (error) {
     return (
-      <div className={styles.emptyMessage}>
+      <Box sx={{ p: '15px' }}>
         {translate('EpisodesLoadError')}
-      </div>
+      </Box>
     );
   }
 
   if (isPopulated && !totalRecords) {
     return (
-      <div className={styles.emptyMessage}>
+      <Box sx={{ p: '15px' }}>
         {translate('NoEpisodesMatchFilters')}
-      </div>
+      </Box>
     );
   }
 
@@ -93,25 +94,33 @@ function SeriesDetailsUnifiedGridConnector(props) {
 
   return (
     <div>
-      <div className={styles.gridContainer}>
+      <Box sx={{ px: '15px', pb: '15px' }}>
         <SeriesDetailsEpisodeGrid
           items={items}
           isSmallScreen={isSmallScreen}
           episodeEntity="seriesDetails.unifiedGrid"
           onMonitorEpisodePress={onMonitorEpisodePress}
         />
-      </div>
+      </Box>
 
       {isLoadingMore &&
-        <div className={styles.loadingMore}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: '15px' }}>
           <LoadingIndicator />
-        </div>
+        </Box>
       }
 
       {isFullyLoaded && !isLoadingMore &&
-        <div className={styles.loadedCount}>
+        <Typography
+          sx={{
+            px: '15px',
+            pb: '15px',
+            color: 'text.disabled',
+            fontSize: 12,
+            textAlign: 'center'
+          }}
+        >
           {totalRecords} {translate('Episodes')}
-        </div>
+        </Typography>
       }
     </div>
   );

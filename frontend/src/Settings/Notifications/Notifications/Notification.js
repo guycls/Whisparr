@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -7,7 +9,6 @@ import TagList from 'Components/TagList';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditNotificationModalConnector from './EditNotificationModalConnector';
-import styles from './Notification.css';
 
 class Notification extends Component {
 
@@ -87,14 +88,30 @@ class Notification extends Component {
     } = this.props;
 
     return (
-      <Card
-        className={styles.notification}
-        overlayContent={true}
-        onPress={this.onEditNotificationPress}
+      <Box
+        sx={(theme) => ({
+          width: 290,
+          m: theme.spacing(1.25)
+        })}
       >
-        <div className={styles.name}>
-          {name}
-        </div>
+        <Card
+          overlayContent={true}
+          onPress={this.onEditNotificationPress}
+        >
+          <Box sx={(theme) => ({ p: theme.spacing(1.25) })}>
+            <Typography
+              sx={(theme) => ({
+                mb: theme.spacing(2.5),
+                fontWeight: 300,
+                fontSize: 24,
+                overflow: 'hidden',
+                maxWidth: '100%',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              })}
+            >
+              {name}
+            </Typography>
 
         {
           supportsOnGrab && onGrab ?
@@ -211,7 +228,7 @@ class Notification extends Component {
             null
         }
 
-        <TagList
+            <TagList
           tags={tags}
           tagList={tagList}
         />
@@ -232,7 +249,9 @@ class Notification extends Component {
           onConfirm={this.onConfirmDeleteNotification}
           onCancel={this.onDeleteNotificationModalClose}
         />
-      </Card>
+          </Box>
+        </Card>
+      </Box>
     );
   }
 }

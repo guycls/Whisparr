@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { icons } from 'Helpers/Props';
@@ -5,7 +6,6 @@ import translate from 'Utilities/String/translate';
 import FilterMenuContent from './FilterMenuContent';
 import Menu from './Menu';
 import ToolbarMenuButton from './ToolbarMenuButton';
-import styles from './FilterMenu.css';
 
 class FilterMenu extends Component {
 
@@ -51,7 +51,14 @@ class FilterMenu extends Component {
     const showCustomFilters = !!FilterModalConnectorComponent;
 
     return (
-      <div>
+      <Box
+        sx={{
+          position: 'relative',
+          '@media (max-width: 768px)': {
+            mr: '10px'
+          }
+        }}
+      >
         <Menu
           className={className}
           {...otherProps}
@@ -86,7 +93,7 @@ class FilterMenu extends Component {
               onModalClose={this.onFiltersModalClose}
             />
         }
-      </div>
+      </Box>
     );
   }
 }
@@ -104,7 +111,6 @@ FilterMenu.propTypes = {
 };
 
 FilterMenu.defaultProps = {
-  className: styles.filterMenu,
   isDisabled: false,
   buttonComponent: ToolbarMenuButton
 };

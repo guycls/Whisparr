@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Form from 'Components/Form/Form';
@@ -12,7 +13,10 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './EditReleaseProfileModalContent.css';
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
 
 const tagInputDelimiters = ['Tab', 'Enter'];
 
@@ -77,7 +81,6 @@ function EditReleaseProfileModalContent(props) {
 
             <FormInputGroup
               {...required}
-              inputClassName={styles.tagInternalInput}
               type={inputTypes.TEXT_TAG}
               name="required"
               helpText={translate('MustContainHelpText')}
@@ -94,7 +97,6 @@ function EditReleaseProfileModalContent(props) {
 
             <FormInputGroup
               {...ignored}
-              inputClassName={styles.tagInternalInput}
               type={inputTypes.TEXT_TAG}
               name="ignored"
               helpText={translate('MustNotContainHelpText')}
@@ -136,13 +138,14 @@ function EditReleaseProfileModalContent(props) {
       <ModalFooter>
         {
           id &&
-            <Button
-              className={styles.deleteButton}
+            <Box sx={sxDeleteButton}>
+<Button
               kind={kinds.DANGER}
               onPress={onDeleteReleaseProfilePress}
             >
               {translate('Delete')}
             </Button>
+</Box>
         }
 
         <Button

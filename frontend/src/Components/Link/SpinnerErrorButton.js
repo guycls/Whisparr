@@ -1,10 +1,10 @@
+import Box from '@mui/material/Box';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import { icons, kinds } from 'Helpers/Props';
-import styles from './SpinnerErrorButton.css';
 
 function getTestResult(error) {
   if (!error) {
@@ -131,25 +131,22 @@ class SpinnerErrorButton extends Component {
         isSpinning={isSpinning}
         {...otherProps}
       >
-        <span className={showIcon ? styles.showIcon : undefined}>
+        <Box
+          component="span"
+          sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}
+        >
           {
             showIcon &&
-              <span className={styles.iconContainer}>
-                <Icon
-                  name={iconName}
-                  kind={iconKind}
-                />
-              </span>
+              <Icon
+                name={iconName}
+                kind={iconKind}
+              />
           }
 
-          {
-            <span className={styles.label}>
-              {
-                children
-              }
-            </span>
-          }
-        </span>
+          <span>
+            {children}
+          </span>
+        </Box>
       </SpinnerButton>
     );
   }

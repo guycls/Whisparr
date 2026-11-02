@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ImportSeriesTitle.css';
 
 function ImportSeriesTitle(props) {
   const {
@@ -14,17 +14,31 @@ function ImportSeriesTitle(props) {
   } = props;
 
   return (
-    <div className={styles.titleContainer}>
-      <div className={styles.title}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        flex: '0 1 auto',
+        overflow: 'hidden'
+      }}
+    >
+      <Box
+        sx={{
+          overflow: 'hidden',
+          maxWidth: '100%',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }}
+      >
         {title}
-      </div>
+      </Box>
 
       {
         !title.contains(year) &&
         year > 0 ?
-          <span className={styles.year}>
+          <Box component="span" sx={{ mx: '5px', color: 'var(--disabledColor)' }}>
             ({year})
-          </span> :
+          </Box> :
           null
       }
 
@@ -43,7 +57,7 @@ function ImportSeriesTitle(props) {
           </Label> :
           null
       }
-    </div>
+    </Box>
   );
 }
 

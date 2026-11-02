@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
@@ -5,7 +6,6 @@ import { icons } from 'Helpers/Props';
 import tagShape from 'Helpers/Props/Shapes/tagShape';
 import FormInputButton from './FormInputButton';
 import TagInput from './TagInput';
-import styles from './DeviceInput.css';
 
 class DeviceInput extends Component {
 
@@ -57,9 +57,8 @@ class DeviceInput extends Component {
     } = this.props;
 
     return (
-      <div className={className}>
+      <Box className={className} sx={{ display: 'flex' }}>
         <TagInput
-          inputContainerClassName={styles.input}
           name={name}
           tags={selectedDevices}
           tagList={items}
@@ -79,13 +78,13 @@ class DeviceInput extends Component {
             isSpinning={isFetching}
           />
         </FormInputButton>
-      </div>
+      </Box>
     );
   }
 }
 
 DeviceInput.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   name: PropTypes.string.isRequired,
   value: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])).isRequired,
   items: PropTypes.arrayOf(PropTypes.shape(tagShape)).isRequired,
@@ -96,11 +95,6 @@ DeviceInput.propTypes = {
   isPopulated: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   onRefreshPress: PropTypes.func.isRequired
-};
-
-DeviceInput.defaultProps = {
-  className: styles.deviceInputWrapper,
-  inputClassName: styles.input
 };
 
 export default DeviceInput;

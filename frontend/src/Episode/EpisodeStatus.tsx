@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import QueueDetails from 'Activity/Queue/QueueDetails';
@@ -11,7 +12,6 @@ import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemS
 import isBefore from 'Utilities/Date/isBefore';
 import translate from 'Utilities/String/translate';
 import EpisodeQuality from './EpisodeQuality';
-import styles from './EpisodeStatus.css';
 
 interface EpisodeStatusProps {
   episodeId: number;
@@ -43,7 +43,7 @@ function EpisodeStatus(props: EpisodeStatusProps) {
     const progress = size ? 100 - (sizeleft / size) * 100 : 0;
 
     return (
-      <div className={styles.center}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <QueueDetails
           {...queueItem}
           progressBar={
@@ -54,18 +54,18 @@ function EpisodeStatus(props: EpisodeStatusProps) {
             />
           }
         />
-      </div>
+      </Box>
     );
   }
 
   if (grabbed) {
     return (
-      <div className={styles.center}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Icon
           name={icons.DOWNLOADING}
           title={translate('EpisodeIsDownloading')}
         />
-      </div>
+      </Box>
     );
   }
 
@@ -74,60 +74,60 @@ function EpisodeStatus(props: EpisodeStatusProps) {
     const isCutoffNotMet = episodeFile.qualityCutoffNotMet;
 
     return (
-      <div className={styles.center}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <EpisodeQuality
           quality={quality}
           size={episodeFile.size}
           isCutoffNotMet={isCutoffNotMet}
           title={translate('EpisodeDownloaded')}
         />
-      </div>
+      </Box>
     );
   }
 
   if (hasFile) {
     return (
-      <div className={styles.center}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Icon name={icons.DOWNLOADED} title={translate('EpisodeDownloaded')} />
-      </div>
+      </Box>
     );
   }
 
   if (!releaseDate) {
     return (
-      <div className={styles.center}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Icon name={icons.TBA} title={translate('Tba')} />
-      </div>
+      </Box>
     );
   }
 
   if (!monitored) {
     return (
-      <div className={styles.center}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Icon
           name={icons.UNMONITORED}
           kind={kinds.DISABLED}
           title={translate('EpisodeIsNotMonitored')}
         />
-      </div>
+      </Box>
     );
   }
 
   if (hasAired) {
     return (
-      <div className={styles.center}>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Icon
           name={icons.MISSING}
           title={translate('EpisodeMissingFromDisk')}
         />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className={styles.center}>
+    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
       <Icon name={icons.NOT_AIRED} title={translate('EpisodeHasNotAired')} />
-    </div>
+    </Box>
   );
 }
 

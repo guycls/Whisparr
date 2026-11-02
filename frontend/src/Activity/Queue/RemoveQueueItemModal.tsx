@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useMemo, useState } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -10,7 +11,6 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './RemoveQueueItemModal.css';
 
 export interface RemovePressProps {
   remove: boolean;
@@ -178,7 +178,7 @@ function RemoveQueueItemModal(props: RemoveQueueItemModalProps) {
         <ModalHeader>{title}</ModalHeader>
 
         <ModalBody>
-          <div className={styles.message}>{message}</div>
+          <Box sx={{ mb: '30px' }}>{message}</Box>
 
           {isPending ? null : (
             <FormGroup>

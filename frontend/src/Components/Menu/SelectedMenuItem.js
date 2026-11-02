@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
 import MenuItem from './MenuItem';
-import styles from './SelectedMenuItem.css';
 
 class SelectedMenuItem extends Component {
 
@@ -35,14 +35,27 @@ class SelectedMenuItem extends Component {
         {...otherProps}
         onPress={this.onPress}
       >
-        <div className={styles.item}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            whiteSpace: 'nowrap'
+          }}
+        >
           {children}
 
-          <Icon
-            className={isSelected ? styles.isSelected : styles.isNotSelected}
-            name={selectedIconName}
-          />
-        </div>
+          <Box
+            component="span"
+            sx={{
+              visibility: isSelected ? 'visible' : 'hidden',
+              ml: '20px'
+            }}
+          >
+            <Icon
+              name={selectedIconName}
+            />
+          </Box>
+        </Box>
       </MenuItem>
     );
   }

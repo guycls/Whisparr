@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { EPISODE_SEARCH } from 'Commands/commandNames';
@@ -17,7 +17,6 @@ import { executeCommand } from 'Store/Actions/commandActions';
 import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import translate from 'Utilities/String/translate';
 import EpisodeDetailsModal from './EpisodeDetailsModal';
-import styles from './EpisodeSearchActions.css';
 
 interface EpisodeSearchActionsProps {
   episodeId: number;
@@ -73,7 +72,10 @@ function EpisodeSearchActions(props: EpisodeSearchActionsProps) {
 
   if (isSmallScreen) {
     return (
-      <div className={classNames(styles.actions, className)}>
+      <Box
+        className={className}
+        sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}
+      >
         <Menu alignMenu={align.RIGHT} enforceMaxHeight={false}>
           <MenuButton>
             <Icon name={icons.ACTIONS} size={18} />
@@ -81,28 +83,34 @@ function EpisodeSearchActions(props: EpisodeSearchActionsProps) {
 
           <MenuContent>
             <MenuItem onPress={handleSearchPress} isDisabled={isSearching}>
-              <SpinnerIcon
-                className={styles.menuIcon}
-                name={icons.SEARCH}
-                isSpinning={isSearching}
-              />
+              <Box component="span" sx={{ mr: '8px', display: 'inline-flex' }}>
+                <SpinnerIcon
+                  name={icons.SEARCH}
+                  isSpinning={isSearching}
+                />
+              </Box>
               {translate('AutomaticSearch')}
             </MenuItem>
 
             <MenuItem onPress={setDetailsModalOpen}>
-              <Icon className={styles.menuIcon} name={icons.INTERACTIVE} />
+              <Box component="span" sx={{ mr: '8px', display: 'inline-flex' }}>
+                <Icon name={icons.INTERACTIVE} />
+              </Box>
               {translate('InteractiveSearch')}
             </MenuItem>
           </MenuContent>
         </Menu>
 
         {modal}
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className={classNames(styles.actions, className)}>
+    <Box
+      className={className}
+      sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}
+    >
       <SpinnerIconButton
         name={icons.SEARCH}
         isSpinning={isSearching}
@@ -119,7 +127,7 @@ function EpisodeSearchActions(props: EpisodeSearchActionsProps) {
       />
 
       {modal}
-    </div>
+    </Box>
   );
 }
 

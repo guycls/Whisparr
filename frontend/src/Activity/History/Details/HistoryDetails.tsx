@@ -20,7 +20,6 @@ import formatDateTime from 'Utilities/Date/formatDateTime';
 import formatAge from 'Utilities/Number/formatAge';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
-import styles from './HistoryDetails.css';
 
 interface HistoryDetailsProps {
   eventType: HistoryEventType;
@@ -56,7 +55,6 @@ function HistoryDetails(props: HistoryDetailsProps) {
     return (
       <DescriptionList>
         <DescriptionListItem
-          descriptionClassName={styles.description}
           title={translate('Name')}
           data={sourceTitle}
         />
@@ -67,7 +65,6 @@ function HistoryDetails(props: HistoryDetailsProps) {
 
         {releaseGroup ? (
           <DescriptionListItem
-            descriptionClassName={styles.description}
             title={translate('ReleaseGroup')}
             data={releaseGroup}
           />
@@ -82,7 +79,6 @@ function HistoryDetails(props: HistoryDetailsProps) {
 
         {seriesMatchType ? (
           <DescriptionListItem
-            descriptionClassName={styles.description}
             title={translate('SeriesMatchType')}
             data={seriesMatchType}
           />
@@ -136,7 +132,6 @@ function HistoryDetails(props: HistoryDetailsProps) {
     return (
       <DescriptionList>
         <DescriptionListItem
-          descriptionClassName={styles.description}
           title={translate('Name')}
           data={sourceTitle}
         />
@@ -159,14 +154,12 @@ function HistoryDetails(props: HistoryDetailsProps) {
     return (
       <DescriptionList>
         <DescriptionListItem
-          descriptionClassName={styles.description}
           title={translate('Name')}
           data={sourceTitle}
         />
 
         {droppedPath ? (
           <DescriptionListItem
-            descriptionClassName={styles.description}
             title={translate('Source')}
             data={droppedPath}
           />
@@ -174,7 +167,6 @@ function HistoryDetails(props: HistoryDetailsProps) {
 
         {importedPath ? (
           <DescriptionListItem
-            descriptionClassName={styles.description}
             title={translate('ImportedTo')}
             data={importedPath}
           />
@@ -257,7 +249,6 @@ function HistoryDetails(props: HistoryDetailsProps) {
     return (
       <DescriptionList>
         <DescriptionListItem
-          descriptionClassName={styles.description}
           title={translate('Name')}
           data={sourceTitle}
         />
@@ -276,7 +267,6 @@ function HistoryDetails(props: HistoryDetailsProps) {
   return (
     <DescriptionList>
       <DescriptionListItem
-        descriptionClassName={styles.description}
         title={translate('Name')}
         data={sourceTitle}
       />

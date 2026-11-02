@@ -1,11 +1,10 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './AdvancedSettingsButton.css';
 
 function AdvancedSettingsButton(props) {
   const {
@@ -15,45 +14,98 @@ function AdvancedSettingsButton(props) {
   } = props;
 
   return (
-    <Link
-      className={styles.button}
-      title={advancedSettings ? translate('ShownClickToHide') : translate('HiddenClickToShow')}
-      onPress={onAdvancedSettingsPress}
+    <Box
+      sx={(theme) => ({
+        position: 'relative',
+        display: 'inline-flex',
+        justifyContent: 'center',
+        width: 84,
+        minWidth: 84,
+        pt: theme.spacing(0.5),
+        overflow: 'hidden',
+        textAlign: 'center'
+      })}
     >
-      <Icon
-        name={icons.ADVANCED_SETTINGS}
-        size={21}
-      />
-
-      <span
-        className={classNames(
-          styles.indicatorContainer,
-          'fa-layers fa-fw'
-        )}
+      <Link
+        title={advancedSettings ? translate('ShownClickToHide') : translate('HiddenClickToShow')}
+        onPress={onAdvancedSettingsPress}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: '100%',
+          minWidth: 0,
+          p: 0,
+          lineHeight: 1,
+          color: 'inherit'
+        }}
       >
         <Icon
-          className={styles.indicatorBackground}
-          name={icons.CIRCLE}
-          size={16}
+          name={icons.ADVANCED_SETTINGS}
+          size={21}
         />
 
-        <Icon
-          className={advancedSettings ? styles.enabled : styles.disabled}
-          name={advancedSettings ? icons.CHECK : icons.CLOSE}
-          size={10}
-        />
-      </span>
+        <Box
+          component="span"
+          className="fa-layers fa-fw"
+          sx={{
+            position: 'absolute',
+            top: '10px',
+            right: '12px'
+          }}
+        >
+          <Box
+            component="span"
+            sx={(theme) => ({ color: theme.palette.text.secondary })}
+          >
+            <Icon
+              name={icons.CIRCLE}
+              size={16}
+            />
+          </Box>
 
-      {
-        showLabel ?
-          <div className={styles.labelContainer}>
-            <div className={styles.label}>
-              {advancedSettings ? translate('HideAdvanced') : translate('ShowAdvanced')}
-            </div>
-          </div> :
-          null
-      }
-    </Link>
+          <Box
+            component="span"
+            sx={(theme) => ({
+              color: advancedSettings ? theme.palette.success.main : theme.palette.error.main
+            })}
+          >
+            <Icon
+              name={advancedSettings ? icons.CHECK : icons.CLOSE}
+              size={10}
+            />
+          </Box>
+        </Box>
+
+        {
+          showLabel ?
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 24
+              }}
+            >
+              <Box
+                sx={(theme) => ({
+                  width: '100%',
+                  px: '3px',
+                  overflow: 'hidden',
+                  color: theme.palette.text.secondary,
+                  fontSize: 11,
+                  lineHeight: '12px',
+                  textAlign: 'center',
+                  whiteSpace: 'normal'
+                })}
+              >
+                {advancedSettings ? translate('HideAdvanced') : translate('ShowAdvanced')}
+              </Box>
+            </Box> :
+            null
+        }
+      </Link>
+    </Box>
   );
 }
 

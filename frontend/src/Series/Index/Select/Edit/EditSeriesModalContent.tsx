@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import SeriesMonitoringOptionsPopoverContent from 'AddSeries/SeriesMonitoringOptionsPopoverContent';
 import FormGroup from 'Components/Form/FormGroup';
@@ -13,7 +14,12 @@ import Popover from 'Components/Tooltip/Popover';
 import { icons, inputTypes, tooltipPositions } from 'Helpers/Props';
 import MoveSeriesModal from 'Series/MoveSeries/MoveSeriesModal';
 import translate from 'Utilities/String/translate';
-import styles from './EditSeriesModalContent.css';
+
+const modalFooterSx = {
+  justifyContent: 'space-between',
+  flexDirection: { xs: 'column', sm: 'row' },
+  gap: { xs: '10px', sm: 0 },
+};
 
 interface SavePayload {
   monitored?: boolean;
@@ -242,7 +248,11 @@ function EditSeriesModalContent(props: EditSeriesModalContentProps) {
             {translate('Monitoring')}
 
             <Popover
-              anchor={<Icon className={styles.labelIcon} name={icons.INFO} />}
+              anchor={
+                <Box component="span" sx={{ ml: 1, display: 'inline-flex' }}>
+                  <Icon name={icons.INFO} />
+                </Box>
+              }
               title={translate('MonitoringOptions')}
               body={<SeriesMonitoringOptionsPopoverContent />}
               position={tooltipPositions.RIGHT}
@@ -314,10 +324,10 @@ function EditSeriesModalContent(props: EditSeriesModalContentProps) {
         </FormGroup>
       </ModalBody>
 
-      <ModalFooter className={styles.modalFooter}>
-        <div className={styles.selected}>
+      <ModalFooter sx={modalFooterSx}>
+        <Box sx={{ fontWeight: 'bold' }}>
           {translate('CountSitesSelected', { count: selectedCount })}
-        </div>
+        </Box>
 
         <div>
           <Button onPress={onModalClose}>{translate('Cancel')}</Button>

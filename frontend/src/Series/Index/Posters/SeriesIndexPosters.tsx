@@ -8,19 +8,18 @@ import useMeasure from 'Helpers/Hooks/useMeasure';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import SeriesIndexPoster from 'Series/Index/Posters/SeriesIndexPoster';
 import Series from 'Series/Series';
-import dimensions from 'Styles/Variables/dimensions';
 import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
 
-const bodyPadding = parseInt(dimensions.pageContentBodyPadding);
+const bodyPadding = parseInt('20px');
 const bodyPaddingSmallScreen = parseInt(
-  dimensions.pageContentBodyPaddingSmallScreen
+  '10px'
 );
-const columnPadding = parseInt(dimensions.seriesIndexColumnPadding);
+const columnPadding = parseInt('10px');
 const columnPaddingSmallScreen = parseInt(
-  dimensions.seriesIndexColumnPaddingSmallScreen
+  '5px'
 );
-const progressBarHeight = parseInt(dimensions.progressBarSmallHeight);
-const detailedProgressBarHeight = parseInt(dimensions.progressBarMediumHeight);
+const progressBarHeight = parseInt('5px');
+const detailedProgressBarHeight = parseInt('15px');
 
 const ADDITIONAL_COLUMN_COUNT: Record<string, number> = {
   small: 2,

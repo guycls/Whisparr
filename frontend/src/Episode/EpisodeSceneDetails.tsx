@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
@@ -20,7 +20,6 @@ import useSeries from 'Series/useSeries';
 import QualityProfileNameConnector from 'Settings/Profiles/Quality/QualityProfileNameConnector';
 import formatRuntime from 'Utilities/Number/formatRuntime';
 import translate from 'Utilities/String/translate';
-import styles from './EpisodeSceneDetails.css';
 
 const METADATA_FADE_MS = 150;
 
@@ -124,9 +123,22 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
 
   if (!episodeId || !episode) {
     return (
-      <div className={className ?? styles.sceneDetails}>
-        <div className={styles.metadataPlaceholder}>{placeholder}</div>
-      </div>
+      <Box
+        className={className}
+        sx={
+          className
+            ? undefined
+            : {
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 1,
+                width: '100%',
+                minHeight: 0,
+              }
+        }
+      >
+        <Box sx={{ color: 'var(--helpTextColor)', py: '8px' }}>{placeholder}</Box>
+      </Box>
     );
   }
 
@@ -157,53 +169,117 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
   const isScreenshotCentered = centerScreenshot && !isMetadataMounted;
 
   return (
-    <div
-      className={classNames(
-        className ?? styles.sceneDetails,
-        fillHeight && styles.sceneDetailsFillHeight
-      )}
+    <Box
+      className={className}
+      sx={{
+        ...(className
+          ? null
+          : {
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1,
+              width: '100%',
+              minHeight: 0,
+            }),
+        ...(fillHeight ? { height: '100%' } : null),
+      }}
     >
       {showHeader ? (
-        <div className={styles.sceneDetailsHeader}>{translate('Details')}</div>
+        <Box sx={{ fontWeight: 600, mb: '10px' }}>{translate('Details')}</Box>
       ) : null}
 
-      <Scroller
+      <Box
+        component={Scroller}
         ref={scrollerRef}
-        className={scrollerClassName ?? styles.sceneDetailsScroller}
+        className={scrollerClassName}
         scrollDirection={scrollDirections.VERTICAL}
+        sx={{
+          ...(scrollerClassName ? null : { flex: 1, minHeight: 0 }),
+          ...(fillHeight ? { height: '100%' } : null),
+        }}
       >
-        <div className={styles.sceneDetailsContent}>
-          <div className={styles.sceneDetailsBody}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            ...(fillHeight ? { flex: 1, minHeight: 0, height: '100%' } : null),
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 0,
+              m: '2em',
+              mt: 0,
+              ...(fillHeight ? { flex: 1, minHeight: 0, height: '100%' } : null),
+            }}
+          >
             {shouldShowScreenshot ? (
-              <div
-                className={classNames(
-                  styles.sceneScreenshotRegion,
-                  isScreenshotGrowing && styles.sceneScreenshotRegionGrowing,
-                  isScreenshotCentered && styles.sceneScreenshotRegionExpanded
-                )}
+              <Box
+                sx={{
+                  display: 'flex',
+                  flex: isScreenshotCentered ? '1 1 auto' : '0 0 auto',
+                  alignItems: isScreenshotCentered ? 'center' : 'flex-start',
+                  justifyContent: 'center',
+                  width: '100%',
+                  minHeight: 0,
+                  overflow: 'hidden',
+                  transition:
+                    'flex-grow 0.15s ease-in, flex-basis 0.15s ease-in, align-items 0.15s ease-in',
+                }}
               >
-                <div className={styles.sceneScreenshot}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    width: '100%',
+                    mb: isScreenshotCentered ? 0 : '12px',
+                    transition: 'margin 0.15s ease-in',
+                  }}
+                >
                   <EpisodeScreenshot
-                    className={styles.screenshot}
                     images={images}
                     blur={safeForWorkMode}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      maxHeight:
+                        isScreenshotGrowing || isScreenshotCentered
+                          ? 'min(50vh, 480px)'
+                          : 240,
+                      borderRadius: 4,
+                      objectFit: 'contain',
+                      transition: 'max-height 0.15s ease-in',
+                    }}
                   />
-                </div>
-              </div>
+                </Box>
+              </Box>
             ) : null}
 
             {isMetadataMounted ? (
-              <div
-                className={classNames(
-                  styles.metadataSection,
-                  isMetadataFadingOut && styles.metadataSectionFadingOut
-                )}
+              <Box
+                sx={{
+                  flex: '0 0 auto',
+                  overflow: 'hidden',
+                  maxHeight: isMetadataFadingOut ? 0 : 3000,
+                  opacity: isMetadataFadingOut ? 0 : 1,
+                  visibility: isMetadataFadingOut ? 'hidden' : 'visible',
+                  mt: isMetadataFadingOut ? 0 : undefined,
+                  pointerEvents: isMetadataFadingOut ? 'none' : undefined,
+                  transition:
+                    'opacity 0.15s ease-in, max-height 0.15s ease-in, margin-top 0.15s ease-in, visibility 0.15s ease-in',
+                }}
               >
-                <div className={styles.metadataTitle}>{title}</div>
+                <Box sx={{ fontSize: 16, fontWeight: 600, mb: '6px' }}>
+                  {title}
+                </Box>
 
-                <div className={styles.metadataSeries}>{seriesTitle}</div>
+                <Box sx={{ color: 'var(--helpTextColor)', mb: '6px' }}>
+                  {seriesTitle}
+                </Box>
 
-                <div className={styles.metadataEpisodeNumber}>
+                <Box sx={{ mb: '8px' }}>
                   <SeasonEpisodeNumber
                     seasonNumber={seasonNumber}
                     episodeNumber={episodeNumber}
@@ -211,9 +287,9 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                     releaseDate={releaseDate}
                     seriesType={seriesType}
                   />
-                </div>
+                </Box>
 
-                <div className={styles.metadataRow}>
+                <Box sx={{ mb: '8px' }}>
                   <Label
                     kind={monitored ? kinds.SUCCESS : kinds.DISABLED}
                     size={sizes.MEDIUM}
@@ -222,47 +298,83 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                       ? translate('Monitored')
                       : translate('Unmonitored')}
                   </Label>
-                </div>
+                </Box>
 
                 {releaseDate || network ? (
-                  <div className={styles.metadataRow}>
-                    <span className={styles.metadataLabel}>
+                  <Box sx={{ mb: '8px' }}>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: 'block',
+                        color: 'var(--helpTextColor)',
+                        fontWeight: 600,
+                        mb: '4px',
+                      }}
+                    >
                       {translate('Airs')}
-                    </span>
+                    </Box>
                     <EpisodeAiring
                       releaseDate={releaseDate}
                       network={network}
                     />
-                  </div>
+                  </Box>
                 ) : null}
 
-                <div className={styles.metadataRow}>
-                  <span className={styles.infoTitle}>
+                <Box sx={{ mb: '8px' }}>
+                  <Box
+                    component="span"
+                    sx={{ display: 'inline-block', width: 100, fontWeight: 'bold' }}
+                  >
                     {translate('QualityProfile')}
-                  </span>
+                  </Box>
 
                   <Label kind={kinds.PRIMARY} size={sizes.MEDIUM}>
                     <QualityProfileNameConnector
                       qualityProfileId={qualityProfileId}
                     />
                   </Label>
-                </div>
+                </Box>
 
                 {runtime ? (
-                  <div className={styles.metadataRow}>
-                    <span className={styles.metadataLabel}>
+                  <Box sx={{ mb: '8px' }}>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: 'block',
+                        color: 'var(--helpTextColor)',
+                        fontWeight: 600,
+                        mb: '4px',
+                      }}
+                    >
                       {translate('Runtime')}
-                    </span>
+                    </Box>
                     <span>{formatRuntime(runtime)}</span>
-                  </div>
+                  </Box>
                 ) : null}
 
                 {showTpdbLinks ? (
-                  <div className={styles.tpdbLinks}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '10px',
+                      mt: '10px',
+                    }}
+                  >
                     {seriesTvdbId ? (
                       <Link
-                        className={styles.tpdbLink}
                         to={`https://theporndb.net/sites/${seriesTvdbId}`}
+                        sx={{
+                          borderRadius: '2px',
+                          textDecoration: 'none',
+                          transition: 'opacity 200ms ease-in',
+                          '&:hover': { opacity: 0.85 },
+                          '&:focus-visible': {
+                            outline: '2px solid var(--linkColor)',
+                            outlineOffset: '2px',
+                            opacity: 0.92,
+                          },
+                        }}
                       >
                         <Label kind={kinds.PRIMARY} size={sizes.MEDIUM}>
                           {translate('TpdbStudio')}
@@ -272,43 +384,60 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
 
                     {episodeTvdbId ? (
                       <Link
-                        className={styles.tpdbLink}
                         to={`https://theporndb.net/scenes/${episodeTvdbId}`}
+                        sx={{
+                          borderRadius: '2px',
+                          textDecoration: 'none',
+                          transition: 'opacity 200ms ease-in',
+                          '&:hover': { opacity: 0.85 },
+                          '&:focus-visible': {
+                            outline: '2px solid var(--linkColor)',
+                            outlineOffset: '2px',
+                            opacity: 0.92,
+                          },
+                        }}
                       >
                         <Label kind={kinds.PINK} size={sizes.MEDIUM}>
                           {translate('TpdbScene')}
                         </Label>
                       </Link>
                     ) : null}
-                  </div>
+                  </Box>
                 ) : null}
 
-                <div className={styles.overviewPanel}>
+                <Box sx={{ mt: '12px' }}>
                   {hasPerformers ? (
-                    <div className={styles.performers}>{performers}</div>
+                    <Box sx={{ whiteSpace: 'pre-wrap' }}>{performers}</Box>
                   ) : null}
 
                   {hasOverview ? (
-                    <div className={styles.overviewText}>{overview}</div>
+                    <Box
+                      sx={{
+                        whiteSpace: 'pre-wrap',
+                        mt: hasPerformers ? '12px' : 0,
+                      }}
+                    >
+                      {overview}
+                    </Box>
                   ) : null}
 
                   {!hasOverview && !hasPerformers ? (
-                    <div className={styles.overviewText}>
+                    <Box sx={{ whiteSpace: 'pre-wrap' }}>
                       {translate('NoEpisodeOverview')}
-                    </div>
+                    </Box>
                   ) : null}
-                </div>
+                </Box>
 
                 <EpisodeDownloadedFiles
                   episodeEntity={episodeEntity}
                   episodeFileId={episodeFileId}
                 />
-              </div>
+              </Box>
             ) : null}
-          </div>
-        </div>
-      </Scroller>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

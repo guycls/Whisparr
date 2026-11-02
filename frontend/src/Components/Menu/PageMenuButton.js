@@ -1,22 +1,38 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
 import MenuButton from 'Components/Menu/MenuButton';
 import { icons } from 'Helpers/Props';
-import styles from './PageMenuButton.css';
 
 function PageMenuButton(props) {
   const {
     iconName,
     showIndicator,
     text,
+    sx,
     ...otherProps
   } = props;
 
   return (
     <MenuButton
-      className={styles.menuButton}
+      sx={[
+        {
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          '&::after': {
+            marginLeft: '5px',
+            content: '"\\25BE"'
+          },
+          '&:hover': {
+            color: '#666'
+          }
+        },
+        ...(Array.isArray(sx) ? sx : [sx])
+      ]}
       {...otherProps}
     >
       <Icon
@@ -26,23 +42,26 @@ function PageMenuButton(props) {
 
       {
         showIndicator ?
-          <span
-            className={classNames(
-              styles.indicatorContainer,
-              'fa-layers fa-fw'
-            )}
+          <Box
+            className="fa-layers fa-fw"
+            component="span"
+            sx={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px'
+            }}
           >
             <Icon
               name={icons.CIRCLE}
               size={9}
             />
-          </span> :
+          </Box> :
           null
       }
 
-      <div className={styles.label}>
+      <Box sx={{ ml: '5px' }}>
         {text}
-      </div>
+      </Box>
     </MenuButton>
   );
 }
@@ -50,7 +69,8 @@ function PageMenuButton(props) {
 PageMenuButton.propTypes = {
   iconName: PropTypes.object.isRequired,
   showIndicator: PropTypes.bool.isRequired,
-  text: PropTypes.string
+  text: PropTypes.string,
+  sx: PropTypes.oneOfType([PropTypes.object, PropTypes.array, PropTypes.func])
 };
 
 PageMenuButton.defaultProps = {

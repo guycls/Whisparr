@@ -4,7 +4,6 @@ const webpack = require('webpack');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const LiveReloadPlugin = require('webpack-livereload-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
@@ -51,7 +50,6 @@ module.exports = (env) => {
         'node_modules'
       ],
       alias: {
-        jquery: 'jquery/dist/jquery.min',
         'react-middle-truncate': 'react-middle-truncate/lib/react-middle-truncate'
       },
       fallback: {
@@ -88,11 +86,6 @@ module.exports = (env) => {
       new webpack.DefinePlugin({
         __DEV__: !isProduction,
         'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development')
-      }),
-
-      new MiniCssExtractPlugin({
-        filename: 'Content/styles.css',
-        chunkFilename: isProduction ? 'Content/[id]-[chunkhash].css' : 'Content/[id].css'
       }),
 
       new HtmlWebpackPlugin({
@@ -192,45 +185,6 @@ module.exports = (env) => {
                   ]
                 ]
               }
-            }
-          ]
-        },
-
-        // CSS Modules
-        {
-          test: /\.css$/,
-          exclude: /(node_modules|globals.css)/,
-          use: [
-            { loader: MiniCssExtractPlugin.loader },
-            { loader: 'css-modules-typescript-loader' },
-            {
-              loader: 'css-loader',
-              options: {
-                importLoaders: 1,
-                modules: {
-                  localIdentName: isProduction ? '[name]/[local]/[hash:base64:5]' : '[name]/[local]'
-                }
-              }
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                postcssOptions: {
-                  config: 'frontend/postcss.config.js'
-                }
-              }
-            }
-          ]
-        },
-
-        // Global styles
-        {
-          test: /\.css$/,
-          include: /(node_modules|globals.css)/,
-          use: [
-            'style-loader',
-            {
-              loader: 'css-loader'
             }
           ]
         },

@@ -1,10 +1,10 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { useCallback } from 'react';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import ImportSeriesTitle from './ImportSeriesTitle';
-import styles from './ImportSeriesSearchResult.css';
 
 function ImportSeriesSearchResult(props) {
   const {
@@ -19,9 +19,19 @@ function ImportSeriesSearchResult(props) {
   const onPressCallback = useCallback(() => onPress(tvdbId), [tvdbId, onPress]);
 
   return (
-    <div className={styles.container}>
+    <Box
+      sx={{
+        display: 'flex',
+        py: '10px',
+        px: '20px',
+        width: '100%',
+        '&:hover': {
+          backgroundColor: 'var(--menuItemHoverBackgroundColor)'
+        }
+      }}
+    >
       <Link
-        className={styles.series}
+        sx={{ flex: '1 0 0', overflow: 'hidden' }}
         onPress={onPressCallback}
       >
         <ImportSeriesTitle
@@ -33,16 +43,17 @@ function ImportSeriesSearchResult(props) {
       </Link>
 
       <Link
-        className={styles.tvdbLink}
+        sx={{ ml: 'auto', color: 'var(--textColor)' }}
         to={`https://theporndb.net/sites/${tvdbId}`}
       >
-        <Icon
-          className={styles.tvdbLinkIcon}
-          name={icons.EXTERNAL_LINK}
-          size={16}
-        />
+        <Box component="span" sx={{ ml: '10px', display: 'inline-flex' }}>
+          <Icon
+            name={icons.EXTERNAL_LINK}
+            size={16}
+          />
+        </Box>
       </Link>
-    </div>
+    </Box>
   );
 }
 

@@ -1,4 +1,5 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import React, { useCallback, useMemo } from 'react';
 import SelectInput from 'Components/Form/SelectInput';
 import TextInput from 'Components/Form/TextInput';
@@ -12,7 +13,6 @@ import { scrollDirections } from 'Helpers/Props';
 import useSeries from 'Series/useSeries';
 import translate from 'Utilities/String/translate';
 import { useSiteRipSeriesEpisodes } from './useSiteRipSeriesEpisodes';
-import styles from './SiteRipMatchingView.css';
 
 const episodeColumns = [
   {
@@ -139,25 +139,38 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
 
   if (activeFileIndex == null) {
     return (
-      <div className={styles.scenePicker}>
-        <div className={styles.metadataPlaceholder}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 220 }}>
+        <Typography sx={{ color: 'text.secondary', py: 1 }}>
           {translate('SiteRipSelectFileHint')}
-        </div>
-      </div>
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className={styles.scenePicker}>
-      <div className={styles.scenePickerFilters}>
-        <div className={styles.studioLabel}>
-          <span className={styles.filterLabel}>{translate('Site')}</span>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 220 }}>
+      <Box
+        sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: '10px' }}
+      >
+        <Box
+          sx={{ display: 'flex', gap: 1, alignItems: 'center', minWidth: 0 }}
+        >
+          <Typography sx={{ color: 'text.secondary', fontWeight: 600 }}>
+            {translate('Site')}
+          </Typography>
           <span>{series?.title}</span>
-        </div>
+        </Box>
 
-        <div className={styles.scenePickerFilterRow}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: '15% 40% 40%',
+            gap: '10px',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
           <SelectInput
-            className={styles.yearFilter}
             name="episodeYearFilter"
             value={episodeFilterYear}
             values={yearOptions}
@@ -165,7 +178,6 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
           />
 
           <TextInput
-            className={styles.titleFilter}
             name="episodeTitleFilter"
             placeholder={translate('Title')}
             value={episodeFilterTitle}
@@ -173,45 +185,54 @@ function SiteRipScenePicker(props: SiteRipScenePickerProps) {
           />
 
           <TextInput
-            className={styles.performerFilter}
             name="episodePerformerFilter"
             placeholder={translate('Performers')}
             value={episodeFilterPerformer}
             onChange={handlePerformerChange}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <Scroller
-        className={styles.episodeListScroller}
-        scrollDirection={scrollDirections.VERTICAL}
+      <Box
+        sx={{
+          maxHeight: 200,
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 1,
+          '& > div': { maxHeight: 200 },
+          '& .site-rip-episode-selected': {
+            bgcolor: 'action.hover',
+          },
+        }}
       >
-        <Table columns={episodeColumns}>
-          <TableBody>
-            {filteredEpisodes.map((episode) => {
-              const performers = formatPerformers(episode.actors);
-              const isSelected = selectedEpisodeId === episode.id;
+        <Scroller scrollDirection={scrollDirections.VERTICAL}>
+          <Table columns={episodeColumns}>
+            <TableBody>
+              {filteredEpisodes.map((episode) => {
+                const performers = formatPerformers(episode.actors);
+                const isSelected = selectedEpisodeId === episode.id;
 
-              return (
-                <TableRowButton
-                  key={episode.id}
-                  className={classNames(
-                    isSelected && styles.episodeRowSelected
-                  )}
-                  onPress={() => onEpisodeSelect(episode.id)}
-                >
-                  <TableRowCell>{episode.title}</TableRowCell>
-                  <TableRowCell>
-                    <span title={performers}>{performers}</span>
-                  </TableRowCell>
-                  <TableRowCell>{episode.releaseDate}</TableRowCell>
-                </TableRowButton>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Scroller>
-    </div>
+                return (
+                  <TableRowButton
+                    key={episode.id}
+                    className={
+                      isSelected ? 'site-rip-episode-selected' : undefined
+                    }
+                    onPress={() => onEpisodeSelect(episode.id)}
+                  >
+                    <TableRowCell>{episode.title}</TableRowCell>
+                    <TableRowCell>
+                      <span title={performers}>{performers}</span>
+                    </TableRowCell>
+                    <TableRowCell>{episode.releaseDate}</TableRowCell>
+                  </TableRowButton>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Scroller>
+      </Box>
+    </Box>
   );
 }
 

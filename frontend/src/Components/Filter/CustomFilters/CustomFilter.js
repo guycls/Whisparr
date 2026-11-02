@@ -1,10 +1,10 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import IconButton from 'Components/Link/IconButton';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './CustomFilter.css';
 
 class CustomFilter extends Component {
 
@@ -78,12 +78,21 @@ class CustomFilter extends Component {
     } = this.props;
 
     return (
-      <div className={styles.customFilter}>
-        <div className={styles.label}>
+      <Box
+        sx={{
+          display: 'flex',
+          mb: '5px',
+          p: '5px',
+          '&:hover': {
+            backgroundColor: 'var(--tableRowHoverBackgroundColor)'
+          }
+        }}
+      >
+        <Box sx={{ flex: '0 1 300px' }}>
           {label}
-        </div>
+        </Box>
 
-        <div className={styles.actions}>
+        <Box sx={{ flex: '0 0 60px' }}>
           <IconButton
             name={icons.EDIT}
             onPress={this.onEditPress}
@@ -95,8 +104,8 @@ class CustomFilter extends Component {
             isSpinning={this.state.isDeleting}
             onPress={this.onRemovePress}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 }

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Manager, Popper, Reference } from 'react-popper';
@@ -12,7 +13,6 @@ import getUniqueElementId from 'Utilities/getUniqueElementId';
 import translate from 'Utilities/String/translate';
 import ImportSeriesSearchResultConnector from './ImportSeriesSearchResultConnector';
 import ImportSeriesTitle from './ImportSeriesTitle';
-import styles from './ImportSeriesSelectSeries.css';
 
 class ImportSeriesSelectSeries extends Component {
 
@@ -132,26 +132,39 @@ class ImportSeriesSelectSeries extends Component {
             >
               <Link
                 ref={ref}
-                className={styles.button}
                 component="div"
                 onPress={this.onPress}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  py: '6px',
+                  px: '16px',
+                  width: '100%',
+                  height: 35,
+                  border: '1px solid var(--inputBorderColor)',
+                  borderRadius: '4px',
+                  backgroundColor: 'var(--inputBackgroundColor)',
+                  boxShadow: 'inset 0 1px 1px var(--inputBoxShadowColor)'
+                }}
               >
                 {
                   isLookingUpSeries && isQueued && !isPopulated ?
-                    <LoadingIndicator
-                      className={styles.loading}
-                      size={20}
-                    /> :
+                    <Box component="span" sx={{ display: 'inline-block' }}>
+                      <LoadingIndicator
+                        size={20}
+                      />
+                    </Box> :
                     null
                 }
 
                 {
                   isPopulated && selectedSeries && isExistingSeries ?
-                    <Icon
-                      className={styles.warningIcon}
-                      name={icons.WARNING}
-                      kind={kinds.WARNING}
-                    /> :
+                    <Box component="span" sx={{ mr: '8px', display: 'inline-flex' }}>
+                      <Icon
+                        name={icons.WARNING}
+                        kind={kinds.WARNING}
+                      />
+                    </Box> :
                     null
                 }
 
@@ -168,12 +181,13 @@ class ImportSeriesSelectSeries extends Component {
 
                 {
                   isPopulated && !selectedSeries ?
-                    <div className={styles.noMatches}>
-                      <Icon
-                        className={styles.warningIcon}
-                        name={icons.WARNING}
-                        kind={kinds.WARNING}
-                      />
+                    <div>
+                      <Box component="span" sx={{ mr: '8px', display: 'inline-flex' }}>
+                        <Icon
+                          name={icons.WARNING}
+                          kind={kinds.WARNING}
+                        />
+                      </Box>
 
                       {translate('NoMatchFound')}
                     </div> :
@@ -183,23 +197,24 @@ class ImportSeriesSelectSeries extends Component {
                 {
                   !isFetching && !!error ?
                     <div>
-                      <Icon
-                        className={styles.warningIcon}
-                        title={errorMessage}
-                        name={icons.WARNING}
-                        kind={kinds.WARNING}
-                      />
+                      <Box component="span" sx={{ mr: '8px', display: 'inline-flex' }}>
+                        <Icon
+                          title={errorMessage}
+                          name={icons.WARNING}
+                          kind={kinds.WARNING}
+                        />
+                      </Box>
 
                       {translate('SearchFailedError')}
                     </div> :
                     null
                 }
 
-                <div className={styles.dropdownArrowContainer}>
+                <Box sx={{ flex: '1 0 auto', ml: '5px', textAlign: 'right' }}>
                   <Icon
                     name={icons.CARET_DOWN}
                   />
-                </div>
+                </Box>
               </Link>
             </div>
           )}
@@ -218,26 +233,48 @@ class ImportSeriesSelectSeries extends Component {
               this._scheduleUpdate = scheduleUpdate;
 
               return (
-                <div
+                <Box
                   ref={ref}
                   id={this._contentId}
-                  className={styles.contentContainer}
                   style={style}
+                  sx={{
+                    zIndex: 2000,
+                    mt: '4px',
+                    width: 384
+                  }}
                 >
                   {
                     this.state.isOpen ?
-                      <div className={styles.content}>
-                        <div className={styles.searchContainer}>
-                          <div className={styles.searchIconContainer}>
+                      <Box
+                        sx={{
+                          p: '4px',
+                          border: '1px solid var(--inputBorderColor)',
+                          borderRadius: '4px',
+                          backgroundColor: 'var(--inputBackgroundColor)'
+                        }}
+                      >
+                        <Box sx={{ display: 'flex' }}>
+                          <Box
+                            sx={{
+                              width: 58,
+                              border: '1px solid var(--inputBorderColor)',
+                              borderRight: 'none',
+                              borderRadius: '4px 0 0 4px',
+                              backgroundColor: 'var(--searchIconContainerBackgroundColor)',
+                              textAlign: 'center',
+                              lineHeight: '33px'
+                            }}
+                          >
                             <Icon name={icons.SEARCH} />
-                          </div>
+                          </Box>
 
-                          <TextInput
-                            className={styles.searchInput}
-                            name={`${name}_textInput`}
-                            value={this.state.term}
-                            onChange={this.onSearchInputChange}
-                          />
+                          <Box sx={{ flex: 1, '& .MuiInputBase-root': { borderRadius: 0 } }}>
+                            <TextInput
+                              name={`${name}_textInput`}
+                              value={this.state.term}
+                              onChange={this.onSearchInputChange}
+                            />
+                          </Box>
 
                           <FormInputButton
                             kind={kinds.DEFAULT}
@@ -248,9 +285,34 @@ class ImportSeriesSelectSeries extends Component {
                           >
                             <Icon name={icons.REFRESH} />
                           </FormInputButton>
-                        </div>
+                        </Box>
 
-                        <div className={styles.results}>
+                        <Box
+                          sx={{
+                            overflowX: 'hidden',
+                            overflowY: 'scroll',
+                            maxHeight: 165,
+                            scrollbarColor: 'var(--scrollbarBackgroundColor) transparent',
+                            scrollbarWidth: 'thin',
+                            '&::-webkit-scrollbar': {
+                              width: 10,
+                              height: 10
+                            },
+                            '&::-webkit-scrollbar-track': {
+                              backgroundColor: 'transparent'
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                              minHeight: 100,
+                              border: '1px solid transparent',
+                              borderRadius: '5px',
+                              backgroundColor: 'var(--scrollbarBackgroundColor)',
+                              backgroundClip: 'padding-box',
+                              '&:hover': {
+                                backgroundColor: 'var(--scrollbarHoverBackgroundColor)'
+                              }
+                            }
+                          }}
+                        >
                           {
                             items.map((item) => {
                               return (
@@ -265,11 +327,11 @@ class ImportSeriesSelectSeries extends Component {
                               );
                             })
                           }
-                        </div>
-                      </div> :
+                        </Box>
+                      </Box> :
                       null
                   }
-                </div>
+                </Box>
               );
             }}
           </Popper>

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SelectInput from 'Components/Form/SelectInput';
@@ -18,7 +19,6 @@ import SeriesFilterBuilderRowValue from './SeriesFilterBuilderRowValue';
 import SeriesStatusFilterBuilderRowValue from './SeriesStatusFilterBuilderRowValue';
 import SeriesTypesFilterBuilderRowValue from './SeriesTypesFilterBuilderRowValue';
 import TagFilterBuilderRowValueConnector from './TagFilterBuilderRowValueConnector';
-import styles from './FilterBuilderRow.css';
 
 function getselectedFilterBuilderProp(filterBuilderProps, name) {
   return filterBuilderProps.find((a) => {
@@ -234,8 +234,27 @@ class FilterBuilderRow extends Component {
     const ValueComponent = getRowValueConnector(selectedFilterBuilderProp);
 
     return (
-      <div className={styles.filterRow}>
-        <div className={styles.inputContainer}>
+      <Box
+        sx={{
+          display: 'flex',
+          mb: '5px',
+          '&:hover': {
+            backgroundColor: 'var(--tableRowHoverBackgroundColor)'
+          },
+          '@media (max-width: 768px)': {
+            display: 'block'
+          }
+        }}
+      >
+        <Box
+          sx={{
+            flex: '0 1 200px',
+            mr: '10px',
+            '@media (max-width: 768px)': {
+              mb: '10px'
+            }
+          }}
+        >
           {
             filterKey &&
               <SelectInput
@@ -245,9 +264,17 @@ class FilterBuilderRow extends Component {
                 onChange={this.onFilterKeyChange}
               />
           }
-        </div>
+        </Box>
 
-        <div className={styles.inputContainer}>
+        <Box
+          sx={{
+            flex: '0 1 200px',
+            mr: '10px',
+            '@media (max-width: 768px)': {
+              mb: '10px'
+            }
+          }}
+        >
           {
             filterType &&
               <SelectInput
@@ -257,9 +284,9 @@ class FilterBuilderRow extends Component {
                 onChange={this.onFilterChange}
               />
           }
-        </div>
+        </Box>
 
-        <div className={styles.valueInputContainer}>
+        <Box sx={{ flex: '0 1 300px', mr: '10px' }}>
           {
             filterValue != null && !!selectedFilterBuilderProp &&
               <ValueComponent
@@ -270,9 +297,9 @@ class FilterBuilderRow extends Component {
                 onChange={this.onFilterChange}
               />
           }
-        </div>
+        </Box>
 
-        <div className={styles.actionsContainer}>
+        <Box sx={{ display: 'flex' }}>
           <IconButton
             name={icons.SUBTRACT}
             isDisabled={filterCount === 1}
@@ -283,8 +310,8 @@ class FilterBuilderRow extends Component {
             name={icons.ADD}
             onPress={this.onAddPress}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 }

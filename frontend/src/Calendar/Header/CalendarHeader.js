@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -12,7 +13,6 @@ import ViewMenuItem from 'Components/Menu/ViewMenuItem';
 import { align, icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import CalendarHeaderViewButton from './CalendarHeaderViewButton';
-import styles from './CalendarHeader.css';
 
 function getTitle(time, start, end, view, longDateFormat) {
   const timeMoment = moment(time);
@@ -98,13 +98,24 @@ class CalendarHeader extends Component {
       <div>
         {
           isSmallScreen &&
-            <div className={styles.titleMobile}>
+            <Box
+              sx={{
+                mb: '5px',
+                textAlign: 'center',
+                fontSize: 18
+              }}
+            >
               {title}
-            </div>
+            </Box>
         }
 
-        <div className={styles.header}>
-          <div className={styles.navigationButtons}>
+        <Box sx={{ display: 'flex' }}>
+          <Box
+            sx={{
+              flex: { xs: '1 0 50%', md: '1 1 33%' },
+              textAlign: 'left'
+            }}
+          >
             <Button
               buttonGroupPosition={align.LEFT}
               isDisabled={view === calendarViews.AGENDA}
@@ -121,37 +132,50 @@ class CalendarHeader extends Component {
               <Icon name={icons.PAGE_NEXT} />
             </Button>
 
-            <Button
-              className={styles.todayButton}
-              isDisabled={view === calendarViews.AGENDA}
-              onPress={onTodayPress}
-            >
-              {translate('Today')}
-            </Button>
-          </div>
+            <Box component="span" sx={{ ml: '5px' }}>
+              <Button
+                isDisabled={view === calendarViews.AGENDA}
+                onPress={onTodayPress}
+              >
+                {translate('Today')}
+              </Button>
+            </Box>
+          </Box>
 
           {
             !isSmallScreen &&
-              <div className={styles.titleDesktop}>
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  fontSize: 18
+                }}
+              >
                 {title}
-              </div>
+              </Box>
           }
 
-          <div className={styles.viewButtonsContainer}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              flex: { xs: '0 0 100px', md: '1 1 33%' }
+            }}
+          >
             {
               isFetching &&
-                <LoadingIndicator
-                  className={styles.loading}
-                  size={20}
-                />
+                <Box sx={{ mt: '5px', mr: '10px' }}>
+                  <LoadingIndicator
+                    size={20}
+                  />
+                </Box>
             }
 
             {
               collapseViewButtons ?
-                <Menu
-                  className={styles.viewMenu}
-                  alignMenu={align.RIGHT}
-                >
+                <Box sx={{ lineHeight: '31px' }}>
+                  <Menu
+                    alignMenu={align.RIGHT}
+                  >
                   <MenuButton>
                     <Icon
                       name={icons.VIEW}
@@ -204,9 +228,10 @@ class CalendarHeader extends Component {
                       {translate('Agenda')}
                     </ViewMenuItem>
                   </MenuContent>
-                </Menu> :
+                  </Menu>
+                </Box> :
 
-                <div className={styles.viewButtons}>
+                <div>
                   <CalendarHeaderViewButton
                     view={calendarViews.MONTH}
                     selectedView={view}
@@ -243,8 +268,8 @@ class CalendarHeader extends Component {
                   />
                 </div>
             }
-          </div>
-        </div>
+          </Box>
+        </Box>
       </div>
     );
   }

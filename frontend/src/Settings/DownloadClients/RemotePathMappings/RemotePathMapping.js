@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
@@ -7,7 +7,30 @@ import ConfirmModal from 'Components/Modal/ConfirmModal';
 import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditRemotePathMappingModalConnector from './EditRemotePathMappingModalConnector';
-import styles from './RemotePathMapping.css';
+
+const sxRemotePathMapping = (theme) => ({
+  display: 'flex',
+  alignItems: 'stretch',
+  mb: theme.spacing(1.25),
+  height: 30,
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  lineHeight: 30
+});
+
+const sxHost = {
+  flex: '0 1 300px'
+};
+
+const sxPath = {
+  flex: '0 1 400px'
+};
+
+const sxActions = (theme) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  flex: '1 0 auto',
+  pr: theme.spacing(1.25)
+});
 
 class RemotePathMapping extends Component {
 
@@ -61,22 +84,19 @@ class RemotePathMapping extends Component {
     } = this.props;
 
     return (
-      <div
-        className={classNames(
-          styles.remotePathMapping
-        )}
-      >
-        <div className={styles.host}>{host}</div>
-        <div className={styles.path}>{remotePath}</div>
-        <div className={styles.path}>{localPath}</div>
+      <Box
+       sx={sxRemotePathMapping}>
+        <Box sx={sxHost}>{host}</Box>
+        <Box sx={sxPath}>{remotePath}</Box>
+        <Box sx={sxPath}>{localPath}</Box>
 
-        <div className={styles.actions}>
+        <Box sx={sxActions}>
           <Link
             onPress={this.onEditRemotePathMappingPress}
           >
             <Icon name={icons.EDIT} />
           </Link>
-        </div>
+        </Box>
 
         <EditRemotePathMappingModalConnector
           id={id}
@@ -94,7 +114,7 @@ class RemotePathMapping extends Component {
           onConfirm={this.onConfirmDeleteRemotePathMapping}
           onCancel={this.onDeleteRemotePathMappingModalClose}
         />
-      </div>
+      </Box>
     );
   }
 }

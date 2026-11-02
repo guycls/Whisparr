@@ -1,8 +1,8 @@
+import Box from '@mui/material/Box';
 import React, { useMemo } from 'react';
 import { Season } from 'Series/Series';
 import translate from 'Utilities/String/translate';
 import SeasonPassSeason from './SeasonPassSeason';
-import styles from './SeasonDetails.css';
 
 interface SeasonDetailsProps {
   seriesId: number;
@@ -17,7 +17,7 @@ function SeasonDetails(props: SeasonDetailsProps) {
   }, [seasons]);
 
   return (
-    <div className={styles.seasons}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
       {latestSeasons.map((season) => {
         const {
           seasonNumber,
@@ -39,11 +39,13 @@ function SeasonDetails(props: SeasonDetailsProps) {
       })}
 
       {latestSeasons.length < seasons.length ? (
-        <div className={styles.truncated}>
+        <Box
+          sx={{ alignSelf: 'center', flex: '0 0 100%', py: '4px', px: '6px' }}
+        >
           {translate('SeasonPassTruncated')}
-        </div>
+        </Box>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

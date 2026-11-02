@@ -1,15 +1,13 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import TagInputTag from 'Components/Form/TagInputTag';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './FilterBuilderRowValueTag.css';
 
 function FilterBuilderRowValueTag(props) {
   return (
-    <div
-      className={styles.tag}
-    >
+    <Box sx={{ display: 'flex' }}>
       <TagInputTag
         kind={kinds.DEFAULT}
         {...props}
@@ -18,11 +16,17 @@ function FilterBuilderRowValueTag(props) {
       {
         props.isLastTag ?
           null :
-          <div className={styles.or}>
+          <Box
+            sx={{
+              mx: '3px',
+              color: 'var(--themeDarkColor)',
+              lineHeight: '31px'
+            }}
+          >
             {translate('Or')}
-          </div>
+          </Box>
       }
-    </div>
+    </Box>
   );
 }
 

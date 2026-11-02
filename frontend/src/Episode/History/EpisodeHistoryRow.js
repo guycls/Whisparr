@@ -16,8 +16,6 @@ import EpisodeQuality from 'Episode/EpisodeQuality';
 import { icons, kinds, tooltipPositions } from 'Helpers/Props';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
-import styles from './EpisodeHistoryRow.css';
-
 function getTitle(eventType) {
   switch (eventType) {
     case 'grabbed': return 'Grabbed';
@@ -108,7 +106,7 @@ class EpisodeHistoryRow extends Component {
           includeTime={true}
         />
 
-        <TableRowCell className={styles.details}>
+        <TableRowCell sx={{ width: 65 }}>
           <Popover
             anchor={
               <Icon
@@ -128,7 +126,7 @@ class EpisodeHistoryRow extends Component {
           />
         </TableRowCell>
 
-        <TableRowCell className={styles.customFormatScore}>
+        <TableRowCell sx={{ width: 55 }}>
           <Tooltip
             anchor={
               formatCustomFormatScore(customFormatScore, customFormats.length)
@@ -138,7 +136,7 @@ class EpisodeHistoryRow extends Component {
           />
         </TableRowCell>
 
-        <TableRowCell className={styles.actions}>
+        <TableRowCell sx={{ width: 65 }}>
           {
             eventType === 'grabbed' &&
               <IconButton

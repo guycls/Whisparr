@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Measure from 'Components/Measure';
@@ -16,7 +17,6 @@ import CalendarFilterModal from './CalendarFilterModal';
 import CalendarLinkModal from './iCal/CalendarLinkModal';
 import LegendConnector from './Legend/LegendConnector';
 import CalendarOptionsModal from './Options/CalendarOptionsModal';
-import styles from './CalendarPage.css';
 
 const MINIMUM_DAY_WIDTH = 120;
 
@@ -142,9 +142,25 @@ class CalendarPage extends Component {
           </PageToolbarSection>
         </PageToolbar>
 
-        <PageContentBody
-          className={styles.calendarPageBody}
-          innerClassName={styles.calendarInnerPageBody}
+        <Box
+          component={PageContentBody}
+          sx={{
+            display: 'flex',
+            flex: '1 0 1px',
+            flexDirection: 'column',
+            minHeight: 0,
+            '@media (max-width: 767.95px)': {
+              flexBasis: 'auto',
+              overflowY: 'hidden'
+            },
+            '& > .MuiBox-root': {
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              width: '100%',
+              minHeight: 0
+            }
+          }}
         >
           <Measure
             whitelist={['width']}
@@ -163,7 +179,7 @@ class CalendarPage extends Component {
             hasSeries &&
               <LegendConnector />
           }
-        </PageContentBody>
+        </Box>
 
         <CalendarLinkModal
           isOpen={isCalendarLinkModalOpen}

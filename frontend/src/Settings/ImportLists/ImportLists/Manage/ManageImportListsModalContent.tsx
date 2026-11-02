@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ImportListAppState } from 'App/State/SettingsAppState';
@@ -26,7 +27,6 @@ import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import ManageImportListsEditModal from './Edit/ManageImportListsEditModal';
 import ManageImportListsModalRow from './ManageImportListsModalRow';
 import TagsModal from './Tags/TagsModal';
-import styles from './ManageImportListsModalContent.css';
 
 // TODO: This feels janky to do, but not sure of a better way currently
 type OnSelectedChangeCallback = React.ComponentProps<
@@ -229,7 +229,13 @@ function ManageImportListsModalContent(
       </ModalBody>
 
       <ModalFooter>
-        <div className={styles.leftButtons}>
+        <Box
+          sx={{
+            display: 'flex',
+            flex: '1 0 50%',
+            flexWrap: 'wrap',
+          }}
+        >
           <SpinnerButton
             kind={kinds.DANGER}
             isSpinning={isDeleting}
@@ -254,7 +260,7 @@ function ManageImportListsModalContent(
           >
             {translate('SetTags')}
           </SpinnerButton>
-        </div>
+        </Box>
 
         <Button onPress={onModalClose}>{translate('Close')}</Button>
       </ModalFooter>

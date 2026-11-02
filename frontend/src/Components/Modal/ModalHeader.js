@@ -1,31 +1,22 @@
+import DialogTitle from '@mui/material/DialogTitle';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import styles from './ModalHeader.css';
+import React from 'react';
 
-class ModalHeader extends Component {
+function ModalHeader(props) {
+  const {
+    children,
+    ...otherProps
+  } = props;
 
-  //
-  // Render
-
-  render() {
-    const {
-      children,
-      ...otherProps
-    } = this.props;
-
-    return (
-      <div
-        className={styles.modalHeader}
-        {...otherProps}
-      >
-        {children}
-      </div>
-    );
-  }
-
+  return (
+    <DialogTitle {...otherProps}>
+      {children}
+    </DialogTitle>
+  );
 }
 
 ModalHeader.propTypes = {
+  className: PropTypes.string,
   children: PropTypes.node
 };
 

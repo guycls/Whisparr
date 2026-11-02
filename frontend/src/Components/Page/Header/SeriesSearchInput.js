@@ -1,3 +1,6 @@
+import Box from '@mui/material/Box';
+import GlobalStyles from '@mui/material/GlobalStyles';
+import TextField from '@mui/material/TextField';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -9,7 +12,6 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import FuseWorker from './fuse.worker';
 import SeriesSearchResult from './SeriesSearchResult';
-import styles from './SeriesSearchInput.css';
 
 const ADD_NEW_TYPE = 'addNew';
 
@@ -69,14 +71,12 @@ class SeriesSearchInput extends Component {
 
   renderSectionTitle(section) {
     return (
-      <div className={styles.sectionTitle}>
+      <div className="seriesSearchSectionTitle">
         {section.title}
 
         {
           section.loading &&
             <LoadingIndicator
-              className={styles.loading}
-              rippleClassName={styles.ripple}
               size={20}
             />
         }
@@ -91,9 +91,9 @@ class SeriesSearchInput extends Component {
   renderSuggestion(item, { query }) {
     if (item.type === ADD_NEW_TYPE) {
       return (
-        <div className={styles.addNewSeriesSuggestion}>
+        <Box sx={{ padding: '5px 3px', cursor: 'pointer' }}>
           {translate('SearchForQuery', { query })}
-        </div>
+        </Box>
       );
     }
 
@@ -290,7 +290,6 @@ class SeriesSearchInput extends Component {
 
     const inputProps = {
       ref: this.setInputRef,
-      className: styles.input,
       name: 'seriesSearch',
       value,
       placeholder: translate('Search'),
@@ -303,22 +302,93 @@ class SeriesSearchInput extends Component {
     };
 
     const theme = {
-      container: styles.container,
-      containerOpen: styles.containerOpen,
-      suggestionsContainer: styles.seriesContainer,
-      suggestionsList: styles.list,
-      suggestion: styles.listItem,
-      suggestionHighlighted: styles.highlighted
+      container: 'seriesSearchContainer',
+      containerOpen: 'seriesSearchContainerOpen',
+      suggestionsContainer: 'seriesSearchSuggestions',
+      suggestionsList: 'seriesSearchList',
+      suggestion: 'seriesSearchItem',
+      suggestionHighlighted: 'seriesSearchItemHighlighted'
     };
 
     return (
-      <div className={styles.wrapper}>
+      <div className="seriesSearchWrapper">
+        <GlobalStyles
+          styles={(muiTheme) => ({
+            '.seriesSearchWrapper': {
+              display: 'flex',
+              alignItems: 'center',
+              minWidth: 180
+            },
+            '.seriesSearchContainer': {
+              position: 'relative',
+              flexGrow: 1
+            },
+            '.seriesSearchContainerOpen .seriesSearchSuggestions': {
+              position: 'absolute',
+              top: 42,
+              zIndex: 2,
+              overflowY: 'auto',
+              minWidth: '100%',
+              maxHeight: 230,
+              backgroundColor: muiTheme.palette.background.paper,
+              color: muiTheme.palette.text.primary,
+              borderRadius: muiTheme.shape.borderRadius,
+              boxShadow: muiTheme.shadows[4]
+            },
+            '.seriesSearchList': {
+              margin: 0,
+              padding: 0,
+              listStyle: 'none'
+            },
+            '.seriesSearchItem': {
+              padding: '4px 16px'
+            },
+            '.seriesSearchItemHighlighted': {
+              backgroundColor: muiTheme.palette.action.hover
+            },
+            '.seriesSearchSectionTitle': {
+              padding: '5px 8px',
+              color: muiTheme.palette.text.secondary
+            }
+          })}
+        />
         <Icon name={icons.SEARCH} />
 
         <Autosuggest
           ref={this.setAutosuggestRef}
-          id={name}
           inputProps={inputProps}
+          renderInputComponent={(autosuggestProps) => {
+            const { ref, ...rest } = autosuggestProps;
+
+            return (
+              <TextField
+                inputRef={ref}
+                variant="outlined"
+                size="small"
+                fullWidth={true}
+                {...rest}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 5,
+                    backgroundColor: 'action.hover',
+                    color: 'inherit'
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'transparent'
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'divider'
+                  },
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'primary.main'
+                  },
+                  '& .MuiInputBase-input': {
+                    py: '6px'
+                  }
+                }}
+              />
+            );
+          }}
           theme={theme}
           focusInputOnSuggestionClick={false}
           multiSection={true}

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
@@ -29,8 +30,6 @@ import { createSeriesSelectorForHook } from 'Store/Selectors/createSeriesSelecto
 import translate from 'Utilities/String/translate';
 import SelectDownloadClientModal from './DownloadClient/SelectDownloadClientModal';
 import OverrideMatchData from './OverrideMatchData';
-import styles from './OverrideMatchModalContent.css';
-
 type SelectType =
   | 'select'
   | 'series'
@@ -238,9 +237,17 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
       </ModalHeader>
 
       <ModalBody>
+        <Box
+          sx={{
+            '& dl > div': {
+              display: 'block',
+              mb: '5px',
+              ml: { xs: 0, md: '50px' },
+            },
+          }}
+        >
         <DescriptionList>
           <DescriptionListItem
-            className={styles.item}
             title={translate('Series')}
             data={
               <OverrideMatchData
@@ -251,7 +258,6 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
           />
 
           <DescriptionListItem
-            className={styles.item}
             title={translate('SeasonNumber')}
             data={
               <OverrideMatchData
@@ -263,7 +269,6 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
           />
 
           <DescriptionListItem
-            className={styles.item}
             title={translate('Episodes')}
             data={
               <OverrideMatchData
@@ -275,12 +280,13 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
           />
 
           <DescriptionListItem
-            className={styles.item}
             title={translate('Quality')}
             data={
               <OverrideMatchData
                 value={
-                  <EpisodeQuality className={styles.label} quality={quality} />
+                  <Box sx={{ cursor: 'pointer' }}>
+                    <EpisodeQuality quality={quality} />
+                  </Box>
                 }
                 onPress={onSelectQualityPress}
               />
@@ -288,15 +294,13 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
           />
 
           <DescriptionListItem
-            className={styles.item}
             title={translate('Languages')}
             data={
               <OverrideMatchData
                 value={
-                  <EpisodeLanguages
-                    className={styles.label}
-                    languages={languages}
-                  />
+                  <Box sx={{ cursor: 'pointer' }}>
+                    <EpisodeLanguages languages={languages} />
+                  </Box>
                 }
                 onPress={onSelectLanguagesPress}
               />
@@ -305,7 +309,6 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
 
           {downloadClients.length > 1 ? (
             <DescriptionListItem
-              className={styles.item}
               title={translate('DownloadClient')}
               data={
                 <OverrideMatchData
@@ -320,12 +323,34 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
             />
           ) : null}
         </DescriptionList>
+        </Box>
       </ModalBody>
 
-      <ModalFooter className={styles.footer}>
-        <div className={styles.error}>{error || grabError}</div>
+      <ModalFooter
+        sx={{
+          display: { xs: 'block', md: 'flex' },
+          justifyContent: 'space-between',
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          sx={{
+            mr: { xs: 0, md: '20px' },
+            mb: { xs: '10px', md: 0 },
+            color: 'var(--dangerColor)',
+            wordBreak: 'break-word',
+          }}
+        >
+          {error || grabError}
+        </Box>
 
-        <div className={styles.buttons}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: { xs: 'space-between', md: 'flex-start' },
+            flexGrow: { xs: 1, md: 0 },
+          }}
+        >
           <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
           <SpinnerErrorButton
@@ -335,7 +360,7 @@ function OverrideMatchModalContent(props: OverrideMatchModalContentProps) {
           >
             {translate('GrabRelease')}
           </SpinnerErrorButton>
-        </div>
+        </Box>
       </ModalFooter>
 
       <SelectSeriesModal

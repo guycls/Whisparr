@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import TextInput from 'Components/Form/TextInput';
@@ -10,7 +11,6 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './RestoreBackupModalContent.css';
 
 function getErrorMessage(error) {
   if (!error || !error.responseJSON || !error.responseJSON.message) {
@@ -161,52 +161,52 @@ class RestoreBackupModalContent extends Component {
               />
           }
 
-          <div className={styles.steps}>
-            <div className={styles.step}>
-              <div className={styles.stepState}>
+          <Box sx={{ mt: '20px' }}>
+            <Box sx={{ display: 'flex', fontSize: 16, lineHeight: '20px' }}>
+              <Box sx={{ mr: '8px' }}>
                 <Icon
                   size={20}
                   {...getStepIconProps(isRestoring, isRestored, restoreError)}
                 />
-              </div>
+              </Box>
 
               <div>
                 {translate('Restore')}
               </div>
-            </div>
+            </Box>
 
-            <div className={styles.step}>
-              <div className={styles.stepState}>
+            <Box sx={{ display: 'flex', fontSize: 16, lineHeight: '20px' }}>
+              <Box sx={{ mr: '8px' }}>
                 <Icon
                   size={20}
                   {...getStepIconProps(isRestarting, isRestarted)}
                 />
-              </div>
+              </Box>
 
               <div>
                 {translate('Restart')}
               </div>
-            </div>
+            </Box>
 
-            <div className={styles.step}>
-              <div className={styles.stepState}>
+            <Box sx={{ display: 'flex', fontSize: 16, lineHeight: '20px' }}>
+              <Box sx={{ mr: '8px' }}>
                 <Icon
                   size={20}
                   {...getStepIconProps(isReloading, false)}
                 />
-              </div>
+              </Box>
 
               <div>
                 {translate('Reload')}
               </div>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </ModalBody>
 
         <ModalFooter>
-          <div className={styles.additionalInfo}>
+          <Box sx={{ flexGrow: 1, color: '#777' }}>
             {translate('RestartReloadNote')}
-          </div>
+          </Box>
 
           <Button onPress={onModalClose}>
             {translate('Cancel')}

@@ -8,7 +8,6 @@ import TagListConnector from 'Components/TagListConnector';
 import { kinds } from 'Helpers/Props';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
-import styles from './ManageIndexersModalRow.css';
 
 interface ManageIndexersModalRowProps {
   id: number;
@@ -55,13 +54,13 @@ function ManageIndexersModalRow(props: ManageIndexersModalRowProps) {
         onSelectedChange={onSelectedChangeWrapper}
       />
 
-      <TableRowCell className={styles.name}>{name}</TableRowCell>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>{name}</TableRowCell>
 
-      <TableRowCell className={styles.implementation}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {implementation}
       </TableRowCell>
 
-      <TableRowCell className={styles.enableRss}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         <Label
           kind={enableRss ? kinds.SUCCESS : kinds.DISABLED}
           outline={!enableRss}
@@ -70,7 +69,7 @@ function ManageIndexersModalRow(props: ManageIndexersModalRowProps) {
         </Label>
       </TableRowCell>
 
-      <TableRowCell className={styles.enableAutomaticSearch}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         <Label
           kind={enableAutomaticSearch ? kinds.SUCCESS : kinds.DISABLED}
           outline={!enableAutomaticSearch}
@@ -79,7 +78,7 @@ function ManageIndexersModalRow(props: ManageIndexersModalRowProps) {
         </Label>
       </TableRowCell>
 
-      <TableRowCell className={styles.enableInteractiveSearch}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         <Label
           kind={enableInteractiveSearch ? kinds.SUCCESS : kinds.DISABLED}
           outline={!enableInteractiveSearch}
@@ -88,9 +87,9 @@ function ManageIndexersModalRow(props: ManageIndexersModalRowProps) {
         </Label>
       </TableRowCell>
 
-      <TableRowCell className={styles.priority}>{priority}</TableRowCell>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>{priority}</TableRowCell>
 
-      <TableRowCell className={styles.tags}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         <TagListConnector tags={tags} />
       </TableRowCell>
     </TableRow>

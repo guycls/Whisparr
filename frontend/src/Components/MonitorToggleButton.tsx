@@ -1,9 +1,7 @@
-import classNames from 'classnames';
 import React, { SyntheticEvent, useCallback, useMemo } from 'react';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './MonitorToggleButton.css';
 
 interface MonitorToggleButtonProps {
   className?: string;
@@ -16,7 +14,7 @@ interface MonitorToggleButtonProps {
 
 function MonitorToggleButton(props: MonitorToggleButtonProps) {
   const {
-    className = styles.toggleButton,
+    className,
     monitored,
     isDisabled = false,
     isSaving = false,
@@ -50,12 +48,22 @@ function MonitorToggleButton(props: MonitorToggleButtonProps) {
 
   return (
     <SpinnerIconButton
-      className={classNames(className, isDisabled && styles.isDisabled)}
+      className={className}
       name={iconName}
       size={size}
       title={title}
       isDisabled={isDisabled}
       isSpinning={isSaving}
+      sx={{
+        p: 0,
+        fontSize: 'inherit',
+        ...(isDisabled
+          ? {
+              color: 'var(--disabledColor)',
+              cursor: 'not-allowed',
+            }
+          : null),
+      }}
       {...otherProps}
       onPress={handlePress}
     />

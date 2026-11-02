@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import Icon from 'Components/Icon';
@@ -13,8 +14,6 @@ import {
 } from 'Store/Actions/episodeFileActions';
 import translate from 'Utilities/String/translate';
 import EpisodeFileRow from './EpisodeFileRow';
-import styles from './EpisodeDownloadedFiles.css';
-
 const COLUMNS: Column[] = [
   {
     name: 'path',
@@ -113,7 +112,7 @@ function EpisodeDownloadedFiles(props: EpisodeDownloadedFilesProps) {
   }
 
   return (
-    <div className={styles.downloadedFiles}>
+    <Box sx={{ overflowX: 'auto', mt: '16px' }}>
       <Table columns={COLUMNS}>
         <TableBody>
           <EpisodeFileRow
@@ -130,7 +129,7 @@ function EpisodeDownloadedFiles(props: EpisodeDownloadedFilesProps) {
           />
         </TableBody>
       </Table>
-    </div>
+    </Box>
   );
 }
 

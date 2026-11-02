@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -9,7 +10,6 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ManageImportListsEditModalContent.css';
 
 interface SavePayload {
   enableAutomaticAdd?: boolean;
@@ -298,10 +298,16 @@ function ManageImportListsEditModalContent(
         </FormGroup>
       </ModalBody>
 
-      <ModalFooter className={styles.modalFooter}>
-        <div className={styles.selected}>
+      <ModalFooter
+        sx={{
+          justifyContent: 'space-between',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1.25, sm: 0 },
+        }}
+      >
+        <Box sx={{ fontWeight: 'bold' }}>
           {translate('CountImportListsSelected', { count: selectedCount })}
-        </div>
+        </Box>
 
         <div>
           <Button onPress={onModalClose}>{translate('Cancel')}</Button>

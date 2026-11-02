@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import TextTruncate from 'react-text-truncate';
@@ -15,20 +15,33 @@ import SeriesIndexPosterSelect from 'Series/Index/Select/SeriesIndexPosterSelect
 import { Statistics } from 'Series/Series';
 import SeriesPoster from 'Series/SeriesPoster';
 import { executeCommand } from 'Store/Actions/commandActions';
-import dimensions from 'Styles/Variables/dimensions';
-import fonts from 'Styles/Variables/fonts';
 import translate from 'Utilities/String/translate';
 import createSeriesIndexItemSelector from '../createSeriesIndexItemSelector';
 import selectOverviewOptions from './selectOverviewOptions';
 import SeriesIndexOverviewInfo from './SeriesIndexOverviewInfo';
-import styles from './SeriesIndexOverview.css';
 
-const columnPadding = parseInt(dimensions.seriesIndexColumnPadding);
+function statusCornerSx(color: 'error.main' | 'grey.500') {
+  return {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 1,
+    width: 0,
+    height: 0,
+    borderWidth: '0 25px 25px 0',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderRightColor: color,
+    color: 'common.white',
+  };
+}
+
+const columnPadding = parseInt('10px');
 const columnPaddingSmallScreen = parseInt(
-  dimensions.seriesIndexColumnPaddingSmallScreen
+  '5px'
 );
-const defaultFontSize = parseInt(fonts.defaultFontSize);
-const lineHeight = parseFloat(fonts.lineHeight);
+const defaultFontSize = parseInt('14px');
+const lineHeight = parseFloat('1.528571429');
 
 // Hardcoded height based on line-height of 32 + bottom margin of 10.
 // Less side-effecty than using react-measure.
@@ -140,30 +153,41 @@ function SeriesIndexOverview(props: SeriesIndexOverviewProps) {
 
   return (
     <div>
-      <div className={styles.content}>
-        <div className={styles.poster}>
-          <div className={styles.posterContainer}>
+      <Box sx={{ display: 'flex', flexGrow: 1 }}>
+        <Box sx={{ position: 'relative' }}>
+          <Box sx={{ position: 'relative' }}>
             {isSelectMode ? (
               <SeriesIndexPosterSelect seriesId={seriesId} />
             ) : null}
 
             {status === 'ended' ? (
-              <div
-                className={classNames(styles.status, styles.ended)}
+              <Box
+                sx={statusCornerSx('error.main')}
                 title={translate('Ended')}
               />
             ) : null}
 
             {status === 'deleted' ? (
-              <div
-                className={classNames(styles.status, styles.deleted)}
+              <Box
+                sx={statusCornerSx('grey.500')}
                 title={translate('Deleted')}
               />
             ) : null}
 
-            <Link className={styles.link} style={elementStyle} to={link}>
+            <Link
+              style={elementStyle}
+              to={link}
+              sx={{
+                display: 'block',
+                color: 'text.primary',
+                textDecoration: 'none',
+                '&:hover': {
+                  color: 'text.primary',
+                  textDecoration: 'none',
+                },
+              }}
+            >
               <SeriesPoster
-                className={styles.poster}
                 style={elementStyle}
                 images={images}
                 size={250}
@@ -171,7 +195,7 @@ function SeriesIndexOverview(props: SeriesIndexOverviewProps) {
                 overflow={true}
               />
             </Link>
-          </div>
+          </Box>
 
           <SeriesIndexProgressBar
             seriesId={seriesId}
@@ -184,15 +208,46 @@ function SeriesIndexOverview(props: SeriesIndexOverviewProps) {
             detailedProgressBar={overviewOptions.detailedProgressBar}
             isStandalone={false}
           />
-        </div>
+        </Box>
 
-        <div className={styles.info} style={{ maxHeight: contentHeight }}>
-          <div className={styles.titleRow}>
-            <Link className={styles.title} to={link}>
+        <Box
+          sx={{
+            display: 'flex',
+            flex: '1 0 1px',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            pl: '10px',
+          }}
+          style={{ maxHeight: contentHeight }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              flex: '0 0 auto',
+              mb: '10px',
+              lineHeight: '32px',
+            }}
+          >
+            <Link
+              to={link}
+              sx={{
+                overflow: 'hidden',
+                maxWidth: '100%',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flex: '1 0 1px',
+                fontWeight: 300,
+                fontSize: 30,
+                color: 'inherit',
+                textDecoration: 'none',
+                '&:hover': { color: 'inherit', textDecoration: 'none' },
+              }}
+            >
               {title}
             </Link>
 
-            <div className={styles.actions}>
+            <Box sx={{ whiteSpace: 'nowrap' }}>
               <SpinnerIconButton
                 name={icons.REFRESH}
                 title={translate('RefreshSite')}
@@ -214,12 +269,35 @@ function SeriesIndexOverview(props: SeriesIndexOverviewProps) {
                 title={translate('EditSite')}
                 onPress={onEditSeriesPress}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className={styles.details}>
-            <div className={styles.overviewContainer}>
-              <Link className={styles.overview} to={link}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              flex: '1 0 auto',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                flex: '0 1 1000px',
+                flexDirection: 'column',
+              }}
+            >
+              <Link
+                to={link}
+                sx={{
+                  overflow: 'hidden',
+                  minHeight: 0,
+                  display: { xs: 'none', md: 'block' },
+                  color: 'inherit',
+                  textDecoration: 'none',
+                  '&:hover': { color: 'inherit', textDecoration: 'none' },
+                }}
+              >
                 <TextTruncate
                   line={Math.floor(
                     overviewHeight / (defaultFontSize * lineHeight)
@@ -229,11 +307,17 @@ function SeriesIndexOverview(props: SeriesIndexOverviewProps) {
               </Link>
 
               {overviewOptions.showTags ? (
-                <div className={styles.tags}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    overflow: 'hidden',
+                  }}
+                >
                   <TagListConnector tags={tags} />
-                </div>
+                </Box>
               ) : null}
-            </div>
+            </Box>
             <SeriesIndexOverviewInfo
               height={overviewHeight}
               monitored={monitored}
@@ -248,9 +332,9 @@ function SeriesIndexOverview(props: SeriesIndexOverviewProps) {
               sortKey={sortKey}
               {...overviewOptions}
             />
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       <EditSeriesModalConnector
         isOpen={isEditSeriesModalOpen}

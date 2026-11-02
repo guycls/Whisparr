@@ -1,10 +1,21 @@
+import Box from '@mui/material/Box';
 import React, { ComponentPropsWithoutRef, useCallback, useRef } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { ScrollDirection } from 'Helpers/Props/scrollDirections';
 import { OnScroll } from './Scroller';
-import styles from './OverlayScroller.css';
 
 const SCROLLBAR_SIZE = 10;
+
+const thumbSx = {
+  minHeight: 100,
+  border: '1px solid transparent',
+  borderRadius: '5px',
+  backgroundColor: 'var(--scrollbarBackgroundColor)',
+  backgroundClip: 'padding-box',
+  '&:hover': {
+    backgroundColor: 'var(--scrollbarHoverBackgroundColor)',
+  },
+};
 
 interface OverlayScrollerProps {
   className?: string;
@@ -26,8 +37,8 @@ function OverlayScroller(props: OverlayScrollerProps) {
   const {
     autoHide = false,
     autoScroll = true,
-    className = styles.scroller,
-    trackClassName = styles.thumb,
+    className,
+    trackClassName,
     children,
     onScroll,
   } = props;
@@ -55,8 +66,10 @@ function OverlayScroller(props: OverlayScrollerProps) {
   }, [onScroll]);
 
   const renderThumb = useCallback(
-    (props: ComponentPropsWithoutRef<'div'>) => {
-      return <div className={trackClassName} {...props} />;
+    (thumbProps: ComponentPropsWithoutRef<'div'>) => {
+      return (
+        <Box className={trackClassName} sx={thumbSx} {...thumbProps} />
+      );
     },
     [trackClassName]
   );
@@ -72,9 +85,7 @@ function OverlayScroller(props: OverlayScrollerProps) {
         height: SCROLLBAR_SIZE,
       };
 
-      return (
-        <div className={styles.track} style={finalStyle} {...trackProps} />
-      );
+      return <Box style={finalStyle} {...trackProps} />;
     },
     []
   );
@@ -90,17 +101,15 @@ function OverlayScroller(props: OverlayScrollerProps) {
         width: SCROLLBAR_SIZE,
       };
 
-      return (
-        <div className={styles.track} style={finalStyle} {...trackProps} />
-      );
+      return <Box style={finalStyle} {...trackProps} />;
     },
     []
   );
 
   const renderView = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (props: any) => {
-      return <div className={className} {...props} />;
+    (viewProps: any) => {
+      return <Box className={className} {...viewProps} />;
     },
     [className]
   );

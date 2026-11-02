@@ -5,8 +5,6 @@ import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRow from 'Components/Table/TableRow';
 import translate from 'Utilities/String/translate';
-import styles from './LogFilesTableRow.css';
-
 class LogFilesTableRow extends Component {
 
   //
@@ -27,7 +25,7 @@ class LogFilesTableRow extends Component {
           date={lastWriteTime}
         />
 
-        <TableRowCell className={styles.download}>
+        <TableRowCell sx={{ width: 100 }}>
           <Link
             to={downloadUrl}
             target="_blank"

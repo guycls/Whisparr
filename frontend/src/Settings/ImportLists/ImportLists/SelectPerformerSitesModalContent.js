@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from 'Components/Alert';
@@ -17,7 +18,66 @@ import { icons, kinds, scrollDirections } from 'Helpers/Props';
 import requestAction from 'Utilities/requestAction';
 import translate from 'Utilities/String/translate';
 import SelectPerformerSitesRow from './SelectPerformerSitesRow';
-import styles from './SelectPerformerSitesModalContent.css';
+
+const sxModalBody = {
+  display: 'flex',
+  flex: '1 1 auto',
+  flexDirection: 'column'
+};
+
+const sxFilterInput = (theme) => ({
+  flex: '0 0 auto',
+  mb: theme.spacing(1.25)
+});
+
+const sxScroller = {
+  flex: '1 1 auto'
+};
+
+const sxFooter = (theme) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  overflow: 'hidden',
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    gap: theme.spacing(1.25)
+  }
+});
+
+const sxPageInfo = (theme) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2.5),
+  [theme.breakpoints.down('md')]: {
+    justifyContent: 'space-between',
+    width: '100%'
+  }
+});
+
+const sxPagination = (theme) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.25)
+});
+
+const sxPageText = {
+  whiteSpace: 'nowrap'
+};
+
+const sxSelectionInfo = (theme) => ({
+  color: theme.palette.text.disabled,
+  whiteSpace: 'nowrap'
+});
+
+const sxButtons = (theme) => ({
+  display: 'flex',
+  gap: theme.spacing(1.25),
+  [theme.breakpoints.down('md')]: {
+    justifyContent: 'flex-end',
+    width: '100%'
+  }
+});
 
 const PAGE_SIZE = 25;
 
@@ -205,8 +265,8 @@ function SelectPerformerSitesModalContent(props) {
         {translate('SelectSitesToImport')} ({totalSites} {totalSites === 1 ? 'site' : 'sites'})
       </ModalHeader>
 
-      <ModalBody
-        className={styles.modalBody}
+      <Box sx={sxModalBody}>
+<ModalBody
         scrollDirection={scrollDirections.NONE}
       >
         {isFetching ? <LoadingIndicator /> : null}
@@ -225,15 +285,17 @@ function SelectPerformerSitesModalContent(props) {
 
         {!isFetching && !error && sites.length > 0 ? (
           <>
-            <TextInput
-              className={styles.filterInput}
+            <Box sx={sxFilterInput}>
+<TextInput
               name="filter"
               value={filter}
               placeholder={translate('SearchSite')}
               autoFocus={true}
               onChange={onFilterChange}
             />
-            <Scroller className={styles.scroller} autoFocus={false}>
+</Box>
+            <Box sx={sxScroller}>
+<Scroller autoFocus={false}>
               <Table
                 columns={columns}
                 selectAll={true}
@@ -256,37 +318,39 @@ function SelectPerformerSitesModalContent(props) {
                 </TableBody>
               </Table>
             </Scroller>
+</Box>
           </>
         ) : null}
       </ModalBody>
+</Box>
 
-      <ModalFooter className={styles.footer}>
-        <div className={styles.pageInfo}>
+      <ModalFooter sx={sxFooter}>
+        <Box sx={sxPageInfo}>
           {totalPages > 1 ? (
-            <div className={styles.pagination}>
+            <Box sx={sxPagination}>
               <Button
                 isDisabled={currentPage === 1}
                 onPress={onPreviousPagePress}
               >
                 <Icon name={icons.PAGE_PREVIOUS} />
               </Button>
-              <span className={styles.pageText}>
+              <Box component="span" sx={sxPageText}>
                 Page {currentPage} of {totalPages}
-              </span>
+              </Box>
               <Button
                 isDisabled={currentPage === totalPages}
                 onPress={onNextPagePress}
               >
                 <Icon name={icons.PAGE_NEXT} />
               </Button>
-            </div>
+            </Box>
           ) : null}
-          <span className={styles.selectionInfo}>
+          <Box component="span" sx={sxSelectionInfo}>
             {selectedSiteIds.length} of {totalSites} selected
-          </span>
-        </div>
+          </Box>
+        </Box>
 
-        <div className={styles.buttons}>
+        <Box sx={sxButtons}>
           <Button onPress={onModalClose}>
             {translate('Cancel')}
           </Button>
@@ -298,7 +362,7 @@ function SelectPerformerSitesModalContent(props) {
           >
             {translate('Confirm')}
           </SpinnerButton>
-        </div>
+        </Box>
       </ModalFooter>
     </ModalContent>
   );

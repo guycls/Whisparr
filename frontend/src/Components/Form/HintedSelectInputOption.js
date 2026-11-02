@@ -1,8 +1,7 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import EnhancedSelectInputOption from './EnhancedSelectInputOption';
-import styles from './HintedSelectInputOption.css';
 
 function HintedSelectInputOption(props) {
   const {
@@ -28,20 +27,34 @@ function HintedSelectInputOption(props) {
       isMobile={isMobile}
       {...otherProps}
     >
-      <div className={classNames(
-        styles.optionText,
-        isMobile && styles.isMobile
-      )}
+      <Box
+        sx={{
+          display: isMobile ? 'block' : 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flex: '1 0 0',
+          minWidth: 0
+        }}
       >
         <div>{value}</div>
 
         {
           hint != null &&
-            <div className={styles.hintText}>
+            <Box
+              sx={{
+                overflow: 'hidden',
+                maxWidth: '100%',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                ml: isMobile ? 0 : '15px',
+                color: 'var(--darkGray)',
+                fontSize: 12
+              }}
+            >
               {hint}
-            </div>
+            </Box>
         }
-      </div>
+      </Box>
     </EnhancedSelectInputOption>
   );
 }

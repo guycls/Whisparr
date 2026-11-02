@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import classNames from 'classnames';
 import React, { useCallback, useMemo } from 'react';
 import { SiteRipMatch, SiteRipSelection } from 'App/State/SiteRipAppState';
@@ -22,7 +24,6 @@ import { formatTorrentFilePaths } from './formatTorrentFilePaths';
 import { getEpisodeDownloadedSummary } from './getEpisodeDownloadedSummary';
 import { getSiteRipFileRowState } from './getSiteRipFileRowState';
 import { SiteRipFileMatchFilter } from './siteRipFileMatchFilter';
-import styles from './SiteRipMatchingView.css';
 
 export type SiteRipFileSortKey =
   | 'displayName'
@@ -39,7 +40,6 @@ const columns = [
   {
     name: 'displayName',
     label: () => translate('Title'),
-    className: styles.titleColumn,
     isSortable: true,
     isVisible: true,
   },
@@ -150,32 +150,75 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
   }, []);
 
   return (
-    <div className={styles.leftPane}>
-      <div className={styles.fileToolbar}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0,
+        minHeight: 0,
+        height: '100%',
+      }}
+    >
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          gap: '10px',
+          alignItems: 'center',
+          mb: '12px',
+          '& .site-rip-match-filter': { minWidth: 140 },
+        }}
+      >
         <TextInput
-          className={styles.filterInput}
           placeholder={translate('Filter')}
           name="fileFilter"
           value={filter}
           onChange={handleFilterChange}
         />
 
-        <SelectInput
-          className={styles.matchFilterSelect}
-          name="fileMatchFilter"
-          value={matchFilter}
-          values={matchFilterOptions}
-          onChange={handleMatchFilterChange}
-        />
-      </div>
+        <Box className="site-rip-match-filter">
+          <SelectInput
+            name="fileMatchFilter"
+            value={matchFilter}
+            values={matchFilterOptions}
+            onChange={handleMatchFilterChange}
+          />
+        </Box>
+      </Box>
 
-      <div className={styles.fileTable}>
-        <Scroller
-          className={styles.fileListScroller}
-          scrollDirection={scrollDirections.VERTICAL}
-        >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+          minHeight: 0,
+          flex: 1,
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 1,
+          overflow: 'hidden',
+          '& > div': { flex: '1 1 auto', minHeight: 0, height: '100%' },
+          '& table': { width: '100%', tableLayout: 'fixed' },
+          '& th:first-of-type': { width: 40 },
+          '& th:nth-of-type(2)': { width: '60%', maxWidth: '60%' },
+          '& .site-rip-file-row': { cursor: 'pointer' },
+          '& .site-rip-file-row:hover': { filter: 'brightness(1.05)' },
+          '& .site-rip-matched-selected': {
+            bgcolor: 'rgba(72, 187, 120, 0.18)',
+          },
+          '& .site-rip-matched-unselected': {
+            bgcolor: 'rgba(93, 156, 236, 0.18)',
+          },
+          '& .site-rip-unmatched': { bgcolor: 'rgba(246, 224, 94, 0.14)' },
+          '& .site-rip-active': {
+            outline: '1px solid',
+            outlineColor: 'primary.main',
+            outlineOffset: '-1px',
+          },
+        }}
+      >
+        <Scroller scrollDirection={scrollDirections.VERTICAL}>
           <Table
-            className={styles.matchingTable}
             horizontalScroll={false}
             selectAll={true}
             allSelected={allSelected}
@@ -202,23 +245,25 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
                   <TableRowButton
                     key={index}
                     className={classNames(
-                      styles.fileRow,
+                      'site-rip-file-row',
                       rowState === 'matchedSelected' &&
-                        styles.fileRowMatchedSelected,
+                        'site-rip-matched-selected',
                       rowState === 'matchedUnselected' &&
-                        styles.fileRowMatchedUnselected,
-                      rowState === 'unmatched' && styles.fileRowUnmatched,
-                      activeFileIndex === index && styles.fileRowActive
+                        'site-rip-matched-unselected',
+                      rowState === 'unmatched' && 'site-rip-unmatched',
+                      activeFileIndex === index && 'site-rip-active'
                     )}
                     onPress={() => onRowPress(index)}
                   >
                     <TableRowCell
-                      className={styles.checkboxColumn}
+                      sx={{
+                        width: 40,
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                      }}
                       onClick={stopCheckboxPropagation}
                     >
                       <CheckInput
-                        containerClassName={styles.checkboxContainer}
-                        className={styles.checkboxInput}
                         name={`file-${index}`}
                         value={selection?.selected ?? false}
                         onChange={(change: CheckInputChanged) =>
@@ -227,34 +272,54 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
                       />
                     </TableRowCell>
 
-                    <TableRowCell className={styles.fileNameCell}>
-                      <div
-                        className={styles.fileName}
+                    <TableRowCell sx={{ width: '60%', maxWidth: '60%' }}>
+                      <Box
                         title={match.displayName}
+                        sx={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}
                       >
                         {match.displayName}
-                      </div>
+                      </Box>
                       {torrentPath ? (
-                        <div
-                          className={styles.filePath}
+                        <Typography
                           title={match.filePaths.join('\n')}
+                          sx={{
+                            color: 'text.secondary',
+                            fontSize: 12,
+                            mt: '2px',
+                            whiteSpace: 'normal',
+                            overflowWrap: 'anywhere',
+                          }}
                         >
                           {torrentPath}
-                        </div>
+                        </Typography>
                       ) : null}
                       {match.partNumber ? (
-                        <div className={styles.partLabel}>
+                        <Typography
+                          sx={{
+                            color: 'text.secondary',
+                            fontSize: 12,
+                            mt: '2px',
+                            whiteSpace: 'normal',
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
                           {translate('Scene')} {match.partNumber}
                           {match.partTotal ? `/${match.partTotal}` : ''}
-                        </div>
+                        </Typography>
                       ) : null}
                     </TableRowCell>
 
-                    <TableRowCell className={styles.sizeCell}>
+                    <TableRowCell
+                      sx={{
+                        color: 'text.secondary',
+                        fontSize: 13,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       {formatBytes(match.totalSize)}
                     </TableRowCell>
 
-                    <TableRowCell className={styles.monitoredCell}>
+                    <TableRowCell sx={{ whiteSpace: 'nowrap' }}>
                       {episode ? (
                         <Label
                           kind={
@@ -267,25 +332,39 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
                             : translate('Unmonitored')}
                         </Label>
                       ) : (
-                        <span className={styles.emptyCell}>-</span>
+                        <Box component="span" sx={{ color: 'text.secondary' }}>
+                          -
+                        </Box>
                       )}
                     </TableRowCell>
 
-                    <TableRowCell className={styles.downloadedCell}>
+                    <TableRowCell sx={{ whiteSpace: 'nowrap' }}>
                       {downloadedSummary ? (
-                        <div className={styles.downloadedSummary}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: '4px',
+                          }}
+                        >
                           <EpisodeQuality
                             quality={downloadedSummary.quality}
                             size={downloadedSummary.totalSize}
                           />
                           {downloadedSummary.partCount > 1 ? (
-                            <span className={styles.partCount}>
+                            <Typography
+                              component="span"
+                              sx={{ color: 'text.secondary', fontSize: 12 }}
+                            >
                               {` (${downloadedSummary.partCount} parts)`}
-                            </span>
+                            </Typography>
                           ) : null}
-                        </div>
+                        </Box>
                       ) : (
-                        <span className={styles.emptyCell}>-</span>
+                        <Box component="span" sx={{ color: 'text.secondary' }}>
+                          -
+                        </Box>
                       )}
                     </TableRowCell>
                   </TableRowButton>
@@ -294,8 +373,8 @@ function SiteRipMatchingFileList(props: SiteRipMatchingFileListProps) {
             </TableBody>
           </Table>
         </Scroller>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

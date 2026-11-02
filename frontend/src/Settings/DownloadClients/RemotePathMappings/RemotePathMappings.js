@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -10,7 +11,30 @@ import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditRemotePathMappingModalConnector from './EditRemotePathMappingModalConnector';
 import RemotePathMapping from './RemotePathMapping';
-import styles from './RemotePathMappings.css';
+
+const sxRemotePathMappingsHeader = (theme) => ({
+  display: 'flex',
+  mb: theme.spacing(1.25),
+  fontWeight: 'bold'
+});
+
+const sxHost = {
+  flex: '0 1 300px'
+};
+
+const sxPath = {
+  flex: '0 1 400px'
+};
+
+const sxAddRemotePathMapping = (theme) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  pr: theme.spacing(1.25)
+});
+
+const sxAddButton = {
+  textAlign: 'center'
+};
 
 class RemotePathMappings extends Component {
 
@@ -57,17 +81,17 @@ class RemotePathMappings extends Component {
             <InlineMarkdown data={translate('RemotePathMappingsInfo', { app: 'Whisparr', wikiLink: 'https://wiki.servarr.com/whisparr/settings#remote-path-mappings' })} />
           </Alert>
 
-          <div className={styles.remotePathMappingsHeader}>
-            <div className={styles.host}>
+          <Box sx={sxRemotePathMappingsHeader}>
+            <Box sx={sxHost}>
               {translate('Host')}
-            </div>
-            <div className={styles.path}>
+            </Box>
+            <Box sx={sxPath}>
               {translate('RemotePath')}
-            </div>
-            <div className={styles.path}>
+            </Box>
+            <Box sx={sxPath}>
               {translate('LocalPath')}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           <div>
             {
@@ -85,14 +109,15 @@ class RemotePathMappings extends Component {
             }
           </div>
 
-          <div className={styles.addRemotePathMapping}>
-            <Link
-              className={styles.addButton}
+          <Box sx={sxAddRemotePathMapping}>
+            <Box sx={sxAddButton}>
+<Link
               onPress={this.onAddRemotePathMappingPress}
             >
               <Icon name={icons.ADD} />
             </Link>
-          </div>
+</Box>
+          </Box>
 
           <EditRemotePathMappingModalConnector
             isOpen={this.state.isAddRemotePathMappingModalOpen}

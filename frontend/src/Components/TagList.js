@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { kinds } from 'Helpers/Props';
 import sortByProp from 'Utilities/Array/sortByProp';
 import Label from './Label';
-import styles from './TagList.css';
 
 function TagList({ tags, tagList }) {
   const sortedTags = tags
@@ -12,7 +12,7 @@ function TagList({ tags, tagList }) {
     .sort(sortByProp('label'));
 
   return (
-    <div className={styles.tags}>
+    <Box sx={{ flex: '1 0 auto' }}>
       {
         sortedTags.map((tag) => {
           return (
@@ -25,7 +25,7 @@ function TagList({ tags, tagList }) {
           );
         })
       }
-    </div>
+    </Box>
   );
 }
 

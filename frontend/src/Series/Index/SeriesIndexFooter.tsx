@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
@@ -10,7 +10,48 @@ import createClientSideCollectionSelector from 'Store/Selectors/createClientSide
 import createDeepEqualSelector from 'Store/Selectors/createDeepEqualSelector';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './SeriesIndexFooter.css';
+
+function LegendItem({
+  label,
+  color,
+  impaired = false,
+  angle = 90,
+}: {
+  label: string;
+  color:
+    | 'primary.main'
+    | 'success.main'
+    | 'error.main'
+    | 'warning.main'
+    | 'secondary.main';
+  impaired?: boolean;
+  angle?: number;
+}) {
+  const paletteKey = color.split('.')[0] as
+    | 'primary'
+    | 'success'
+    | 'error'
+    | 'warning'
+    | 'secondary';
+
+  return (
+    <Box sx={{ display: 'flex', mb: '4px', lineHeight: '16px' }}>
+      <Box
+        sx={(theme) => ({
+          mr: 1,
+          width: 30,
+          height: 16,
+          borderRadius: '4px',
+          bgcolor: color,
+          background: impaired
+            ? `repeating-linear-gradient(${angle}deg, ${theme.palette[paletteKey].dark} 0 5px, ${theme.palette[paletteKey].main} 5px 10px)`
+            : undefined,
+        })}
+      />
+      <Box>{label}</Box>
+    </Box>
+  );
+}
 
 function createUnoptimizedSelector() {
   return createSelector(
@@ -77,60 +118,49 @@ export default function SeriesIndexFooter() {
     <ColorImpairedConsumer>
       {(enableColorImpairedMode) => {
         return (
-          <div className={styles.footer}>
-            <div>
-              <div className={styles.legendItem}>
-                <div
-                  className={classNames(
-                    styles.continuing,
-                    enableColorImpairedMode && 'colorImpaired'
-                  )}
-                />
-                <div>{translate('SiteIndexFooterContinuing')}</div>
-              </div>
+          <Box
+            sx={{
+              display: { xs: 'block', md: 'flex' },
+              flexWrap: 'wrap',
+              mt: '20px',
+              fontSize: 12,
+            }}
+          >
+            <Box>
+              <LegendItem
+                label={translate('SiteIndexFooterContinuing')}
+                color="primary.main"
+              />
+              <LegendItem
+                label={translate('SiteIndexFooterEnded')}
+                color="success.main"
+              />
+              <LegendItem
+                label={translate('SiteIndexFooterMissingMonitored')}
+                color="error.main"
+                impaired={enableColorImpairedMode}
+                angle={90}
+              />
+              <LegendItem
+                label={translate('SiteIndexFooterMissingUnmonitored')}
+                color="warning.main"
+                impaired={enableColorImpairedMode}
+                angle={45}
+              />
+              <LegendItem
+                label={translate('SiteIndexFooterDownloading')}
+                color="secondary.main"
+              />
+            </Box>
 
-              <div className={styles.legendItem}>
-                <div
-                  className={classNames(
-                    styles.ended,
-                    enableColorImpairedMode && 'colorImpaired'
-                  )}
-                />
-                <div>{translate('SiteIndexFooterEnded')}</div>
-              </div>
-
-              <div className={styles.legendItem}>
-                <div
-                  className={classNames(
-                    styles.missingMonitored,
-                    enableColorImpairedMode && 'colorImpaired'
-                  )}
-                />
-                <div>{translate('SiteIndexFooterMissingMonitored')}</div>
-              </div>
-
-              <div className={styles.legendItem}>
-                <div
-                  className={classNames(
-                    styles.missingUnmonitored,
-                    enableColorImpairedMode && 'colorImpaired'
-                  )}
-                />
-                <div>{translate('SiteIndexFooterMissingUnmonitored')}</div>
-              </div>
-
-              <div className={styles.legendItem}>
-                <div
-                  className={classNames(
-                    styles.downloading,
-                    enableColorImpairedMode && 'colorImpaired'
-                  )}
-                />
-                <div>{translate('SiteIndexFooterDownloading')}</div>
-              </div>
-            </div>
-
-            <div className={styles.statistics}>
+            <Box
+              sx={{
+                display: { xs: 'flex', md: 'block', xl: 'flex' },
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                mt: { xs: '20px', md: 0 },
+              }}
+            >
               <DescriptionList>
                 <DescriptionListItem title={translate('Sites')} data={count} />
 
@@ -172,8 +202,8 @@ export default function SeriesIndexFooter() {
                   data={formatBytes(totalFileSize)}
                 />
               </DescriptionList>
-            </div>
-          </div>
+            </Box>
+          </Box>
         );
       }}
     </ColorImpairedConsumer>

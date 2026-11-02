@@ -1,7 +1,8 @@
-import classNames from 'classnames';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import styles from './SelectInput.css';
 
 class SelectInput extends Component {
 
@@ -20,8 +21,6 @@ class SelectInput extends Component {
 
   render() {
     const {
-      className,
-      disabledClassName,
       name,
       value,
       values,
@@ -33,40 +32,39 @@ class SelectInput extends Component {
     } = this.props;
 
     return (
-      <select
-        className={classNames(
-          className,
-          hasError && styles.hasError,
-          hasWarning && styles.hasWarning,
-          isDisabled && disabledClassName
-        )}
+      <FormControl
+        fullWidth={true}
+        size="small"
         disabled={isDisabled}
-        name={name}
-        value={value}
-        autoFocus={autoFocus}
-        onChange={this.onChange}
-        onBlur={onBlur}
+        error={!!hasError}
+        color={hasWarning ? 'warning' : 'primary'}
       >
-        {
-          values.map((option) => {
-            const {
-              key,
-              value: optionValue,
-              ...otherOptionProps
-            } = option;
+        <Select
+          name={name}
+          value={value}
+          autoFocus={autoFocus}
+          onChange={this.onChange}
+          onBlur={onBlur}
+        >
+          {
+            values.map((option) => {
+              const {
+                key,
+                value: optionValue
+              } = option;
 
-            return (
-              <option
-                key={key}
-                value={key}
-                {...otherOptionProps}
-              >
-                {typeof optionValue === 'function' ? optionValue() : optionValue}
-              </option>
-            );
-          })
-        }
-      </select>
+              return (
+                <MenuItem
+                  key={key}
+                  value={key}
+                >
+                  {typeof optionValue === 'function' ? optionValue() : optionValue}
+                </MenuItem>
+              );
+            })
+          }
+        </Select>
+      </FormControl>
     );
   }
 }
@@ -86,8 +84,6 @@ SelectInput.propTypes = {
 };
 
 SelectInput.defaultProps = {
-  className: styles.select,
-  disabledClassName: styles.isDisabled,
   isDisabled: false,
   autoFocus: false
 };

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import NumberInput from 'Components/Form/NumberInput';
@@ -6,7 +7,6 @@ import TextInput from 'Components/Form/TextInput';
 import { IN_LAST, IN_NEXT, NOT_IN_LAST, NOT_IN_NEXT } from 'Helpers/Props/filterTypes';
 import isString from 'Utilities/String/isString';
 import { NAME } from './FilterBuilderRowValue';
-import styles from './DateFilterBuilderRowValue.css';
 
 const timeOptions = [
   { key: 'seconds', value: 'seconds' },
@@ -137,22 +137,24 @@ class DateFilterBuilderRowValue extends Component {
 
     if (isInFilter(filterType)) {
       return (
-        <div className={styles.container}>
-          <NumberInput
-            className={styles.numberInput}
-            name={NAME}
-            value={filterValue.value}
-            onChange={this.onValueChange}
-          />
+        <Box sx={{ display: 'flex' }}>
+          <Box sx={{ mr: '3px', flex: 1 }}>
+            <NumberInput
+              name={NAME}
+              value={filterValue.value}
+              onChange={this.onValueChange}
+            />
+          </Box>
 
-          <SelectInput
-            className={styles.selectInput}
-            name={NAME}
-            value={filterValue.time}
-            values={timeOptions}
-            onChange={this.onTimeChange}
-          />
-        </div>
+          <Box sx={{ ml: '3px', flex: 1 }}>
+            <SelectInput
+              name={NAME}
+              value={filterValue.time}
+              values={timeOptions}
+              onChange={this.onTimeChange}
+            />
+          </Box>
+        </Box>
       );
     }
 

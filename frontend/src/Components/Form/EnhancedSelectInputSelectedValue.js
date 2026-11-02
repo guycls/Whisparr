@@ -1,34 +1,39 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
-import styles from './EnhancedSelectInputSelectedValue.css';
 
 function EnhancedSelectInputSelectedValue(props) {
   const {
     className,
     children,
-    isDisabled
+    isDisabled,
+    sx
   } = props;
 
   return (
-    <div className={classNames(
-      className,
-      isDisabled && styles.isDisabled
-    )}
+    <Box
+      className={className}
+      sx={[
+        {
+          flex: '1 1 auto',
+          color: isDisabled ? 'text.disabled' : undefined
+        },
+        ...(Array.isArray(sx) ? sx : [sx])
+      ]}
     >
       {children}
-    </div>
+    </Box>
   );
 }
 
 EnhancedSelectInputSelectedValue.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   children: PropTypes.node,
-  isDisabled: PropTypes.bool.isRequired
+  isDisabled: PropTypes.bool.isRequired,
+  sx: PropTypes.oneOfType([PropTypes.object, PropTypes.array, PropTypes.func])
 };
 
 EnhancedSelectInputSelectedValue.defaultProps = {
-  className: styles.selectedValue,
   isDisabled: false
 };
 

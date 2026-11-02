@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Link from 'Components/Link/Link';
@@ -29,7 +30,6 @@ import TextArea from './TextArea';
 import TextInput from './TextInput';
 import TextTagInputConnector from './TextTagInputConnector';
 import UMaskInput from './UMaskInput';
-import styles from './FormInputGroup.css';
 
 function getComponent(type) {
   switch (type) {
@@ -137,9 +137,19 @@ function FormInputGroup(props) {
   const hasButton = !!buttonsArray.length;
 
   return (
-    <div className={containerClassName}>
-      <div className={className}>
-        <div className={styles.inputContainer}>
+    <Box
+      className={containerClassName}
+      sx={{ flex: '1 1 auto', minWidth: 0 }}
+    >
+      <Box
+        className={className}
+        sx={{
+          display: 'flex',
+          flex: '1 1 auto',
+          flexWrap: 'wrap'
+        }}
+      >
+        <Box sx={{ position: 'relative', flex: '1 1 auto', minWidth: 0 }}>
           <InputComponent
             className={inputClassName}
             helpText={helpText}
@@ -152,17 +162,23 @@ function FormInputGroup(props) {
 
           {
             unit &&
-              <div
-                className={
-                  type === inputTypes.NUMBER ?
-                    styles.inputUnitNumber :
-                    styles.inputUnit
-                }
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: type === inputTypes.NUMBER ? '40px' : '20px',
+                  mt: '7px',
+                  width: 75,
+                  color: '#c6c6c6',
+                  textAlign: 'right',
+                  pointerEvents: 'none',
+                  userSelect: 'none'
+                }}
               >
                 {unit}
-              </div>
+              </Box>
           }
-        </div>
+        </Box>
 
         {
           buttonsArray.map((button, index) => {
@@ -175,17 +191,7 @@ function FormInputGroup(props) {
           })
         }
 
-        {/* <div className={styles.pendingChangesContainer}>
-          {
-          pending &&
-          <Icon
-          name={icons.UNSAVED_SETTING}
-          className={styles.pendingChangesIcon}
-          title="Change has not been saved yet"
-          />
-          }
-        </div> */}
-      </div>
+      </Box>
 
       {
         !checkInput && helpText &&
@@ -257,13 +263,13 @@ function FormInputGroup(props) {
           );
         })
       }
-    </div>
+    </Box>
   );
 }
 
 FormInputGroup.propTypes = {
-  className: PropTypes.string.isRequired,
-  containerClassName: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  containerClassName: PropTypes.string,
   inputClassName: PropTypes.string,
   name: PropTypes.string.isRequired,
   value: PropTypes.any,
@@ -291,8 +297,6 @@ FormInputGroup.propTypes = {
 };
 
 FormInputGroup.defaultProps = {
-  className: styles.inputGroup,
-  containerClassName: styles.inputGroupContainer,
   type: inputTypes.TEXT,
   buttons: [],
   helpTexts: [],

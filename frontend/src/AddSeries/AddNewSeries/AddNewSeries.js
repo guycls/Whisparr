@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import TextInput from 'Components/Form/TextInput';
@@ -11,7 +13,6 @@ import { icons, kinds } from 'Helpers/Props';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import AddNewSeriesSearchResultConnector from './AddNewSeriesSearchResultConnector';
-import styles from './AddNewSeries.css';
 
 class AddNewSeries extends Component {
 
@@ -90,33 +91,65 @@ class AddNewSeries extends Component {
     return (
       <PageContent title={translate('AddNewSite')}>
         <PageContentBody>
-          <div className={styles.searchContainer}>
-            <div className={styles.searchIconContainer}>
+          <Box sx={{ display: 'flex', mb: '10px' }}>
+            <Box
+              sx={{
+                width: 58,
+                height: 46,
+                border: '1px solid var(--inputBorderColor)',
+                borderRight: 'none',
+                borderRadius: '4px 0 0 4px',
+                backgroundColor: 'var(--searchIconContainerBackgroundColor)',
+                textAlign: 'center',
+                lineHeight: '46px'
+              }}
+            >
               <Icon
                 name={icons.SEARCH}
                 size={20}
               />
-            </div>
+            </Box>
 
-            <TextInput
-              className={styles.searchInput}
-              name="seriesLookup"
-              value={term}
-              placeholder="eg. Brazzers, tpdb:####"
-              autoFocus={true}
-              onChange={this.onSearchInputChange}
-            />
-
-            <Button
-              className={styles.clearLookupButton}
-              onPress={this.onClearSeriesLookupPress}
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                '& .MuiInputBase-root': {
+                  height: 46,
+                  borderRadius: 0,
+                  fontSize: 18
+                }
+              }}
             >
-              <Icon
-                name={icons.REMOVE}
-                size={20}
+              <TextInput
+                name="seriesLookup"
+                value={term}
+                placeholder="eg. Brazzers, tpdb:####"
+                autoFocus={true}
+                onChange={this.onSearchInputChange}
               />
-            </Button>
-          </div>
+            </Box>
+
+            <Box
+              sx={{
+                '& .MuiButton-root': {
+                  border: '1px solid var(--inputBorderColor)',
+                  borderLeft: 'none',
+                  borderRadius: '0 4px 4px 0',
+                  boxShadow: 'inset 0 1px 1px rgba(0, 0, 0, 0.075)'
+                }
+              }}
+            >
+              <Button
+                onPress={this.onClearSeriesLookupPress}
+              >
+                <Icon
+                  name={icons.REMOVE}
+                  size={20}
+                />
+              </Button>
+            </Box>
+          </Box>
 
           {
             isFetching &&
@@ -125,17 +158,17 @@ class AddNewSeries extends Component {
 
           {
             !isFetching && !!error ?
-              <div className={styles.message}>
-                <div className={styles.helpText}>
+              <Box sx={{ mt: '30px', textAlign: 'center', fontWeight: 300, fontSize: 16 }}>
+                <Typography sx={{ mb: '10px', fontSize: 24, fontWeight: 300 }}>
                   {translate('AddNewSeriesError')}
-                </div>
+                </Typography>
                 <div>{getErrorMessage(error)}</div>
-              </div> : null
+              </Box> : null
           }
 
           {
             !isFetching && !error && !!items.length &&
-              <div className={styles.searchResults}>
+              <Box sx={{ mt: '30px' }}>
                 {
                   items.map((item) => {
                     return (
@@ -146,39 +179,41 @@ class AddNewSeries extends Component {
                     );
                   })
                 }
-              </div>
+              </Box>
           }
 
           {
             !isFetching && !error && !items.length && !!term &&
-              <div className={styles.message}>
-                <div className={styles.noResults}>{translate('CouldNotFindResults', { term })}</div>
+              <Box sx={{ mt: '30px', textAlign: 'center', fontWeight: 300, fontSize: 16 }}>
+                <Typography sx={{ mb: '10px', fontWeight: 300, fontSize: 30 }}>
+                  {translate('CouldNotFindResults', { term })}
+                </Typography>
                 <div>{translate('SearchByTpdbId')}</div>
                 <div>
                   <Link to="https://wiki.servarr.com/whisparr/faq#why-cant-i-add-a-new-site-when-i-know-the-tpdb-id">
                     {translate('WhyCantIFindMySite')}
                   </Link>
                 </div>
-              </div>
+              </Box>
           }
 
           {
             term ?
               null :
-              <div className={styles.message}>
-                <div className={styles.helpText}>
+              <Box sx={{ mt: '30px', textAlign: 'center', fontWeight: 300, fontSize: 16 }}>
+                <Typography sx={{ mb: '10px', fontSize: 24, fontWeight: 300 }}>
                   {translate('AddNewSeriesHelpText')}
-                </div>
+                </Typography>
                 <div>{translate('SearchByTpdbId')}</div>
-              </div>
+              </Box>
           }
 
           {
             !term && !hasExistingSeries ?
-              <div className={styles.message}>
-                <div className={styles.noSeriesText}>
+              <Box sx={{ mt: '30px', textAlign: 'center', fontWeight: 300, fontSize: 16 }}>
+                <Box sx={{ mt: '80px', mb: '20px' }}>
                   {translate('NoSitesHaveBeenAdded')}
-                </div>
+                </Box>
                 <div>
                   <Button
                     to="/add/import"
@@ -187,7 +222,7 @@ class AddNewSeries extends Component {
                     {translate('ImportExistingSites')}
                   </Button>
                 </div>
-              </div> :
+              </Box> :
               null
           }
 

@@ -1,8 +1,8 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import DocumentTitle from 'react-document-title';
 import ErrorBoundary from 'Components/Error/ErrorBoundary';
 import PageContentError from './PageContentError';
-import styles from './PageContent.css';
 
 interface PageContentProps {
   className?: string;
@@ -11,7 +11,7 @@ interface PageContentProps {
 }
 
 function PageContent(props: PageContentProps) {
-  const { className = styles.content, title, children } = props;
+  const { className, title, children } = props;
 
   return (
     <ErrorBoundary errorComponent={PageContentError}>
@@ -22,7 +22,20 @@ function PageContent(props: PageContentProps) {
             : window.Whisparr.instanceName
         }
       >
-        <div className={className}>{children}</div>
+        <Box
+          className={className}
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+            overflowX: 'hidden',
+            width: '100%',
+            minHeight: 0,
+          }}
+        >
+          {children}
+        </Box>
       </DocumentTitle>
     </ErrorBoundary>
   );

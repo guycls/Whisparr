@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SeriesMonitoringOptionsPopoverContent from 'AddSeries/SeriesMonitoringOptionsPopoverContent';
@@ -15,7 +16,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import Popover from 'Components/Tooltip/Popover';
 import { icons, inputTypes, tooltipPositions } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './MonitoringOptionsModalContent.css';
 
 const NO_CHANGE = 'noChange';
 
@@ -94,10 +94,11 @@ class MonitoringOptionsModalContent extends Component {
 
                 <Popover
                   anchor={
-                    <Icon
-                      className={styles.labelIcon}
-                      name={icons.INFO}
-                    />
+                    <Box component="span" sx={{ ml: 1, display: 'inline-flex' }}>
+                      <Icon
+                        name={icons.INFO}
+                      />
+                    </Box>
                   }
                   title={translate('MonitoringOptions')}
                   body={<SeriesMonitoringOptionsPopoverContent />}

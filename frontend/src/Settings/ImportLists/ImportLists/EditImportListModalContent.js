@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { useCallback, useState } from 'react';
 import SeriesMonitoringOptionsPopoverContent from 'AddSeries/SeriesMonitoringOptionsPopoverContent';
@@ -22,7 +23,18 @@ import formatShortTimeSpan from 'Utilities/Date/formatShortTimeSpan';
 import translate from 'Utilities/String/translate';
 import ImportListMonitoringOptionsPopoverContent from './ImportListMonitoringOptionsPopoverContent';
 import SelectPerformerSitesModal from './SelectPerformerSitesModal';
-import styles from './EditImportListModalContent.css';
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
+
+const sxLabelIcon = (theme) => ({
+  ml: theme.spacing(1)
+});
+
+const sxMessage = (theme) => ({
+  mb: theme.spacing(3.75)
+});
 
 function EditImportListModalContent(props) {
   const [isSelectSitesModalOpen, setIsSelectSitesModalOpen] = useState(false);
@@ -108,14 +120,15 @@ function EditImportListModalContent(props) {
           !isFetching && !error ?
             <Form {...otherProps}>
 
-              <Alert
+              <Box sx={sxMessage}>
+<Alert
                 kind={kinds.INFO}
-                className={styles.message}
               >
                 {translate('ListWillRefreshEveryInterval', {
                   refreshInterval: formatShortTimeSpan(minRefreshInterval.value)
                 })}
               </Alert>
+</Box>
 
               <FormGroup>
                 <FormLabel>{translate('Name')}</FormLabel>
@@ -156,10 +169,10 @@ function EditImportListModalContent(props) {
                 <FormLabel>
                   {translate('Monitor')}
 
-                  <Popover
+                  <Box sx={sxLabelIcon}>
+<Popover
                     anchor={
                       <Icon
-                        className={styles.labelIcon}
                         name={icons.INFO}
                       />
                     }
@@ -167,6 +180,7 @@ function EditImportListModalContent(props) {
                     body={<ImportListMonitoringOptionsPopoverContent />}
                     position={tooltipPositions.RIGHT}
                   />
+</Box>
                 </FormLabel>
 
                 <FormInputGroup
@@ -184,10 +198,10 @@ function EditImportListModalContent(props) {
                     <FormLabel>
                       Site Monitoring Options
 
-                      <Popover
+                      <Box sx={sxLabelIcon}>
+<Popover
                         anchor={
                           <Icon
-                            className={styles.labelIcon}
                             name={icons.INFO}
                           />
                         }
@@ -195,6 +209,7 @@ function EditImportListModalContent(props) {
                         body={<SeriesMonitoringOptionsPopoverContent />}
                         position={tooltipPositions.RIGHT}
                       />
+</Box>
                     </FormLabel>
 
                     <FormInputGroup
@@ -210,10 +225,10 @@ function EditImportListModalContent(props) {
               <FormGroup>
                 <FormLabel>
                   {translate('MonitorNewScenes')}
-                  <Popover
+                  <Box sx={sxLabelIcon}>
+<Popover
                     anchor={
                       <Icon
-                        className={styles.labelIcon}
                         name={icons.INFO}
                       />
                     }
@@ -221,6 +236,7 @@ function EditImportListModalContent(props) {
                     body={<SeriesMonitorNewItemsOptionsPopoverContent />}
                     position={tooltipPositions.RIGHT}
                   />
+</Box>
                 </FormLabel>
 
                 <FormInputGroup
@@ -297,13 +313,14 @@ function EditImportListModalContent(props) {
       <ModalFooter>
         {
           id &&
-            <Button
-              className={styles.deleteButton}
+            <Box sx={sxDeleteButton}>
+<Button
               kind={kinds.DANGER}
               onPress={onDeleteImportListPress}
             >
               {translate('Delete')}
             </Button>
+</Box>
         }
 
         {

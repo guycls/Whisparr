@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Label from 'Components/Label';
@@ -10,7 +11,6 @@ import { icons, kinds } from 'Helpers/Props';
 import { deleteRootFolder } from 'Store/Actions/rootFolderActions';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './RootFolderRow.css';
 
 interface RootFolderRowProps {
   id: number;
@@ -47,31 +47,29 @@ function RootFolderRow(props: RootFolderRowProps) {
     <TableRow>
       <TableRowCell>
         {isUnavailable ? (
-          <div className={styles.unavailablePath}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {path}
 
-            <Label className={styles.unavailableLabel} kind={kinds.DANGER}>
-              {translate('Unavailable')}
-            </Label>
-          </div>
+            <Box sx={{ ml: '10px' }}>
+              <Label kind={kinds.DANGER}>{translate('Unavailable')}</Label>
+            </Box>
+          </Box>
         ) : (
-          <Link className={styles.link} to={`/add/import/${id}`}>
-            {path}
-          </Link>
+          <Link to={`/add/import/${id}`}>{path}</Link>
         )}
       </TableRowCell>
 
-      <TableRowCell className={styles.freeSpace}>
+      <TableRowCell sx={{ width: 150 }}>
         {isUnavailable || isNaN(Number(freeSpace))
           ? '-'
           : formatBytes(freeSpace)}
       </TableRowCell>
 
-      <TableRowCell className={styles.unmappedFolders}>
+      <TableRowCell sx={{ width: 150 }}>
         {isUnavailable ? '-' : unmappedFolders.length}
       </TableRowCell>
 
-      <TableRowCell className={styles.actions}>
+      <TableRowCell sx={{ width: 45 }}>
         <IconButton
           title={translate('RemoveRootFolder')}
           name={icons.REMOVE}

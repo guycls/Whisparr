@@ -1,47 +1,18 @@
+import DialogContent from '@mui/material/DialogContent';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import Scroller from 'Components/Scroller/Scroller';
+import React from 'react';
 import { scrollDirections } from 'Helpers/Props';
-import styles from './ModalBody.css';
 
-class ModalBody extends Component {
+function ModalBody(props) {
+  const {
+    children
+  } = props;
 
-  //
-  // Render
-
-  render() {
-    const {
-      innerClassName,
-      scrollDirection,
-      children,
-      ...otherProps
-    } = this.props;
-
-    let className = this.props.className;
-    const hasScroller = scrollDirection !== scrollDirections.NONE;
-
-    if (!className) {
-      className = hasScroller ? styles.modalScroller : styles.modalBody;
-    }
-
-    return (
-      <Scroller
-        className={className}
-        scrollDirection={scrollDirection}
-        scrollTop={0}
-        {...otherProps}
-      >
-        {
-          hasScroller ?
-            <div className={innerClassName}>
-              {children}
-            </div> :
-            children
-        }
-      </Scroller>
-    );
-  }
-
+  return (
+    <DialogContent dividers={true}>
+      {children}
+    </DialogContent>
+  );
 }
 
 ModalBody.propTypes = {
@@ -52,7 +23,6 @@ ModalBody.propTypes = {
 };
 
 ModalBody.defaultProps = {
-  innerClassName: styles.innerModalBody,
   scrollDirection: scrollDirections.VERTICAL
 };
 

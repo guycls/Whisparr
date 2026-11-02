@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
@@ -9,7 +9,47 @@ import { icons, kinds } from 'Helpers/Props';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import EditDelayProfileModalConnector from './EditDelayProfileModalConnector';
-import styles from './DelayProfile.css';
+
+const sxDelayProfile = (theme) => ({
+  display: 'flex',
+  alignItems: 'stretch',
+  mb: theme.spacing(1.25),
+  height: 30,
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  lineHeight: 30
+});
+
+const sxColumn = {
+  flex: '0 0 200px'
+};
+
+const sxActions = {
+  display: 'flex'
+};
+
+const sxDragHandle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  ml: 'auto',
+  width: 40,
+  textAlign: 'center',
+  cursor: 'grab'
+};
+
+const sxDragIcon = {
+  top: '0'
+};
+
+const sxIsDragging = {
+  opacity: 0.25
+};
+
+const sxEditButton = {
+  width: 40,
+  textAlign: 'center'
+};
 
 function getDelay(enabled, delay) {
   if (!enabled) {
@@ -94,41 +134,39 @@ class DelayProfile extends Component {
     }
 
     return (
-      <div
-        className={classNames(
-          styles.delayProfile,
-          isDragging && styles.isDragging
-        )}
-      >
-        <div className={styles.column}>{preferred}</div>
-        <div className={styles.column}>{getDelay(enableUsenet, usenetDelay)}</div>
-        <div className={styles.column}>{getDelay(enableTorrent, torrentDelay)}</div>
+      <Box
+       sx={[sxDelayProfile, isDragging && sxIsDragging]}>
+        <Box sx={sxColumn}>{preferred}</Box>
+        <Box sx={sxColumn}>{getDelay(enableUsenet, usenetDelay)}</Box>
+        <Box sx={sxColumn}>{getDelay(enableTorrent, torrentDelay)}</Box>
 
         <TagList
           tags={tags}
           tagList={tagList}
         />
 
-        <div className={styles.actions}>
-          <Link
-            className={id === 1 ? styles.editButton : undefined}
+        <Box sx={sxActions}>
+          <Box sx={[id === 1 && sxEditButton]}>
+<Link
             onPress={this.onEditDelayProfilePress}
           >
             <Icon name={icons.EDIT} />
           </Link>
+</Box>
 
           {
             id !== 1 &&
               connectDragSource(
-                <div className={styles.dragHandle}>
-                  <Icon
-                    className={styles.dragIcon}
+                <Box sx={sxDragHandle}>
+                  <Box sx={sxDragIcon}>
+<Icon
                     name={icons.REORDER}
                   />
-                </div>
+</Box>
+                </Box>
               )
           }
-        </div>
+        </Box>
 
         <EditDelayProfileModalConnector
           id={id}
@@ -146,7 +184,7 @@ class DelayProfile extends Component {
           onConfirm={this.onConfirmDeleteDelayProfile}
           onCancel={this.onDeleteDelayProfileModalClose}
         />
-      </div>
+      </Box>
     );
   }
 }

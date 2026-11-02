@@ -11,7 +11,8 @@ import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import NamingModal from './NamingModal';
-import styles from './Naming.css';
+
+const monoSpaceFontFamily = '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace';
 
 class Naming extends Component {
 
@@ -216,9 +217,9 @@ class Naming extends Component {
                       <FormLabel>{translate('StandardEpisodeFormat')}</FormLabel>
 
                       <FormInputGroup
-                        inputClassName={styles.namingInput}
                         type={inputTypes.TEXT}
                         name="standardEpisodeFormat"
+                        sx={{ fontFamily: monoSpaceFontFamily }}
                         buttons={<FormInputButton onPress={this.onStandardNamingModalOpenClick}>?</FormInputButton>}
                         onChange={onInputChange}
                         {...settings.standardEpisodeFormat}
@@ -231,9 +232,9 @@ class Naming extends Component {
                       <FormLabel>{translate('JavEpisodeFormat')}</FormLabel>
 
                       <FormInputGroup
-                        inputClassName={styles.namingInput}
                         type={inputTypes.TEXT}
                         name="javEpisodeFormat"
+                        sx={{ fontFamily: monoSpaceFontFamily }}
                         buttons={<FormInputButton onPress={this.onJavNamingModalOpenClick}>?</FormInputButton>}
                         onChange={onInputChange}
                         {...settings.javEpisodeFormat}
@@ -251,9 +252,9 @@ class Naming extends Component {
                 <FormLabel>{translate('SiteFolderFormat')}</FormLabel>
 
                 <FormInputGroup
-                  inputClassName={styles.namingInput}
                   type={inputTypes.TEXT}
                   name="seriesFolderFormat"
+                  sx={{ fontFamily: monoSpaceFontFamily }}
                   buttons={<FormInputButton onPress={this.onSeriesFolderNamingModalOpenClick}>?</FormInputButton>}
                   onChange={onInputChange}
                   {...settings.seriesFolderFormat}

@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import _ from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
@@ -30,7 +32,6 @@ import SeriesPoster from 'Series/SeriesPoster';
 import { getSeriesStatusDetails } from 'Series/SeriesStatus';
 import SiteRipSearchModal from 'Series/SiteRip/SiteRipSearchModal';
 import QualityProfileNameConnector from 'Settings/Profiles/Quality/QualityProfileNameConnector';
-import fonts from 'Styles/Variables/fonts';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import selectAll from 'Utilities/Table/selectAll';
@@ -45,10 +46,15 @@ import SeriesDetailsSeasonConnector from './SeriesDetailsSeasonConnector';
 import SeriesDetailsUnifiedGridConnector from './SeriesDetailsUnifiedGridConnector';
 import SeriesGenres from './SeriesGenres';
 import SeriesTagsConnector from './SeriesTagsConnector';
-import styles from './SeriesDetails.css';
 
-const defaultFontSize = parseInt(fonts.defaultFontSize);
-const lineHeight = parseFloat(fonts.lineHeight);
+const detailValueSx = {
+  ml: 1,
+  fontWeight: 300,
+  fontSize: 17
+};
+
+const defaultFontSize = parseInt('14px');
+const lineHeight = parseFloat('1.528571429');
 
 function getFanartUrl(images) {
   return _.find(images, { coverType: 'fanart' })?.url;
@@ -398,370 +404,444 @@ class SeriesDetails extends Component {
           </PageToolbarSection>
         </PageToolbar>
 
-        <PageContentBody innerClassName={styles.innerContentBody}>
-          <div className={styles.header}>
-            <div
-              className={styles.backdrop}
-              style={
-                fanartUrl ?
-                  { backgroundImage: `url(${fanartUrl})` } :
-                  null
-              }
+        <PageContentBody>
+          <Box sx={{ m: { xs: '-10px', md: '-20px' } }}>
+            <Box
+              sx={{
+                position: 'relative',
+                width: '100%',
+                height: 290,
+                bgcolor: 'background.paper',
+                backgroundImage: (theme) =>
+                  `linear-gradient(145deg, ${theme.palette.action.selected} 0%, ${theme.palette.background.default} 70%)`
+              }}
             >
-              <div className={styles.backdropOverlay} />
-            </div>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  zIndex: -1,
+                  width: '100%',
+                  height: '100%',
+                  backgroundSize: 'cover'
+                }}
+                style={
+                  fanartUrl ?
+                    { backgroundImage: `url(${fanartUrl})` } :
+                    null
+                }
+              >
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    bgcolor: 'common.black',
+                    opacity: 0.7
+                  }}
+                />
+              </Box>
 
-            <div className={styles.headerContent}>
-              <SeriesPoster
-                className={styles.poster}
-                style={elementStyle}
-                images={images}
-                blur={safeForWorkMode}
-                size={500}
-                lazy={false}
-              />
-
-              <div className={styles.info}>
-                <div className={styles.titleRow}>
-                  <div className={styles.titleContainer}>
-                    <div className={styles.toggleMonitoredContainer}>
-                      <MonitorToggleButton
-                        className={styles.monitorToggleButton}
-                        monitored={monitored}
-                        isSaving={isSaving}
-                        size={40}
-                        onPress={onMonitorTogglePress}
-                      />
-                    </div>
-
-                    <div className={styles.title}>
-                      {title}
-                    </div>
-
-                    {
-                      !!alternateTitles.length &&
-                        <div className={styles.alternateTitlesIconContainer}>
-                          <Popover
-                            anchor={
-                              <Icon
-                                name={icons.ALTERNATE_TITLES}
-                                size={20}
-                              />
-                            }
-                            title={translate('AlternateTitles')}
-                            body={<SeriesAlternateTitles alternateTitles={alternateTitles} />}
-                            position={tooltipPositions.BOTTOM}
-                          />
-                        </div>
-                    }
-                  </div>
-
-                  <div className={styles.seriesNavigationButtons}>
-                    <IconButton
-                      className={styles.seriesNavigationButton}
-                      name={icons.ARROW_LEFT}
-                      size={30}
-                      title={translate('SiteDetailsGoTo', { title: previousSeries.title })}
-                      to={`/site/${previousSeries.titleSlug}`}
-                    />
-
-                    <IconButton
-                      className={styles.seriesNavigationButton}
-                      name={icons.ARROW_RIGHT}
-                      size={30}
-                      title={translate('SiteDetailsGoTo', { title: nextSeries.title })}
-                      to={`/site/${nextSeries.titleSlug}`}
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.details}>
-                  <div>
-                    {
-                      !!runtime &&
-                        <span className={styles.runtime}>
-                          {translate('SiteDetailsRuntime', { runtime })}
-                        </span>
-                    }
-
-                    {
-                      ratings.value ?
-                        <HeartRating
-                          rating={ratings.value}
-                          iconSize={20}
-                        /> :
-                        null
-                    }
-
-                    <SeriesGenres genres={genres} />
-
-                    <span>
-                      {runningYears}
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.detailsLabels}>
-                  <Label
-                    className={styles.detailsLabel}
-                    size={sizes.LARGE}
-                  >
-
-                    <div>
-                      <Icon
-                        name={icons.FOLDER}
-                        size={17}
-                      />
-                      <span className={styles.path}>
-                        {path}
-                      </span>
-                    </div>
-                  </Label>
-
-                  <Tooltip
-                    anchor={
-                      <Label
-                        className={styles.detailsLabel}
-                        size={sizes.LARGE}
-                      >
-
-                        <div>
-                          <Icon
-                            name={icons.DRIVE}
-                            size={17}
-                          />
-
-                          <span className={styles.sizeOnDisk}>
-                            {formatBytes(sizeOnDisk)}
-                          </span>
-                        </div>
-                      </Label>
-                    }
-                    tooltip={
-                      <span>
-                        {episodeFilesCountMessage}
-                      </span>
-                    }
-                    kind={kinds.INVERSE}
-                    position={tooltipPositions.BOTTOM}
+              <Box
+                sx={{
+                  display: 'flex',
+                  p: { xs: '15px', md: '30px' },
+                  width: '100%',
+                  height: '100%',
+                  color: 'common.white'
+                }}
+              >
+                <Box
+                  sx={{
+                    flexShrink: 0,
+                    mr: '35px',
+                    maxWidth: 250,
+                    display: { xs: 'none', xl: 'block' }
+                  }}
+                >
+                  <SeriesPoster
+                    style={elementStyle}
+                    images={images}
+                    blur={safeForWorkMode}
+                    size={500}
+                    lazy={false}
                   />
+                </Box>
 
-                  <Label
-                    className={styles.detailsLabel}
-                    title={translate('QualityProfile')}
-                    size={sizes.LARGE}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexGrow: 1,
+                    overflow: 'hidden'
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      flex: '0 0 auto'
+                    }}
                   >
+                    <Box sx={{ display: 'flex', mb: '5px' }}>
+                      <Box sx={{ alignSelf: 'center', mr: '10px' }}>
+                        <MonitorToggleButton
+                          sx={{
+                            width: 40,
+                            '&:hover': { color: 'text.secondary' }
+                          }}
+                          monitored={monitored}
+                          isSaving={isSaving}
+                          size={40}
+                          onPress={onMonitorTogglePress}
+                        />
+                      </Box>
 
-                    <div>
-                      <Icon
-                        name={icons.PROFILE}
-                        size={17}
-                      />
-                      <span className={styles.qualityProfileName}>
-                        {
-                          <QualityProfileNameConnector
-                            qualityProfileId={qualityProfileId}
-                          />
-                        }
-                      </span>
-                    </div>
-                  </Label>
-
-                  <Label
-                    className={styles.detailsLabel}
-                    size={sizes.LARGE}
-                  >
-
-                    <div>
-                      <Icon
-                        name={monitored ? icons.MONITORED : icons.UNMONITORED}
-                        size={17}
-                      />
-                      <span className={styles.qualityProfileName}>
-                        {monitored ? translate('Monitored') : translate('Unmonitored')}
-                      </span>
-                    </div>
-                  </Label>
-
-                  <Label
-                    className={styles.detailsLabel}
-                    title={statusDetails.message}
-                    size={sizes.LARGE}
-                    kind={status === 'deleted' ? kinds.INVERSE : undefined}
-                  >
-
-                    <div>
-                      <Icon
-                        name={statusDetails.icon}
-                        size={17}
-                      />
-                      <span className={styles.statusName}>
-                        {statusDetails.title}
-                      </span>
-                    </div>
-                  </Label>
-
-                  {
-                    !!network &&
-                      <Label
-                        className={styles.detailsLabel}
-                        title={translate('Network')}
-                        size={sizes.LARGE}
+                      <Typography
+                        sx={{
+                          fontWeight: 300,
+                          fontSize: { xs: 30, md: 50 },
+                          lineHeight: { xs: '30px', md: '50px' }
+                        }}
                       >
+                        {title}
+                      </Typography>
 
-                        <div>
+                      {
+                        !!alternateTitles.length &&
+                          <Box sx={{ alignSelf: 'flex-end', ml: '20px' }}>
+                            <Popover
+                              anchor={
+                                <Icon
+                                  name={icons.ALTERNATE_TITLES}
+                                  size={20}
+                                />
+                              }
+                              title={translate('AlternateTitles')}
+                              body={<SeriesAlternateTitles alternateTitles={alternateTitles} />}
+                              position={tooltipPositions.BOTTOM}
+                            />
+                          </Box>
+                      }
+                    </Box>
+
+                    <Box sx={{ position: 'absolute', right: 0, whiteSpace: 'nowrap' }}>
+                      <IconButton
+                        sx={{
+                          ml: '5px',
+                          width: 30,
+                          color: '#e1e2e3',
+                          whiteSpace: 'nowrap',
+                          '&:hover': { color: 'text.secondary' }
+                        }}
+                        name={icons.ARROW_LEFT}
+                        size={30}
+                        title={translate('SiteDetailsGoTo', { title: previousSeries.title })}
+                        to={`/site/${previousSeries.titleSlug}`}
+                      />
+
+                      <IconButton
+                        sx={{
+                          ml: '5px',
+                          width: 30,
+                          color: '#e1e2e3',
+                          whiteSpace: 'nowrap',
+                          '&:hover': { color: 'text.secondary' }
+                        }}
+                        name={icons.ARROW_RIGHT}
+                        size={30}
+                        title={translate('SiteDetailsGoTo', { title: nextSeries.title })}
+                        to={`/site/${nextSeries.titleSlug}`}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ mb: 1, fontWeight: 300, fontSize: 20 }}>
+                    <div>
+                      {
+                        !!runtime &&
+                          <Box component="span" sx={{ mr: '15px' }}>
+                            {translate('SiteDetailsRuntime', { runtime })}
+                          </Box>
+                      }
+
+                      {
+                        ratings.value ?
+                          <HeartRating
+                            rating={ratings.value}
+                            iconSize={20}
+                          /> :
+                          null
+                      }
+
+                      <SeriesGenres genres={genres} />
+
+                      <span>
+                        {runningYears}
+                      </span>
+                    </div>
+                  </Box>
+
+                  <Box sx={{ '& .MuiChip-root': { m: '5px 10px 5px 0' } }}>
+                    <Label
+                      size={sizes.LARGE}
+                    >
+
+                      <div>
+                        <Icon
+                          name={icons.FOLDER}
+                          size={17}
+                        />
+                        <Box component="span" sx={detailValueSx}>
+                          {path}
+                        </Box>
+                      </div>
+                    </Label>
+
+                    <Tooltip
+                      anchor={
+                        <Label
+                          size={sizes.LARGE}
+                        >
+
+                          <div>
+                            <Icon
+                              name={icons.DRIVE}
+                              size={17}
+                            />
+
+                            <Box component="span" sx={detailValueSx}>
+                              {formatBytes(sizeOnDisk)}
+                            </Box>
+                          </div>
+                        </Label>
+                      }
+                      tooltip={
+                        <span>
+                          {episodeFilesCountMessage}
+                        </span>
+                      }
+                      kind={kinds.INVERSE}
+                      position={tooltipPositions.BOTTOM}
+                    />
+
+                    <Label
+                      title={translate('QualityProfile')}
+                      size={sizes.LARGE}
+                    >
+
+                      <div>
+                        <Icon
+                          name={icons.PROFILE}
+                          size={17}
+                        />
+                        <Box component="span" sx={detailValueSx}>
+                          {
+                            <QualityProfileNameConnector
+                              qualityProfileId={qualityProfileId}
+                            />
+                          }
+                        </Box>
+                      </div>
+                    </Label>
+
+                    <Label
+                      size={sizes.LARGE}
+                    >
+
+                      <div>
+                        <Icon
+                          name={monitored ? icons.MONITORED : icons.UNMONITORED}
+                          size={17}
+                        />
+                        <Box component="span" sx={detailValueSx}>
+                          {monitored ? translate('Monitored') : translate('Unmonitored')}
+                        </Box>
+                      </div>
+                    </Label>
+
+                    <Label
+                      title={statusDetails.message}
+                      size={sizes.LARGE}
+                      kind={status === 'deleted' ? kinds.INVERSE : undefined}
+                    >
+
+                      <div>
+                        <Icon
+                          name={statusDetails.icon}
+                          size={17}
+                        />
+                        <Box component="span" sx={detailValueSx}>
+                          {statusDetails.title}
+                        </Box>
+                      </div>
+                    </Label>
+
+                    {
+                      !!network &&
+                        <Label
+                          title={translate('Network')}
+                          size={sizes.LARGE}
+                        >
+
+                          <div>
+                            <Icon
+                              name={icons.NETWORK}
+                              size={17}
+                            />
+                            <Box component="span" sx={detailValueSx}>
+                              {network}
+                            </Box>
+                          </div>
+                        </Label>
+                    }
+
+                    {
+                      !!tvdbId && (
+                        <Label
+                          title={translate('TPDB ID')}
+                          size={sizes.LARGE}
+                        >
                           <Icon
                             name={icons.NETWORK}
                             size={17}
                           />
-                          <span className={styles.qualityProfileName}>
-                            {network}
-                          </span>
-                        </div>
-                      </Label>
-                  }
-
-                  {
-                    !!tvdbId && (
-                      <Label
-                        className={styles.detailsLabel}
-                        title={translate('TPDB ID')}
-                        size={sizes.LARGE}
-                      >
-                        <Icon
-                          name={icons.NETWORK}
-                          size={17}
-                        />
-                        <span className={styles.qualityProfileName}>
-                          {tvdbId}
-                        </span>
-                      </Label>
-                    )
-                  }
-
-                  <Tooltip
-                    anchor={
-                      <Label
-                        className={styles.detailsLabel}
-                        size={sizes.LARGE}
-                      >
-
-                        <div>
-                          <Icon
-                            name={icons.EXTERNAL_LINK}
-                            size={17}
-                          />
-                          <span className={styles.links}>
-                            {translate('Links')}
-                          </span>
-                        </div>
-                      </Label>
+                          <Box component="span" sx={detailValueSx}>
+                            {tvdbId}
+                          </Box>
+                        </Label>
+                      )
                     }
 
-                    tooltip={
-                      <SeriesDetailsLinks
-                        tvdbId={tvdbId}
-                      />
-                    }
-                    kind={kinds.INVERSE}
-                    position={tooltipPositions.BOTTOM}
-                  />
+                    <Tooltip
+                      anchor={
+                        <Label
+                          size={sizes.LARGE}
+                        >
 
-                  {
-                    !!tags.length &&
-                      <Tooltip
-                        anchor={
-                          <Label
-                            className={styles.detailsLabel}
-                            size={sizes.LARGE}
-                          >
+                          <div>
                             <Icon
-                              name={icons.TAGS}
+                              name={icons.EXTERNAL_LINK}
                               size={17}
                             />
+                            <Box component="span" sx={detailValueSx}>
+                              {translate('Links')}
+                            </Box>
+                          </div>
+                        </Label>
+                      }
 
-                            <span className={styles.tags}>
-                              {translate('Tags')}
-                            </span>
-                          </Label>
-                        }
-                        tooltip={<SeriesTagsConnector seriesId={id} />}
-                        kind={kinds.INVERSE}
-                        position={tooltipPositions.BOTTOM}
-                      />
-
-                  }
-                </div>
-
-                <Measure onMeasure={this.onMeasure}>
-                  <div className={styles.overview}>
-                    <TextTruncate
-                      line={Math.floor(overviewHeight / (defaultFontSize * lineHeight)) - 1}
-                      text={overview}
-                    />
-                  </div>
-                </Measure>
-
-                <MetadataAttribution />
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.contentContainer}>
-            {
-              !isPopulated && !isUnifiedGridView && !episodesError && !episodeFilesError &&
-                <LoadingIndicator />
-            }
-
-            {
-              !isFetching && !isUnifiedGridView && episodesError &&
-                <div>{translate('EpisodesLoadError')}</div>
-            }
-
-            {
-              !isFetching && !isUnifiedGridView && episodeFilesError &&
-                <div>{translate('EpisodeFilesLoadError')}</div>
-            }
-
-            {
-              isUnifiedGridView &&
-                <SeriesDetailsUnifiedGridConnector
-                  seriesId={id}
-                />
-            }
-
-            {
-              isPopulated && !isUnifiedGridView && !!seasons.length &&
-                <div>
-                  {
-                    seasons.slice(0).reverse().map((season) => {
-                      return (
-                        <SeriesDetailsSeasonConnector
-                          key={season.seasonNumber}
-                          seriesId={id}
-                          view={view}
-                          monitorStatusFilter={monitorStatusFilter}
-                          qualityFilter={qualityFilter}
-                          runtimeFilter={runtimeFilter}
-                          maxEpisodeRuntime={maxEpisodeRuntime}
-                          {...season}
-                          isExpanded={expandedState[season.seasonNumber]}
-                          onExpandPress={this.onExpandPress}
+                      tooltip={
+                        <SeriesDetailsLinks
+                          tvdbId={tvdbId}
                         />
-                      );
-                    })
-                  }
-                </div>
-            }
+                      }
+                      kind={kinds.INVERSE}
+                      position={tooltipPositions.BOTTOM}
+                    />
 
-            {
-              isPopulated && !isUnifiedGridView && !seasons.length &&
-                <div>
-                  {translate('NoEpisodeInformation')}
-                </div>
-            }
+                    {
+                      !!tags.length &&
+                        <Tooltip
+                          anchor={
+                            <Label
+                              size={sizes.LARGE}
+                            >
+                              <Icon
+                                name={icons.TAGS}
+                                size={17}
+                              />
 
-          </div>
+                              <Box component="span" sx={detailValueSx}>
+                                {translate('Tags')}
+                              </Box>
+                            </Label>
+                          }
+                          tooltip={<SeriesTagsConnector seriesId={id} />}
+                          kind={kinds.INVERSE}
+                          position={tooltipPositions.BOTTOM}
+                        />
+
+                    }
+                  </Box>
+
+                  <Measure onMeasure={this.onMeasure}>
+                    <Box
+                      sx={{
+                        flex: '1 0 0',
+                        mt: 1,
+                        minHeight: 0,
+                        fontSize: 15
+                      }}
+                    >
+                      <TextTruncate
+                        line={Math.floor(overviewHeight / (defaultFontSize * lineHeight)) - 1}
+                        text={overview}
+                      />
+                    </Box>
+                  </Measure>
+
+                  <MetadataAttribution />
+                </Box>
+              </Box>
+            </Box>
+
+            <Box sx={{ p: { xs: '20px 0', md: '20px' } }}>
+              {
+                !isPopulated && !isUnifiedGridView && !episodesError && !episodeFilesError &&
+                  <LoadingIndicator />
+              }
+
+              {
+                !isFetching && !isUnifiedGridView && episodesError &&
+                  <div>{translate('EpisodesLoadError')}</div>
+              }
+
+              {
+                !isFetching && !isUnifiedGridView && episodeFilesError &&
+                  <div>{translate('EpisodeFilesLoadError')}</div>
+              }
+
+              {
+                isUnifiedGridView &&
+                  <SeriesDetailsUnifiedGridConnector
+                    seriesId={id}
+                  />
+              }
+
+              {
+                isPopulated && !isUnifiedGridView && !!seasons.length &&
+                  <div>
+                    {
+                      seasons.slice(0).reverse().map((season) => {
+                        return (
+                          <SeriesDetailsSeasonConnector
+                            key={season.seasonNumber}
+                            seriesId={id}
+                            view={view}
+                            monitorStatusFilter={monitorStatusFilter}
+                            qualityFilter={qualityFilter}
+                            runtimeFilter={runtimeFilter}
+                            maxEpisodeRuntime={maxEpisodeRuntime}
+                            {...season}
+                            isExpanded={expandedState[season.seasonNumber]}
+                            onExpandPress={this.onExpandPress}
+                          />
+                        );
+                      })
+                    }
+                  </div>
+              }
+
+              {
+                isPopulated && !isUnifiedGridView && !seasons.length &&
+                  <div>
+                    {translate('NoEpisodeInformation')}
+                  </div>
+              }
+
+            </Box>
+          </Box>
 
           <OrganizePreviewModalConnector
             isOpen={isOrganizeModalOpen}

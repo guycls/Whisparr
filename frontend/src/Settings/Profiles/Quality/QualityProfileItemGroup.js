@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import CheckInput from 'Components/Form/CheckInput';
@@ -9,7 +9,107 @@ import IconButton from 'Components/Link/IconButton';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import QualityProfileItemDragSource from './QualityProfileItemDragSource';
-import styles from './QualityProfileItemGroup.css';
+
+const sxQualityProfileItemGroup = (theme) => ({
+  width: '100%',
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: '4px',
+  bgcolor: theme.palette.action.hover
+});
+
+const sxEditGroups = (theme) => ({
+  bgcolor: theme.palette.action.hover
+});
+
+const sxQualityProfileItemGroupInfo = {
+  display: 'flex',
+  alignItems: 'stretch',
+  width: '100%'
+};
+
+const sxCheckInputContainer = {
+  display: 'flex',
+  alignItems: 'center'
+};
+
+const sxNameInput = (theme) => ({
+  mt: theme.spacing(0.5),
+  mr: theme.spacing(1.25)
+});
+
+const sxNameContainer = {
+  display: 'flex',
+  alignItems: 'center',
+  flexGrow: 1
+};
+
+const sxName = {
+  flexShrink: 0
+};
+
+const sxNotAllowed = (theme) => ({
+  color: theme.palette.divider
+});
+
+const sxGroupQualities = (theme) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  flexGrow: 1,
+  flexWrap: 'wrap',
+  margin: theme.spacing(0.25, 0, 0.25, 1.25)
+});
+
+const sxQualityNameContainer = (theme) => ({
+  display: 'flex',
+  alignItems: 'stretch',
+  flexGrow: 1,
+  mb: 0,
+  ml: theme.spacing(0.25),
+  fontWeight: 'normal'
+});
+
+const sxQualityNameLabel = (theme) => ({
+  display: 'flex',
+  alignItems: 'stretch',
+  flexGrow: 1,
+  mb: 0,
+  ml: theme.spacing(0.25),
+  fontWeight: 'normal',
+  cursor: 'pointer'
+});
+
+const sxDeleteGroupButton = (theme) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  mr: theme.spacing(0.625),
+  ml: theme.spacing(1),
+  width: 20
+});
+
+const sxDragHandle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  ml: 'auto',
+  width: 40,
+  textAlign: 'center',
+  cursor: 'grab'
+};
+
+const sxDragIcon = {
+  top: '0'
+};
+
+const sxIsDragging = {
+  opacity: 0.25
+};
+
+const sxItems = (theme) => ({
+  margin: theme.spacing(0, 6.25, 0, 4.375)
+});
 
 class QualityProfileItemGroup extends Component {
 
@@ -64,56 +164,47 @@ class QualityProfileItemGroup extends Component {
     } = this.props;
 
     return (
-      <div
-        className={classNames(
-          styles.qualityProfileItemGroup,
-          editGroups && styles.editGroups,
-          isDragging && styles.isDragging
-        )}
-      >
-        <div className={styles.qualityProfileItemGroupInfo}>
+      <Box
+       sx={[sxQualityProfileItemGroup, editGroups && sxEditGroups, isDragging && sxIsDragging]}>
+        <Box sx={sxQualityProfileItemGroupInfo}>
           {
             editGroups &&
-              <div className={styles.qualityNameContainer}>
+              <Box sx={sxQualityNameContainer}>
                 <IconButton
-                  className={styles.deleteGroupButton}
                   name={icons.UNGROUP}
                   title={translate('Ungroup')}
                   onPress={this.onDeleteGroupPress}
-                />
+                 sx={sxDeleteGroupButton} />
 
-                <TextInput
-                  className={styles.nameInput}
+                <Box sx={sxNameInput}>
+<TextInput
                   name="name"
                   value={name}
                   onChange={this.onNameChange}
                 />
-              </div>
+</Box>
+              </Box>
           }
 
           {
             !editGroups &&
-              <label
-                className={styles.qualityNameLabel}
-              >
-                <CheckInput
-                  className={styles.checkInput}
-                  containerClassName={styles.checkInputContainer}
+              <Box
+               sx={sxQualityNameLabel}>
+                <Box sx={sxCheckInputContainer}>
+                  <CheckInput
                   name="allowed"
                   value={allowed}
                   onChange={this.onAllowedChange}
                 />
+                </Box>
 
-                <div className={styles.nameContainer}>
-                  <div className={classNames(
-                    styles.name,
-                    !allowed && styles.notAllowed
-                  )}
-                  >
+                <Box sx={sxNameContainer}>
+                  <Box
+                   sx={[sxName, !allowed && sxNotAllowed]}>
                     {name}
-                  </div>
+                  </Box>
 
-                  <div className={styles.groupQualities}>
+                  <Box sx={sxGroupQualities}>
                     {
                       items.map(({ quality }) => {
                         return (
@@ -123,27 +214,28 @@ class QualityProfileItemGroup extends Component {
                         );
                       }).reverse()
                     }
-                  </div>
-                </div>
-              </label>
+                  </Box>
+                </Box>
+              </Box>
           }
 
           {
             connectDragSource(
-              <div className={styles.dragHandle}>
-                <Icon
-                  className={styles.dragIcon}
+              <Box sx={sxDragHandle}>
+                <Box sx={sxDragIcon}>
+<Icon
                   name={icons.REORDER}
                   title={translate('Reorder')}
                 />
-              </div>
+</Box>
+              </Box>
             )
           }
-        </div>
+        </Box>
 
         {
           editGroups &&
-            <div className={styles.items}>
+            <Box sx={sxItems}>
               {
                 items.map(({ quality }, index) => {
                   return (
@@ -167,9 +259,9 @@ class QualityProfileItemGroup extends Component {
                   );
                 }).reverse()
               }
-            </div>
+            </Box>
         }
-      </div>
+      </Box>
     );
   }
 }

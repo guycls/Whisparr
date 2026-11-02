@@ -18,10 +18,11 @@ function App({ store, history }: AppProps) {
     <DocumentTitle title={window.Whisparr.instanceName}>
       <Provider store={store}>
         <ConnectedRouter history={history}>
-          <ApplyTheme />
-          <PageConnector>
-            <AppRoutes app={App} />
-          </PageConnector>
+          <ApplyTheme>
+            <PageConnector>
+              <AppRoutes app={App} />
+            </PageConnector>
+          </ApplyTheme>
         </ConnectedRouter>
       </Provider>
     </DocumentTitle>

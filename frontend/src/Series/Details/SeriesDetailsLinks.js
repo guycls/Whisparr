@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
 import { kinds, sizes } from 'Helpers/Props';
-import styles from './SeriesDetailsLinks.css';
 
 function SeriesDetailsLinks(props) {
   const {
@@ -11,20 +11,27 @@ function SeriesDetailsLinks(props) {
   } = props;
 
   return (
-    <div className={styles.links}>
+    <Box
+      sx={{
+        m: 0,
+        display: { xs: 'flex', sm: 'block' },
+        flexFlow: { xs: 'column wrap', sm: 'unset' }
+      }}
+    >
       <Link
-        className={styles.link}
+        sx={{ whiteSpace: 'nowrap' }}
         to={`https://theporndb.net/sites/${tvdbId}`}
       >
         <Label
-          className={styles.linkLabel}
           kind={kinds.INFO}
           size={sizes.LARGE}
         >
-          TPDB
+          <Box component="span" sx={{ cursor: 'pointer' }}>
+            TPDB
+          </Box>
         </Label>
       </Link>
-    </div>
+    </Box>
   );
 }
 

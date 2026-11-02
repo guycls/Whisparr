@@ -1,17 +1,19 @@
-import React, { Component } from 'react';
-import styles from './PageToolbarSeparator.css';
+import Box from '@mui/material/Box';
+import React from 'react';
 
-class PageToolbarSeparator extends Component {
-
-  //
-  // Render
-
-  render() {
-    return (
-      <div className={styles.separator} />
-    );
-  }
-
+function PageToolbarSeparator() {
+  return (
+    <Box
+      sx={{
+        alignSelf: 'center',
+        flexShrink: 0,
+        height: 28,
+        mx: '2px',
+        borderRight: 1,
+        borderColor: 'divider'
+      }}
+    />
+  );
 }
 
 export default PageToolbarSeparator;

@@ -2,7 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Label from 'Components/Label';
 import VirtualTableRowCell from 'Components/Table/Cells/VirtualTableRowCell';
-import styles from './SelectSeriesRow.css';
+
+const cellSx = {
+  display: 'flex',
+  alignItems: 'center'
+};
 
 class SelectSeriesRow extends Component {
 
@@ -19,15 +23,15 @@ class SelectSeriesRow extends Component {
   render() {
     return (
       <>
-        <VirtualTableRowCell className={styles.title}>
+        <VirtualTableRowCell sx={{ ...cellSx, flex: '4 0 140px' }}>
           {this.props.title}
         </VirtualTableRowCell>
 
-        <VirtualTableRowCell className={styles.year}>
+        <VirtualTableRowCell sx={{ ...cellSx, flex: '0 0 70px' }}>
           {this.props.year}
         </VirtualTableRowCell>
 
-        <VirtualTableRowCell className={styles.tvdbId}>
+        <VirtualTableRowCell sx={{ ...cellSx, flex: '0 0 110px' }}>
           <Label>{this.props.tvdbId}</Label>
         </VirtualTableRowCell>
       </>

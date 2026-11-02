@@ -1,10 +1,19 @@
+import GlobalStyles from '@mui/material/GlobalStyles';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Autosuggest from 'react-autosuggest';
 import { Manager, Popper, Reference } from 'react-popper';
 import Portal from 'Components/Portal';
-import styles from './AutoSuggestInput.css';
+
+const containerClass = 'WhisparrAutoSuggest-container';
+const inputClass = 'WhisparrAutoSuggest-input';
+const errorClass = 'WhisparrAutoSuggest-error';
+const warningClass = 'WhisparrAutoSuggest-warning';
+const suggestionsClass = 'WhisparrAutoSuggest-suggestions';
+const listClass = 'WhisparrAutoSuggest-list';
+const suggestionClass = 'WhisparrAutoSuggest-suggestion';
+const highlightedClass = 'WhisparrAutoSuggest-highlighted';
 
 class AutoSuggestInput extends Component {
 
@@ -73,8 +82,10 @@ class AutoSuggestInput extends Component {
             return (
               <div
                 ref={popperRef}
-                style={style}
-                className={children ? styles.suggestionsContainerOpen : undefined}
+                style={{
+                  ...style,
+                  zIndex: 2000
+                }}
               >
                 <div
                   {...containerProps}
@@ -175,8 +186,8 @@ class AutoSuggestInput extends Component {
     const inputProps = {
       className: classNames(
         className,
-        hasError && styles.hasError,
-        hasWarning && styles.hasWarning
+        hasError && errorClass,
+        hasWarning && warningClass
       ),
       name,
       value,
@@ -191,15 +202,60 @@ class AutoSuggestInput extends Component {
 
     const theme = {
       container: inputContainerClassName,
-      containerOpen: styles.suggestionsContainerOpen,
-      suggestionsContainer: styles.suggestionsContainer,
-      suggestionsList: styles.suggestionsList,
-      suggestion: styles.suggestion,
-      suggestionHighlighted: styles.suggestionHighlighted
+      suggestionsContainer: suggestionsClass,
+      suggestionsList: listClass,
+      suggestion: suggestionClass,
+      suggestionHighlighted: highlightedClass
     };
 
     return (
       <Manager>
+        <GlobalStyles
+          styles={{
+            [`.${containerClass}`]: {
+              flexGrow: 1
+            },
+            [`.${inputClass}`]: {
+              padding: '6px 16px',
+              width: '100%',
+              height: 35,
+              border: '1px solid var(--inputBorderColor)',
+              borderRadius: '4px',
+              backgroundColor: 'var(--inputBackgroundColor)',
+              boxShadow: 'inset 0 1px 1px var(--inputBoxShadowColor)',
+              color: 'var(--textColor)'
+            },
+            [`.${errorClass}`]: {
+              borderColor: 'var(--inputErrorBorderColor)'
+            },
+            [`.${warningClass}`]: {
+              borderColor: 'var(--inputWarningBorderColor)'
+            },
+            [`.${suggestionsClass}`]: {
+              overflowY: 'auto',
+              maxHeight: 200,
+              width: '100%',
+              border: '1px solid var(--inputBorderColor)',
+              borderRadius: '4px',
+              backgroundColor: 'var(--inputBackgroundColor)',
+              boxShadow: 'inset 0 1px 1px var(--inputBoxShadowColor)',
+              scrollbarColor: 'var(--scrollbarBackgroundColor) transparent',
+              scrollbarWidth: 'thin'
+            },
+            [`.${listClass}`]: {
+              margin: '5px 0',
+              paddingLeft: 0,
+              maxHeight: 200,
+              listStyleType: 'none'
+            },
+            [`.${suggestionClass}`]: {
+              padding: '0 16px'
+            },
+            [`.${highlightedClass}`]: {
+              backgroundColor: 'var(--menuItemHoverBackgroundColor)'
+            }
+          }}
+        />
         <Autosuggest
           {...otherProps}
           ref={forwardedRef}
@@ -247,8 +303,8 @@ AutoSuggestInput.propTypes = {
 };
 
 AutoSuggestInput.defaultProps = {
-  className: styles.input,
-  inputContainerClassName: styles.inputContainer,
+  className: inputClass,
+  inputContainerClassName: containerClass,
   enforceMaxHeight: true,
   minHeight: 50,
   maxHeight: 200

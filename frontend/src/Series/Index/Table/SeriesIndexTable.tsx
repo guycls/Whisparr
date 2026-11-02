@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import { throttle } from 'lodash';
 import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -9,16 +10,14 @@ import Column from 'Components/Table/Column';
 import useMeasure from 'Helpers/Hooks/useMeasure';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import Series from 'Series/Series';
-import dimensions from 'Styles/Variables/dimensions';
 import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
 import selectTableOptions from './selectTableOptions';
 import SeriesIndexRow from './SeriesIndexRow';
 import SeriesIndexTableHeader from './SeriesIndexTableHeader';
-import styles from './SeriesIndexTable.css';
 
-const bodyPadding = parseInt(dimensions.pageContentBodyPadding);
+const bodyPadding = parseInt('20px');
 const bodyPaddingSmallScreen = parseInt(
-  dimensions.pageContentBodyPaddingSmallScreen
+  '10px'
 );
 
 interface RowItemData {
@@ -58,13 +57,18 @@ const Row: React.FC<ListChildComponentProps<RowItemData>> = ({
   const series = items[index];
 
   return (
-    <div
+    <Box
       style={{
         display: 'flex',
         justifyContent: 'space-between',
         ...style,
       }}
-      className={styles.row}
+      sx={{
+        transition: 'background-color 500ms',
+        '&:hover': {
+          bgcolor: 'action.hover',
+        },
+      }}
     >
       <SeriesIndexRow
         seriesId={series.id}
@@ -72,7 +76,7 @@ const Row: React.FC<ListChildComponentProps<RowItemData>> = ({
         columns={columns}
         isSelectMode={isSelectMode}
       />
-    </div>
+    </Box>
   );
 };
 
@@ -174,8 +178,8 @@ function SeriesIndexTable(props: SeriesIndexTableProps) {
   }, [jumpToCharacter, rowHeight, items, scrollerRef, listRef]);
 
   return (
-    <div ref={measureRef}>
-      <Scroller className={styles.tableScroller} scrollDirection="horizontal">
+    <Box ref={measureRef} sx={{ '& > div': { position: 'relative' } }}>
+      <Scroller scrollDirection="horizontal">
         <SeriesIndexTableHeader
           showBanners={showBanners}
           columns={columns}
@@ -204,7 +208,7 @@ function SeriesIndexTable(props: SeriesIndexTableProps) {
           {Row}
         </List>
       </Scroller>
-    </div>
+    </Box>
   );
 }
 

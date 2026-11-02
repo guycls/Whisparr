@@ -1,10 +1,9 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
-import styles from './TableOptionsColumn.css';
 
 function TableOptionsColumn(props) {
   const {
@@ -18,39 +17,64 @@ function TableOptionsColumn(props) {
   } = props;
 
   return (
-    <div className={isModifiable ? undefined : styles.notDragable}>
-      <div
-        className={classNames(
-          styles.column,
-          isDragging && styles.isDragging
-        )}
+    <Box sx={isModifiable ? undefined : { py: '4px' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'stretch',
+          width: '100%',
+          border: '1px solid #aaa',
+          borderRadius: '4px',
+          background: 'var(--inputBackgroundColor)',
+          opacity: isDragging ? 0.25 : undefined
+        }}
       >
-        <label
-          className={styles.label}
+        <Box
+          component="label"
+          sx={{
+            display: 'flex',
+            flexGrow: 1,
+            mb: 0,
+            ml: '2px',
+            fontWeight: 'normal',
+            lineHeight: '36px',
+            cursor: 'pointer'
+          }}
         >
-          <CheckInput
-            containerClassName={styles.checkContainer}
-            name={name}
-            value={isVisible}
-            isDisabled={isModifiable === false}
-            onChange={onVisibleChange}
-          />
+          <Box sx={{ position: 'relative', mr: '4px', mb: '7px', ml: '8px' }}>
+            <CheckInput
+              name={name}
+              value={isVisible}
+              isDisabled={isModifiable === false}
+              onChange={onVisibleChange}
+            />
+          </Box>
           {typeof label === 'function' ? label() : label}
-        </label>
+        </Box>
 
         {
           !!connectDragSource &&
             connectDragSource(
-              <div className={styles.dragHandle}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  ml: 'auto',
+                  width: 40,
+                  textAlign: 'center',
+                  cursor: 'grab'
+                }}
+              >
                 <Icon
-                  className={styles.dragIcon}
                   name={icons.REORDER}
                 />
-              </div>
+              </Box>
             )
         }
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

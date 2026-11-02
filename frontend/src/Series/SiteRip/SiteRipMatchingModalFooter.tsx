@@ -1,3 +1,4 @@
+import Typography from '@mui/material/Typography';
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
@@ -6,7 +7,6 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import { kinds } from 'Helpers/Props';
 import { grabSiteRip, setSiteRipView } from 'Store/Actions/siteRipActions';
 import translate from 'Utilities/String/translate';
-import styles from './SiteRipMatchingView.css';
 
 interface SiteRipMatchingModalFooterProps {
   seriesId: number;
@@ -38,11 +38,10 @@ function SiteRipMatchingModalFooter(props: SiteRipMatchingModalFooterProps) {
     const grabSelections = Object.keys(selections)
       .filter(
         (key) =>
-          selections[parseInt(key, 10)].selected &&
-          selections[parseInt(key, 10)].episodeId
+          selections[Number(key)].selected && selections[Number(key)].episodeId
       )
       .map((key) => {
-        const index = parseInt(key, 10);
+        const index = Number(key);
         const match = matches[index];
 
         return {
@@ -82,7 +81,11 @@ function SiteRipMatchingModalFooter(props: SiteRipMatchingModalFooterProps) {
       >
         {isGrabbing ? translate('Downloading') : translate('GrabRelease')}
       </Button>
-      {grabError ? <span className={styles.grabError}>{grabError}</span> : null}
+      {grabError ? (
+        <Typography component="span" sx={{ color: 'error.main', ml: '10px' }}>
+          {grabError}
+        </Typography>
+      ) : null}
     </ModalFooter>
   );
 }

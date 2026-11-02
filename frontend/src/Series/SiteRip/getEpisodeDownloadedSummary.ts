@@ -1,7 +1,6 @@
 import Episode from 'Episode/Episode';
 import { EpisodeFile } from 'EpisodeFile/EpisodeFile';
-import { QualityModel } from 'Quality/Quality';
-import { QualitySource } from 'Quality/Quality';
+import { QualityModel, QualitySource } from 'Quality/Quality';
 
 const BRACKET_PART_REGEX = /\[\d{1,3}[/+]\d{1,3}\]/gi;
 const PART_OF_REGEX =
@@ -68,21 +67,20 @@ function findRelatedEpisodeFiles(
 }
 
 function getBestQuality(files: EpisodeFile[]): QualityModel | undefined {
-  let bestFile: EpisodeFile | undefined;
-  let bestTier = -1;
-
-  files.forEach((file) => {
+  const bestFile = files.reduce<EpisodeFile | undefined>((best, file) => {
     if (!file.quality) {
-      return;
+      return best;
     }
 
-    const tier = getQualityTierIndex(file.quality);
-
-    if (tier > bestTier) {
-      bestTier = tier;
-      bestFile = file;
+    if (
+      !best?.quality ||
+      getQualityTierIndex(file.quality) > getQualityTierIndex(best.quality)
+    ) {
+      return file;
     }
-  });
+
+    return best;
+  }, undefined);
 
   return bestFile?.quality;
 }

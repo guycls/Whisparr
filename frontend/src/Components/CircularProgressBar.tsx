@@ -1,5 +1,5 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useState } from 'react';
-import styles from './CircularProgressBar.css';
 
 interface CircularProgressBarProps {
   className?: string;
@@ -12,8 +12,8 @@ interface CircularProgressBarProps {
 }
 
 function CircularProgressBar({
-  className = styles.circularProgressBar,
-  containerClassName = styles.circularProgressBarContainer,
+  className,
+  containerClassName,
   size = 60,
   strokeWidth = 5,
   strokeColor = '#35c5f4',
@@ -60,20 +60,32 @@ function CircularProgressBar({
   );
 
   return (
-    <div
+    <Box
       className={containerClassName}
-      style={{
+      sx={{
+        position: 'relative',
+        display: 'inline-block',
+        verticalAlign: 'top',
+        textAlign: 'center',
         width: sizeInPixels,
         height: sizeInPixels,
         lineHeight: sizeInPixels,
       }}
     >
-      <svg
+      <Box
         className={className}
+        component="svg"
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
         width={size}
         height={size}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: 'rotate(-90deg)',
+          transformOrigin: 'center center',
+        }}
       >
         <circle
           fill="transparent"
@@ -87,12 +99,21 @@ function CircularProgressBar({
             strokeDashoffset,
           }}
         />
-      </svg>
+      </Box>
 
       {showProgressText && (
-        <div className={styles.circularProgressBarText}>{progressText}</div>
+        <Box
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            fontWeight: 'bold',
+          }}
+        >
+          {progressText}
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 

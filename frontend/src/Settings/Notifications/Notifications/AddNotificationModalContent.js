@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Button from 'Components/Link/Button';
@@ -8,7 +9,12 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import translate from 'Utilities/String/translate';
 import AddNotificationItem from './AddNotificationItem';
-import styles from './AddNotificationModalContent.css';
+
+const sxNotifications = {
+  display: 'flex',
+  justifyContent: 'center',
+  flexWrap: 'wrap'
+};
 
 class AddNotificationModalContent extends Component {
 
@@ -47,7 +53,7 @@ class AddNotificationModalContent extends Component {
           {
             isSchemaPopulated && !schemaError &&
               <div>
-                <div className={styles.notifications}>
+                <Box sx={sxNotifications}>
                   {
                     schema.map((notification) => {
                       return (
@@ -60,7 +66,7 @@ class AddNotificationModalContent extends Component {
                       );
                     })
                   }
-                </div>
+                </Box>
               </div>
           }
         </ModalBody>

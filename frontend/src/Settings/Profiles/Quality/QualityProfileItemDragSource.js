@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
@@ -6,7 +6,25 @@ import { findDOMNode } from 'react-dom';
 import { QUALITY_PROFILE_ITEM } from 'Helpers/dragTypes';
 import QualityProfileItem from './QualityProfileItem';
 import QualityProfileItemGroup from './QualityProfileItemGroup';
-import styles from './QualityProfileItemDragSource.css';
+
+const sxQualityProfileItemDragSource = (theme) => ({
+  padding: theme.spacing(0.5, 0)
+});
+
+const sxQualityProfileItemPlaceholder = (theme) => ({
+  width: '100%',
+  height: 30,
+  border: `1px dotted ${theme.palette.divider}`,
+  borderRadius: '4px'
+});
+
+const sxQualityProfileItemPlaceholderBefore = (theme) => ({
+  mb: theme.spacing(1)
+});
+
+const sxQualityProfileItemPlaceholderAfter = (theme) => ({
+  mt: theme.spacing(1)
+});
 
 const qualityProfileItemDragSource = {
   beginDrag(props) {
@@ -136,21 +154,12 @@ class QualityProfileItemDragSource extends Component {
     const isAfter = !isDragging && isDraggingDown && isOverCurrent;
 
     return connectDropTarget(
-      <div
-        className={classNames(
-          styles.qualityProfileItemDragSource,
-          isBefore && styles.isDraggingUp,
-          isAfter && styles.isDraggingDown
-        )}
-      >
+      <Box
+       sx={sxQualityProfileItemDragSource}>
         {
           isBefore &&
-            <div
-              className={classNames(
-                styles.qualityProfileItemPlaceholder,
-                styles.qualityProfileItemPlaceholderBefore
-              )}
-            />
+            <Box
+             sx={[sxQualityProfileItemPlaceholder, sxQualityProfileItemPlaceholderBefore]} />
         }
 
         {
@@ -194,14 +203,10 @@ class QualityProfileItemDragSource extends Component {
 
         {
           isAfter &&
-            <div
-              className={classNames(
-                styles.qualityProfileItemPlaceholder,
-                styles.qualityProfileItemPlaceholderAfter
-              )}
-            />
+            <Box
+             sx={[sxQualityProfileItemPlaceholder, sxQualityProfileItemPlaceholderAfter]} />
         }
-      </div>
+      </Box>
     );
   }
 }

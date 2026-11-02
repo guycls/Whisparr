@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import AppUpdatedModal from 'App/AppUpdatedModal';
@@ -8,7 +9,6 @@ import AuthenticationRequiredModal from 'FirstRun/AuthenticationRequiredModal';
 import locationShape from 'Helpers/Props/Shapes/locationShape';
 import PageHeader from './Header/PageHeader';
 import PageSidebar from './Sidebar/PageSidebar';
-import styles from './Page.css';
 
 class Page extends Component {
 
@@ -83,23 +83,45 @@ class Page extends Component {
 
     return (
       <ColorImpairedContext.Provider value={enableColorImpairedMode}>
-        <div className={className}>
+        <Box
+          className={className}
+          sx={{ display: 'flex', height: '100%' }}
+        >
           <SignalRConnector />
 
-          <PageHeader
-            onSidebarToggle={onSidebarToggle}
+          <PageSidebar
+            location={location}
+            isSmallScreen={isSmallScreen}
+            isSidebarVisible={isSidebarVisible}
+            onSidebarVisibleChange={onSidebarVisibleChange}
           />
 
-          <div className={styles.main}>
-            <PageSidebar
-              location={location}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              minWidth: 0
+            }}
+          >
+            <PageHeader
               isSmallScreen={isSmallScreen}
-              isSidebarVisible={isSidebarVisible}
-              onSidebarVisibleChange={onSidebarVisibleChange}
+              onSidebarToggle={onSidebarToggle}
             />
 
-            {children}
-          </div>
+            <Box
+              component="main"
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                flexGrow: 1,
+                minHeight: 0,
+                overflow: 'hidden'
+              }}
+            >
+              {children}
+            </Box>
+          </Box>
 
           <AppUpdatedModal
             isOpen={this.state.isUpdatedModalOpen}
@@ -114,7 +136,7 @@ class Page extends Component {
           <AuthenticationRequiredModal
             isOpen={!authenticationEnabled}
           />
-        </div>
+        </Box>
       </ColorImpairedContext.Provider>
     );
   }
@@ -136,7 +158,7 @@ Page.propTypes = {
 };
 
 Page.defaultProps = {
-  className: styles.page
+  className: undefined
 };
 
 export default Page;

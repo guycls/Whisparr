@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FormGroup from 'Components/Form/FormGroup';
@@ -10,7 +11,20 @@ import { icons, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import QualityProfileItemDragPreview from './QualityProfileItemDragPreview';
 import QualityProfileItemDragSource from './QualityProfileItemDragSource';
-import styles from './QualityProfileItems.css';
+
+const sxEditGroupsButton = (theme) => ({
+  mt: theme.spacing(1.25)
+});
+
+const sxEditGroupsButtonIcon = (theme) => ({
+  mr: theme.spacing(1)
+});
+
+const sxQualities = (theme) => ({
+  mt: theme.spacing(1.25),
+  transition: 'min-height 200ms',
+  userSelect: 'none'
+});
 
 class QualityProfileItems extends Component {
 
@@ -104,32 +118,33 @@ class QualityProfileItems extends Component {
             })
           }
 
-          <Button
-            className={styles.editGroupsButton}
+          <Box sx={sxEditGroupsButton}>
+<Button
             kind={kinds.PRIMARY}
             onPress={this.onToggleEditGroupsMode}
           >
             <div>
-              <Icon
-                className={styles.editGroupsButtonIcon}
+              <Box sx={sxEditGroupsButtonIcon}>
+<Icon
                 name={editGroups ? icons.REORDER : icons.GROUP}
               />
+</Box>
 
               {
                 editGroups ? translate('DoneEditingGroups') : translate('EditGroups')
               }
             </div>
           </Button>
+</Box>
 
           <Measure
             whitelist={['height']}
             includeMargin={false}
             onMeasure={this.onMeasure}
           >
-            <div
-              className={styles.qualities}
+            <Box
               style={{ minHeight: `${minHeight}px` }}
-            >
+             sx={sxQualities}>
               {
                 qualityProfileItems.map(({ id, name, allowed, quality, items }, index) => {
                   const identifier = quality ? quality.id : id;
@@ -155,7 +170,7 @@ class QualityProfileItems extends Component {
               }
 
               <QualityProfileItemDragPreview />
-            </div>
+            </Box>
           </Measure>
         </div>
       </FormGroup>

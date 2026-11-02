@@ -1,12 +1,12 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
-import styles from './VirtualTableHeader.css';
 
 function VirtualTableHeader({ children }) {
   return (
-    <div className={styles.header}>
+    <Box sx={{ display: 'flex' }}>
       {children}
-    </div>
+    </Box>
   );
 }
 

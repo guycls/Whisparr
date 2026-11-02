@@ -5,7 +5,6 @@ import Measure from 'Components/Measure';
 import Scroller from 'Components/Scroller/Scroller';
 import { scrollDirections } from 'Helpers/Props';
 import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
-import styles from './VirtualTable.css';
 
 const ROW_HEIGHT = 38;
 
@@ -142,6 +141,7 @@ class VirtualTable extends Component {
               <Scroller
                 className={className}
                 scrollDirection={scrollDirections.HORIZONTAL}
+                sx={{ width: '100%' }}
               >
                 {header}
                 <div ref={registerChild}>
@@ -165,8 +165,10 @@ class VirtualTable extends Component {
                     overscanIndicesGetter={overscanIndicesGetter}
                     scrollToAlignment={'start'}
                     isScrollingOptout={true}
-                    className={styles.tableBodyContainer}
-                    style={gridStyle}
+                    style={{
+                      ...gridStyle,
+                      position: 'relative'
+                    }}
                     containerStyle={containerStyle}
                   />
                 </div>
@@ -182,7 +184,7 @@ class VirtualTable extends Component {
 
 VirtualTable.propTypes = {
   isSmallScreen: PropTypes.bool.isRequired,
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   scrollIndex: PropTypes.number,
   scrollTop: PropTypes.number,
@@ -194,7 +196,6 @@ VirtualTable.propTypes = {
 };
 
 VirtualTable.defaultProps = {
-  className: styles.tableContainer,
   headerHeight: 38,
   rowHeight: ROW_HEIGHT
 };

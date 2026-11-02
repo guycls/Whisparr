@@ -1,9 +1,10 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import { kinds } from 'Helpers/Props';
 import SeriesPoster from 'Series/SeriesPoster';
-import styles from './SeriesSearchResult.css';
 
 function SeriesSearchResult(props) {
   const {
@@ -25,43 +26,41 @@ function SeriesSearchResult(props) {
   }
 
   return (
-    <div className={styles.result}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}>
       <SeriesPoster
-        className={styles.poster}
         images={images}
         blur={safeForWorkMode}
         size={250}
         lazy={false}
         overflow={true}
+        style={{ width: 80, height: 35, objectFit: 'contain' }}
       />
 
-      <div className={styles.titles}>
-        <div className={styles.title}>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography noWrap={true}>
           {title}
-        </div>
+        </Typography>
 
         {
           alternateTitle ?
-            <div className={styles.alternateTitle}>
+            <Typography variant="body2" color="text.secondary" noWrap={true}>
               {alternateTitle.title}
-            </div> :
+            </Typography> :
             null
         }
 
         {
           tag ?
-            <div className={styles.tagContainer}>
-              <Label
-                key={tag.id}
-                kind={kinds.INFO}
-              >
-                {tag.label}
-              </Label>
-            </div> :
+            <Label
+              key={tag.id}
+              kind={kinds.INFO}
+            >
+              {tag.label}
+            </Label> :
             null
         }
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

@@ -1,13 +1,16 @@
+import Box from '@mui/material/Box';
+import { SxProps, Theme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
 import StackTrace from 'stacktrace-js';
 import translate from 'Utilities/String/translate';
-import styles from './ErrorBoundaryError.css';
 
 interface ErrorBoundaryErrorProps {
-  className: string;
-  messageClassName: string;
-  detailsClassName: string;
-  message: string;
+  className?: string;
+  messageClassName?: string;
+  detailsClassName?: string;
+  messageSx?: SxProps<Theme>;
+  detailsSx?: SxProps<Theme>;
+  message?: string;
   error: Error;
   info: {
     componentStack: string;
@@ -16,9 +19,11 @@ interface ErrorBoundaryErrorProps {
 
 function ErrorBoundaryError(props: ErrorBoundaryErrorProps) {
   const {
-    className = styles.container,
-    messageClassName = styles.message,
-    detailsClassName = styles.details,
+    className,
+    messageClassName,
+    detailsClassName,
+    messageSx,
+    detailsSx,
     message = translate('ErrorLoadingContent'),
     error,
     info,
@@ -39,17 +44,56 @@ function ErrorBoundaryError(props: ErrorBoundaryErrorProps) {
   }, [error, setDetailedError]);
 
   return (
-    <div className={className}>
-      <div className={messageClassName}>{message}</div>
+    <Box className={className} sx={{ textAlign: 'center' }}>
+      <Box
+        className={messageClassName}
+        sx={[
+          {
+            my: '50px',
+            textAlign: 'center',
+            fontWeight: 300,
+            fontSize: 36,
+          },
+          ...(Array.isArray(messageSx) ? messageSx : [messageSx]),
+        ]}
+      >
+        {message}
+      </Box>
 
-      <div className={styles.imageContainer}>
-        <img
-          className={styles.image}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          flex: '0 0 auto',
+        }}
+      >
+        <Box
+          component="img"
           src={`${window.Whisparr.urlBase}/Content/Images/error.png`}
+          sx={{
+            height: 350,
+            '@media (max-width: 992px)': {
+              height: 250,
+            },
+            '@media (max-width: 768px)': {
+              height: 150,
+            },
+          }}
         />
-      </div>
+      </Box>
 
-      <details className={detailsClassName}>
+      <Box
+        className={detailsClassName}
+        component="details"
+        sx={[
+          {
+            m: '20px',
+            textAlign: 'left',
+            whiteSpace: 'pre-wrap',
+          },
+          ...(Array.isArray(detailsSx) ? detailsSx : [detailsSx]),
+        ]}
+      >
         {error ? <div>{error.message}</div> : null}
 
         {detailedError ? (
@@ -64,13 +108,9 @@ function ErrorBoundaryError(props: ErrorBoundaryErrorProps) {
           <div>{info.componentStack}</div>
         )}
 
-        {
-          <div className={styles.version}>
-            Version: {window.Whisparr.version}
-          </div>
-        }
-      </details>
-    </div>
+        <Box sx={{ mt: '20px' }}>Version: {window.Whisparr.version}</Box>
+      </Box>
+    </Box>
   );
 }
 

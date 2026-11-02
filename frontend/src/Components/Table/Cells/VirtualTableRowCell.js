@@ -1,29 +1,41 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
-import styles from './VirtualTableRowCell.css';
 
 function VirtualTableRowCell(props) {
   const {
     className,
-    children
+    children,
+    sx
   } = props;
 
   return (
-    <div
+    <Box
       className={className}
+      sx={[
+        {
+          overflow: 'hidden',
+          maxWidth: '100%',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          padding: '8px',
+          borderTop: '1px solid var(--borderColor)',
+          lineHeight: 1.52857143,
+          flexGrow: 0,
+          flexShrink: 1
+        },
+        ...(Array.isArray(sx) ? sx : [sx])
+      ]}
     >
       {children}
-    </div>
+    </Box>
   );
 }
 
 VirtualTableRowCell.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  sx: PropTypes.oneOfType([PropTypes.object, PropTypes.array, PropTypes.func]),
   children: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
-};
-
-VirtualTableRowCell.defaultProps = {
-  className: styles.cell
 };
 
 export default VirtualTableRowCell;

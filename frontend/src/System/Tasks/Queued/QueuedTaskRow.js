@@ -1,4 +1,5 @@
 import moment from 'moment';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
@@ -13,8 +14,6 @@ import formatDateTime from 'Utilities/Date/formatDateTime';
 import formatTimeSpan from 'Utilities/Date/formatTimeSpan';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
-import styles from './QueuedTaskRow.css';
-
 function getStatusIconProps(status, message) {
   const title = titleCase(status);
 
@@ -209,8 +208,11 @@ class QueuedTaskRow extends Component {
 
     return (
       <TableRow>
-        <TableRowCell className={styles.trigger}>
-          <span className={styles.triggerContent}>
+        <TableRowCell sx={{ width: 50 }}>
+          <Box
+            component="span"
+            sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}
+          >
             <Icon
               name={triggerIcon}
               title={titleCase(trigger)}
@@ -219,11 +221,11 @@ class QueuedTaskRow extends Component {
             <Icon
               {...getStatusIconProps(status, message)}
             />
-          </span>
+          </Box>
         </TableRowCell>
 
         <TableRowCell>
-          <span className={styles.commandName}>
+          <Box component="span" sx={{ display: 'inline-block', minWidth: 220 }}>
             {formatCommandDisplayName({
               name,
               commandName,
@@ -232,43 +234,47 @@ class QueuedTaskRow extends Component {
               progressPercent,
               isCancelling
             })}
-          </span>
+          </Box>
           {
             clientUserAgent ?
-              <span className={styles.userAgent} title={translate('TaskUserAgentTooltip')}>
+              <Box
+                component="span"
+                title={translate('TaskUserAgentTooltip')}
+                sx={{ color: '#b0b0b0' }}
+              >
                 {translate('From')}: {clientUserAgent}
-              </span> :
+              </Box> :
               null
           }
         </TableRowCell>
 
         <TableRowCell
-          className={styles.queued}
+          sx={{ width: 180 }}
           title={formatDateTime(queued, longDateFormat, timeFormat)}
         >
           {queuedAt}
         </TableRowCell>
 
         <TableRowCell
-          className={styles.started}
+          sx={{ width: 180 }}
           title={formatDateTime(started, longDateFormat, timeFormat)}
         >
           {startedAt}
         </TableRowCell>
 
         <TableRowCell
-          className={styles.ended}
+          sx={{ width: 180 }}
           title={formatDateTime(ended, longDateFormat, timeFormat)}
         >
           {endedAt}
         </TableRowCell>
 
-        <TableRowCell className={styles.duration}>
+        <TableRowCell sx={{ width: 100 }}>
           {formatTimeSpan(duration)}
         </TableRowCell>
 
         <TableRowCell
-          className={styles.actions}
+          sx={{ width: 60 }}
         >
           {
             (status === 'queued' || status === 'started') && !isCancelling &&

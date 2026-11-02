@@ -1,90 +1,32 @@
-import classNames from 'classnames';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import Icon from 'Components/Icon';
-import { icons, kinds } from 'Helpers/Props';
-import FormInputHelpText from './FormInputHelpText';
-import styles from './CheckInput.css';
+import { kinds } from 'Helpers/Props';
+import { kindToColor } from 'Helpers/Props/muiKind';
 
 class CheckInput extends Component {
 
   //
-  // Lifecycle
-
-  constructor(props, context) {
-    super(props, context);
-
-    this._checkbox = null;
-  }
-
-  componentDidMount() {
-    this.setIndeterminate();
-  }
-
-  componentDidUpdate() {
-    this.setIndeterminate();
-  }
-
-  //
-  // Control
-
-  setIndeterminate() {
-    if (!this._checkbox) {
-      return;
-    }
-
-    const {
-      value,
-      uncheckedValue,
-      checkedValue
-    } = this.props;
-
-    this._checkbox.indeterminate = value !== uncheckedValue && value !== checkedValue;
-  }
-
-  toggleChecked = (checked, shiftKey) => {
-    const {
-      name,
-      value,
-      checkedValue,
-      uncheckedValue
-    } = this.props;
-
-    const newValue = checked ? checkedValue : uncheckedValue;
-
-    if (value !== newValue) {
-      this.props.onChange({
-        name,
-        value: newValue,
-        shiftKey
-      });
-    }
-  };
-
-  //
   // Listeners
 
-  setRef = (ref) => {
-    this._checkbox = ref;
-  };
-
-  onClick = (event) => {
+  onChange = (event) => {
     if (this.props.isDisabled) {
       return;
     }
 
-    const shiftKey = event.nativeEvent.shiftKey;
-    const checked = !this._checkbox.checked;
+    const {
+      name,
+      checkedValue,
+      uncheckedValue
+    } = this.props;
 
-    event.preventDefault();
-    this.toggleChecked(checked, shiftKey);
-  };
-
-  onChange = (event) => {
-    const checked = event.target.checked;
-    const shiftKey = event.nativeEvent.shiftKey;
-
-    this.toggleChecked(checked, shiftKey);
+    this.props.onChange({
+      name,
+      value: event.target.checked ? checkedValue : uncheckedValue,
+      shiftKey: event.nativeEvent.shiftKey
+    });
   };
 
   //
@@ -92,8 +34,6 @@ class CheckInput extends Component {
 
   render() {
     const {
-      className,
-      containerClassName,
       name,
       value,
       checkedValue,
@@ -107,68 +47,36 @@ class CheckInput extends Component {
     const isChecked = value === checkedValue;
     const isUnchecked = value === uncheckedValue;
     const isIndeterminate = !isChecked && !isUnchecked;
-    const isCheckClass = `${kind}IsChecked`;
 
     return (
-      <div className={containerClassName}>
-        <label
-          className={styles.label}
-          onClick={this.onClick}
-        >
-          <input
-            ref={this.setRef}
-            className={styles.checkbox}
-            type="checkbox"
-            name={name}
-            checked={isChecked}
-            disabled={isDisabled}
-            onChange={this.onChange}
-          />
-
-          <div
-            className={classNames(
-              className,
-              isChecked ? styles[isCheckClass] : styles.isNotChecked,
-              isIndeterminate && styles.isIndeterminate,
-              isDisabled && styles.isDisabled
-            )}
-          >
-            {
-              isChecked &&
-                <Icon name={icons.CHECK} />
-            }
-
-            {
-              isIndeterminate &&
-                <Icon name={icons.CHECK_INDETERMINATE} />
-            }
-          </div>
-
-          {
-            helpText &&
-              <FormInputHelpText
-                className={styles.helpText}
-                text={helpText}
-              />
+      <div>
+        <FormControlLabel
+          control={
+            <Checkbox
+              name={name}
+              checked={isChecked}
+              indeterminate={isIndeterminate}
+              disabled={isDisabled}
+              color={kindToColor(kind) === 'inherit' ? 'primary' : kindToColor(kind)}
+              onChange={this.onChange}
+            />
           }
-
-          {
-            !helpText && helpTextWarning &&
-              <FormInputHelpText
-                className={styles.helpText}
-                text={helpTextWarning}
-                isWarning={true}
-              />
-          }
-        </label>
+          label={helpText || helpTextWarning || ''}
+        />
+        {
+          helpTextWarning && !helpText &&
+            <FormHelperText>
+              {helpTextWarning}
+            </FormHelperText>
+        }
       </div>
     );
   }
 }
 
 CheckInput.propTypes = {
-  className: PropTypes.string.isRequired,
-  containerClassName: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  containerClassName: PropTypes.string,
   name: PropTypes.string.isRequired,
   checkedValue: PropTypes.bool,
   uncheckedValue: PropTypes.bool,
@@ -181,8 +89,6 @@ CheckInput.propTypes = {
 };
 
 CheckInput.defaultProps = {
-  className: styles.input,
-  containerClassName: styles.container,
   checkedValue: true,
   uncheckedValue: false,
   kind: kinds.PRIMARY

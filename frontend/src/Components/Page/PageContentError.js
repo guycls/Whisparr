@@ -1,19 +1,28 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import ErrorBoundaryError from 'Components/Error/ErrorBoundaryError';
 import translate from 'Utilities/String/translate';
 import PageContentBody from './PageContentBody';
-import styles from './PageContentError.css';
 
 function PageContentError(props) {
   return (
-    <div className={styles.content}>
+    <Box
+      sx={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        overflowX: 'hidden',
+        width: '100%'
+      }}
+    >
       <PageContentBody>
         <ErrorBoundaryError
           {...props}
           message={translate('ErrorLoadingPage')}
         />
       </PageContentBody>
-    </div>
+    </Box>
   );
 }
 

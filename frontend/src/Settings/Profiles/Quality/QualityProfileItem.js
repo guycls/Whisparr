@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import CheckInput from 'Components/Form/CheckInput';
@@ -6,7 +6,81 @@ import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './QualityProfileItem.css';
+
+const sxQualityProfileItem = (theme) => ({
+  display: 'flex',
+  alignItems: 'stretch',
+  width: '100%',
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: '4px',
+  bgcolor: theme.palette.action.hover
+});
+
+const sxIsInGroup = {
+  borderStyle: 'dashed'
+};
+
+const sxNameInGroup = (theme) => ({
+  ml: theme.spacing(1.75)
+});
+
+const sxNameInGroupPreview = (theme) => ({
+  ml: theme.spacing(3.5)
+});
+
+const sxCheckInputContainer = (theme) => ({
+  position: 'relative',
+  mr: theme.spacing(0.5),
+  mb: theme.spacing(0.625),
+  ml: theme.spacing(1)
+});
+
+const sxCheckInput = (theme) => ({
+  mt: theme.spacing(0.625)
+});
+
+const sxQualityNameContainer = (theme) => ({
+  display: 'flex',
+  flexGrow: 1,
+  mb: 0,
+  ml: theme.spacing(0.25),
+  fontWeight: 'normal',
+  lineHeight: 30,
+  cursor: 'pointer'
+});
+
+const sxNotAllowed = (theme) => ({
+  color: theme.palette.divider
+});
+
+const sxCreateGroupButton = (theme) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  mr: theme.spacing(0.625),
+  ml: theme.spacing(1),
+  width: 20
+});
+
+const sxDragHandle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  ml: 'auto',
+  width: 40,
+  textAlign: 'center',
+  cursor: 'grab'
+};
+
+const sxDragIcon = {
+  top: '0'
+};
+
+const sxIsDragging = {
+  opacity: 0.25
+};
 
 class QualityProfileItem extends Component {
 
@@ -47,62 +121,57 @@ class QualityProfileItem extends Component {
     } = this.props;
 
     return (
-      <div
-        className={classNames(
-          styles.qualityProfileItem,
-          isDragging && styles.isDragging,
-          isPreview && styles.isPreview,
-          isOverCurrent && styles.isOverCurrent,
-          groupId && styles.isInGroup
-        )}
+      <Box
+        sx={[sxQualityProfileItem, isDragging && sxIsDragging, groupId && sxIsInGroup]}
       >
-        <label
-          className={styles.qualityNameContainer}
+        <Box
+          component="label"
+          sx={sxQualityNameContainer}
         >
           {
             editGroups && !groupId && !isPreview &&
               <IconButton
-                className={styles.createGroupButton}
                 name={icons.GROUP}
                 title={translate('Group')}
                 onPress={this.onCreateGroupPress}
-              />
+               sx={sxCreateGroupButton} />
           }
 
           {
             !editGroups &&
-              <CheckInput
-                className={styles.checkInput}
-                containerClassName={styles.checkInputContainer}
+              <Box sx={[sxCheckInputContainer, sxCheckInput]}>
+                <CheckInput
                 name={name}
                 value={allowed}
                 isDisabled={!!groupId}
                 onChange={this.onAllowedChange}
               />
+</Box>
           }
 
-          <div className={classNames(
-            styles.qualityName,
-            groupId && styles.isInGroup,
-            !allowed && styles.notAllowed
-          )}
+          <Box
+            sx={[
+              isPreview && groupId ? sxNameInGroupPreview : (isPreview || groupId) && sxNameInGroup,
+              !allowed && sxNotAllowed
+            ]}
           >
             {name}
-          </div>
-        </label>
+          </Box>
+        </Box>
 
         {
           connectDragSource(
-            <div className={styles.dragHandle}>
-              <Icon
-                className={styles.dragIcon}
+            <Box sx={sxDragHandle}>
+              <Box sx={sxDragIcon}>
+<Icon
                 title={translate('CreateGroup')}
                 name={icons.REORDER}
               />
-            </div>
+</Box>
+            </Box>
           )
         }
-      </div>
+      </Box>
     );
   }
 }

@@ -1,3 +1,4 @@
+import GlobalStyles from '@mui/material/GlobalStyles';
 import classNames from 'classnames';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
@@ -7,7 +8,12 @@ import tagShape from 'Helpers/Props/Shapes/tagShape';
 import AutoSuggestInput from './AutoSuggestInput';
 import TagInputInput from './TagInputInput';
 import TagInputTag from './TagInputTag';
-import styles from './TagInput.css';
+
+const containerClass = 'WhisparrTagInput-container';
+const focusedClass = 'WhisparrTagInput-focused';
+const errorClass = 'WhisparrTagInput-error';
+const warningClass = 'WhisparrTagInput-warning';
+const internalInputClass = 'WhisparrTagInput-internal';
 
 function getTag(value, selectedIndex, suggestions, allowNew) {
   if (selectedIndex == null && value) {
@@ -237,15 +243,47 @@ class TagInput extends Component {
     } = this.state;
 
     return (
+      <>
+        <GlobalStyles
+          styles={{
+            [`.${containerClass}`]: {
+              padding: 0,
+              minHeight: 35,
+              height: 'auto'
+            },
+            [`.${containerClass}.${focusedClass}`]: {
+              outline: 0,
+              borderColor: 'var(--inputFocusBorderColor)',
+              boxShadow: 'inset 0 1px 1px var(--inputBoxShadowColor), 0 0 8px var(--inputFocusBoxShadowColor)'
+            },
+            [`.${errorClass}`]: {
+              borderColor: 'var(--inputErrorBorderColor)'
+            },
+            [`.${warningClass}`]: {
+              borderColor: 'var(--inputWarningBorderColor)'
+            },
+            [`.${internalInputClass}`]: {
+              flex: '1 1 0%',
+              marginLeft: 3,
+              minWidth: '20%',
+              maxWidth: '100%',
+              width: '0%',
+              height: 31,
+              border: 'none',
+              backgroundColor: 'var(--inputBackground)',
+              color: 'var(--textColor)'
+            }
+          }}
+        />
       <AutoSuggestInput
         {...otherProps}
         forwardedRef={this._setAutosuggestRef}
         className={className}
         inputContainerClassName={classNames(
           inputContainerClassName,
-          isFocused && styles.isFocused,
-          hasError && styles.hasError,
-          hasWarning && styles.hasWarning
+          isFocused && focusedClass,
+          hasError && errorClass,
+          hasWarning && warningClass
         )}
         value={value}
         suggestions={suggestions}
@@ -263,6 +301,7 @@ class TagInput extends Component {
         onSuggestionsClearRequested={this.onSuggestionsClearRequested}
         onChange={this.onInputChange}
       />
+      </>
     );
   }
 }
@@ -287,8 +326,8 @@ TagInput.propTypes = {
 };
 
 TagInput.defaultProps = {
-  className: styles.internalInput,
-  inputContainerClassName: styles.input,
+  className: internalInputClass,
+  inputContainerClassName: containerClass,
   allowNew: true,
   kind: kinds.INFO,
   placeholder: '',

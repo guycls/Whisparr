@@ -1,17 +1,31 @@
+import Box from '@mui/material/Box';
 import React, { ReactNode } from 'react';
-import styles from './DescriptionListItemDescription.css';
 
 export interface DescriptionListItemDescriptionProps {
   className?: string;
   children?: ReactNode;
 }
 
-function DescriptionListItemDescription(
-  props: DescriptionListItemDescriptionProps
-) {
-  const { className = styles.description, children } = props;
-
-  return <dd className={className}>{children}</dd>;
+function DescriptionListItemDescription({
+  className,
+  children,
+}: DescriptionListItemDescriptionProps) {
+  return (
+    <Box
+      className={className}
+      component="dd"
+      sx={{
+        ml: 0,
+        lineHeight: 1.528571429,
+        overflowWrap: 'break-word',
+        '@media (min-width: 768px)': {
+          ml: '180px',
+        },
+      }}
+    >
+      {children}
+    </Box>
+  );
 }
 
 export default DescriptionListItemDescription;

@@ -1,11 +1,20 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import MessageConnector from './MessageConnector';
-import styles from './Messages.css';
 
 function Messages({ messages }) {
   return (
-    <div className={styles.messages}>
+    <Box
+      sx={{
+        mt: 'auto',
+        mb: '20px',
+        pt: '20px',
+        '@media (max-width: 768px)': {
+          mb: 0
+        }
+      }}
+    >
       {
         messages.map((message) => {
           return (
@@ -16,7 +25,7 @@ function Messages({ messages }) {
           );
         })
       }
-    </div>
+    </Box>
   );
 }
 

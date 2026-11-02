@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -11,7 +12,12 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import AddSpecificationItem from './AddSpecificationItem';
-import styles from './AddSpecificationModalContent.css';
+
+const sxSpecifications = {
+  display: 'flex',
+  justifyContent: 'center',
+  flexWrap: 'wrap'
+};
 
 class AddSpecificationModalContent extends Component {
 
@@ -61,7 +67,7 @@ class AddSpecificationModalContent extends Component {
                   </div>
                 </Alert>
 
-                <div className={styles.specifications}>
+                <Box sx={sxSpecifications}>
                   {
                     schema.map((specification) => {
                       return (
@@ -73,7 +79,7 @@ class AddSpecificationModalContent extends Component {
                       );
                     })
                   }
-                </div>
+                </Box>
 
               </div>
           }

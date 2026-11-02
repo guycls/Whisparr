@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -5,7 +6,21 @@ import Label from 'Components/Label';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditMetadataModalConnector from './EditMetadataModalConnector';
-import styles from './Metadata.css';
+
+const sxMetadata = (theme) => ({
+  width: 290,
+  m: theme.spacing(1.25)
+});
+
+const sxName = (theme) => ({
+  mb: theme.spacing(2.5),
+  fontWeight: 300,
+  fontSize: 24
+});
+
+const sxSection = (theme) => ({
+  mt: theme.spacing(1.25)
+});
 
 class Metadata extends Component {
 
@@ -54,14 +69,14 @@ class Metadata extends Component {
     });
 
     return (
-      <Card
-        className={styles.metadata}
+      <Box sx={sxMetadata}>
+<Card
         overlayContent={true}
         onPress={this.onEditMetadataPress}
       >
-        <div className={styles.name}>
+        <Box sx={sxName}>
           {name}
-        </div>
+        </Box>
 
         <div>
           {
@@ -81,9 +96,9 @@ class Metadata extends Component {
         {
           enable && !!metadataFields.length &&
             <div>
-              <div className={styles.section}>
+              <Box sx={sxSection}>
                 {translate('Metadata')}
-              </div>
+              </Box>
 
               {
                 metadataFields.map((field) => {
@@ -107,9 +122,9 @@ class Metadata extends Component {
         {
           enable && !!imageFields.length &&
             <div>
-              <div className={styles.section}>
+              <Box sx={sxSection}>
                 {translate('Images')}
-              </div>
+              </Box>
 
               {
                 imageFields.map((field) => {
@@ -136,6 +151,7 @@ class Metadata extends Component {
           onModalClose={this.onEditMetadataModalClose}
         />
       </Card>
+</Box>
     );
   }
 }

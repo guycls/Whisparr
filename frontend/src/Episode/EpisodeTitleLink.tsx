@@ -1,10 +1,9 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, { KeyboardEvent, useCallback, useState } from 'react';
 import Link from 'Components/Link/Link';
 import EpisodeDetailsModal from 'Episode/EpisodeDetailsModal';
 import { EpisodeEntities } from 'Episode/useEpisode';
 import FinaleType from './FinaleType';
-import styles from './EpisodeTitleLink.css';
 
 interface EpisodeTitleLinkProps {
   className?: string;
@@ -51,17 +50,38 @@ function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
   }, []);
 
   return (
-    <div className={styles.container}>
-      <Link
-        className={classNames(styles.link, className)}
-        component="span"
-        role="button"
-        tabIndex={0}
-        onPress={handleLinkPress}
-        onKeyDown={handleKeyDown}
+    <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+      <Box
+        sx={{
+          maxWidth: 800,
+          '@media (min-width: 2560px)': { maxWidth: 1200 },
+          '@media (min-width: 3840px)': { maxWidth: 2000 },
+          '& .MuiButton-root': {
+            display: 'inline-block',
+            overflow: 'hidden',
+            maxWidth: '100%',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            userSelect: 'text',
+            '&:hover': {
+              color: 'var(--linkHoverColor)',
+              textDecoration: 'underline',
+            },
+          },
+        }}
       >
+        <Link
+          className={className}
+          component="span"
+          role="button"
+          tabIndex={0}
+          onPress={handleLinkPress}
+          onKeyDown={handleKeyDown}
+        >
         {episodeTitle}
-      </Link>
+        </Link>
+      </Box>
 
       {finaleType ? <FinaleType finaleType={finaleType} /> : null}
 
@@ -73,7 +93,7 @@ function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
           onModalClose={handleModalClose}
         />
       ) : null}
-    </div>
+    </Box>
   );
 }
 

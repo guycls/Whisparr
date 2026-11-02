@@ -193,6 +193,7 @@ SeriesDetailsSeasonConnector.propTypes = {
   qualityFilter: PropTypes.object.isRequired,
   runtimeFilter: PropTypes.object.isRequired,
   maxEpisodeRuntime: PropTypes.number.isRequired,
+  items: PropTypes.arrayOf(PropTypes.object).isRequired,
   toggleSeasonMonitored: PropTypes.func.isRequired,
   toggleEpisodesMonitored: PropTypes.func.isRequired,
   setEpisodesTableOption: PropTypes.func.isRequired,

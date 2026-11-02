@@ -8,7 +8,11 @@ import { icons, kinds } from 'Helpers/Props';
 import ImportListExclusion from 'typings/ImportListExclusion';
 import translate from 'Utilities/String/translate';
 import EditImportListExclusionModal from './EditImportListExclusionModal';
-import styles from './ImportListExclusionRow.css';
+
+const sxActions = {
+  width: 35,
+  whiteSpace: 'nowrap',
+};
 
 interface ImportListExclusionRowProps extends ImportListExclusion {
   onConfirmDeleteImportListExclusion: (id: number) => void;
@@ -38,7 +42,7 @@ function ImportListExclusionRow(props: ImportListExclusionRowProps) {
       <TableRowCell>{title}</TableRowCell>
       <TableRowCell>{tvdbId}</TableRowCell>
 
-      <TableRowCell className={styles.actions}>
+      <TableRowCell sx={sxActions}>
         <IconButton
           name={icons.EDIT}
           onPress={setEditImportListExclusionModalOpen}

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Alert from 'Components/Alert';
@@ -15,7 +16,10 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import { boolSettingShape, numberSettingShape, tagSettingShape } from 'Helpers/Props/Shapes/settingShape';
 import translate from 'Utilities/String/translate';
-import styles from './EditDelayProfileModalContent.css';
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
 
 const protocolOptions = [
   {
@@ -208,13 +212,14 @@ function EditDelayProfileModalContent(props) {
       <ModalFooter>
         {
           id && id > 1 ?
-            <Button
-              className={styles.deleteButton}
+            <Box sx={sxDeleteButton}>
+<Button
               kind={kinds.DANGER}
               onPress={onDeleteDelayProfilePress}
             >
               {translate('Delete')}
-            </Button> :
+            </Button>
+</Box> :
             null
         }
 

@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import * as calendarViews from 'Calendar/calendarViews';
 import DayOfWeek from './DayOfWeek';
-import styles from './DaysOfWeek.css';
 
 class DaysOfWeek extends Component {
 
@@ -70,7 +70,7 @@ class DaysOfWeek extends Component {
     }
 
     return (
-      <div className={styles.daysOfWeek}>
+      <Box sx={{ display: 'flex', mt: '10px' }}>
         {
           dates.map((date) => {
             return (
@@ -84,7 +84,7 @@ class DaysOfWeek extends Component {
             );
           })
         }
-      </div>
+      </Box>
     );
   }
 }

@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import CheckInput from 'Components/Form/CheckInput';
 import VirtualTableRowCell from './VirtualTableRowCell';
-import styles from './VirtualTableSelectCell.css';
 
 export function virtualTableSelectCellRenderer(cellProps) {
   const {
@@ -52,7 +51,7 @@ class VirtualTableSelectCell extends Component {
 
     return (
       <VirtualTableRowCell
-        className={styles.cell}
+        sx={{ flex: '0 0 36px' }}
         {...otherProps}
       >
         <CheckInput
@@ -68,7 +67,7 @@ class VirtualTableSelectCell extends Component {
 }
 
 VirtualTableSelectCell.propTypes = {
-  inputClassName: PropTypes.string.isRequired,
+  inputClassName: PropTypes.string,
   id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   isSelected: PropTypes.bool.isRequired,
   isDisabled: PropTypes.bool.isRequired,
@@ -76,7 +75,6 @@ VirtualTableSelectCell.propTypes = {
 };
 
 VirtualTableSelectCell.defaultProps = {
-  inputClassName: styles.input,
   isSelected: false
 };
 

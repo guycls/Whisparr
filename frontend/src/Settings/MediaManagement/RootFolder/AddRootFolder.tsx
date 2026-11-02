@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Alert from 'Components/Alert';
@@ -8,7 +9,14 @@ import { icons, kinds, sizes } from 'Helpers/Props';
 import { addRootFolder } from 'Store/Actions/rootFolderActions';
 import createRootFoldersSelector from 'Store/Selectors/createRootFoldersSelector';
 import translate from 'Utilities/String/translate';
-import styles from './AddRootFolder.css';
+
+const sxAddRootFolderButtonContainer = {
+  mt: 2.5,
+};
+
+const sxImportButtonIcon = {
+  mr: 1,
+};
 
 function AddRootFolder() {
   const { isSaving, saveError } = useSelector(createRootFoldersSelector());
@@ -51,13 +59,15 @@ function AddRootFolder() {
         </Alert>
       ) : null}
 
-      <div className={styles.addRootFolderButtonContainer}>
+      <Box sx={sxAddRootFolderButtonContainer}>
         <Button
           kind={kinds.PRIMARY}
           size={sizes.LARGE}
           onPress={onAddNewRootFolderPress}
         >
-          <Icon className={styles.importButtonIcon} name={icons.DRIVE} />
+          <Box sx={sxImportButtonIcon}>
+<Icon name={icons.DRIVE} />
+</Box>
           {translate('AddRootFolder')}
         </Button>
 
@@ -68,7 +78,7 @@ function AddRootFolder() {
           onChange={onNewRootFolderSelect}
           onModalClose={onAddRootFolderModalClose}
         />
-      </div>
+      </Box>
     </>
   );
 }

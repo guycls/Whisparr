@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import FormGroup from 'Components/Form/FormGroup';
@@ -6,7 +7,11 @@ import FormInputHelpText from 'Components/Form/FormInputHelpText';
 import FormLabel from 'Components/Form/FormLabel';
 import { inputTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './NotificationEventItems.css';
+
+const sxEvents = (theme) => ({
+  mt: theme.spacing(1.25),
+  userSelect: 'none'
+});
 
 function NotificationEventItems(props) {
   const {
@@ -52,7 +57,7 @@ function NotificationEventItems(props) {
           text={translate('NotificationTriggersHelpText')}
           link="https://wiki.servarr.com/whisparr/settings#connections"
         />
-        <div className={styles.events}>
+        <Box sx={sxEvents}>
           <div>
             <FormInputGroup
               type={inputTypes.CHECK}
@@ -215,7 +220,7 @@ function NotificationEventItems(props) {
               onChange={onInputChange}
             />
           </div>
-        </div>
+        </Box>
       </div>
     </FormGroup>
   );

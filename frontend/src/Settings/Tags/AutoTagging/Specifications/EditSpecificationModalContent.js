@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -23,7 +24,10 @@ import {
 } from 'Store/Actions/settingsActions';
 import { createProviderSettingsSelectorHook } from 'Store/Selectors/createProviderSettingsSelector';
 import translate from 'Utilities/String/translate';
-import styles from './EditSpecificationModalContent.css';
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
 
 function EditSpecificationModalContent(props) {
   const {
@@ -154,13 +158,14 @@ function EditSpecificationModalContent(props) {
       <ModalFooter>
         {
           id ?
-            <Button
-              className={styles.deleteButton}
+            <Box sx={sxDeleteButton}>
+<Button
               kind={kinds.DANGER}
               onPress={onDeleteSpecificationPress}
             >
               {translate('Delete')}
-            </Button> :
+            </Button>
+</Box> :
             null
         }
 

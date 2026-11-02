@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -9,7 +10,6 @@ import * as calendarViews from './calendarViews';
 import CalendarDaysConnector from './Day/CalendarDaysConnector';
 import DaysOfWeekConnector from './Day/DaysOfWeekConnector';
 import CalendarHeaderConnector from './Header/CalendarHeaderConnector';
-import styles from './Calendar.css';
 
 class Calendar extends Component {
 
@@ -25,7 +25,7 @@ class Calendar extends Component {
     } = this.props;
 
     return (
-      <div className={styles.calendar}>
+      <Box sx={{ flexGrow: 1, width: '100%' }}>
         {
           isFetching && !isPopulated &&
             <LoadingIndicator />
@@ -38,21 +38,21 @@ class Calendar extends Component {
 
         {
           !error && isPopulated && view === calendarViews.AGENDA &&
-            <div className={styles.calendarContent}>
+            <Box sx={{ width: '100%' }}>
               <CalendarHeaderConnector />
               <AgendaConnector />
-            </div>
+            </Box>
         }
 
         {
           !error && isPopulated && view !== calendarViews.AGENDA &&
-            <div className={styles.calendarContent}>
+            <Box sx={{ width: '100%' }}>
               <CalendarHeaderConnector />
               <DaysOfWeekConnector />
               <CalendarDaysConnector />
-            </div>
+            </Box>
         }
-      </div>
+      </Box>
     );
   }
 }

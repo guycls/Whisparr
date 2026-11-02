@@ -243,7 +243,7 @@ module.exports = {
     'max-nested-callbacks': ['error', 4],
     'max-statements': 'off',
     'max-statements-per-line': ['error', { max: 1 }],
-    'new-cap': ['error', { capIsNewExceptions: ['$.Deferred', 'DragDropContext', 'DragLayer', 'DragSource', 'DropTarget'] }],
+    'new-cap': ['error', { capIsNewExceptions: ['DragDropContext', 'DragLayer', 'DragSource', 'DropTarget'] }],
     'new-parens': 'error',
     'newline-after-var': 'off',
     'newline-before-return': 'off',

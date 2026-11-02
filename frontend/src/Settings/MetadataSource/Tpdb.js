@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import FormGroup from 'Components/Form/FormGroup';
@@ -7,7 +8,26 @@ import FormLabel from 'Components/Form/FormLabel';
 import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
 import { inputTypes, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './Tpdb.css';
+
+const sxContainer = {
+  display: 'flex',
+  flexDirection: 'column'
+};
+
+const sxInfo = (theme) => ({
+  mt: theme.spacing(3.75)
+});
+
+const sxTitle = (theme) => ({
+  mb: theme.spacing(2.5),
+  fontWeight: 300,
+  fontSize: 36
+});
+
+const sxImage = {
+  width: 448,
+  height: 123
+};
 
 function Tpdb(props) {
   const {
@@ -27,16 +47,15 @@ function Tpdb(props) {
   const showClearApiKeyButton = hasTpdbApiKey?.value;
 
   return (
-    <div className={styles.container}>
-      <img
-        className={styles.image}
+    <Box sx={sxContainer}>
+      <Box component="img"
         src={`${window.Whisparr.urlBase}/Content/Images/Tpdb.png`}
-      />
+       sx={sxImage} />
 
-      <div className={styles.info}>
-        <div className={styles.title}>
+      <Box sx={sxInfo}>
+        <Box sx={sxTitle}>
           {translate('TheTpdb')}
-        </div>
+        </Box>
 
         <InlineMarkdown data={translate('SiteAndEpisodeInformationIsProvidedByTheTPDB')} />
 
@@ -81,8 +100,8 @@ function Tpdb(props) {
             </FormGroup> :
             null
         }
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

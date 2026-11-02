@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -12,7 +14,6 @@ import PageContentBody from 'Components/Page/PageContentBody';
 import { icons, kinds, sizes } from 'Helpers/Props';
 import RootFolders from 'RootFolder/RootFolders';
 import translate from 'Utilities/String/translate';
-import styles from './ImportSeriesSelectFolder.css';
 
 class ImportSeriesSelectFolder extends Component {
 
@@ -78,28 +79,30 @@ class ImportSeriesSelectFolder extends Component {
           {
             !error && isPopulated &&
               <div>
-                <div className={styles.header}>
+                <Typography
+                  sx={{ mb: '40px', textAlign: 'center', fontWeight: 300, fontSize: 36 }}
+                >
                   {translate('LibraryImportHeader')}
-                </div>
+                </Typography>
 
-                <div className={styles.tips}>
+                <Box sx={{ fontSize: 20 }}>
                   {translate('LibraryImportTips')}
                   <ul>
-                    <li className={styles.tip}>
+                    <Box component="li" sx={{ fontSize: 14 }}>
                       <InlineMarkdown data={translate('LibraryImportTipsQualityInFilename')} />
-                    </li>
-                    <li className={styles.tip}>
+                    </Box>
+                    <Box component="li" sx={{ fontSize: 14 }}>
                       <InlineMarkdown data={translate('LibraryImportTipsUseRootFolder', { goodFolderExample, badFolderExample })} />
-                    </li>
-                    <li className={styles.tip}>
+                    </Box>
+                    <Box component="li" sx={{ fontSize: 14 }}>
                       {translate('LibraryImportTipsDontUseDownloadsFolder')}
-                    </li>
+                    </Box>
                   </ul>
-                </div>
+                </Box>
 
                 {
                   hasRootFolders ?
-                    <div className={styles.recentFolders}>
+                    <Box sx={{ mt: '40px' }}>
                       <FieldSet legend={translate('RootFolders')}>
                         <RootFolders
                           isFetching={isFetching}
@@ -108,14 +111,14 @@ class ImportSeriesSelectFolder extends Component {
                           items={items}
                         />
                       </FieldSet>
-                    </div> :
+                    </Box> :
                     null
                 }
 
                 {
                   !isSaving && saveError ?
+                    <Box sx={{ my: '20px' }}>
                     <Alert
-                      className={styles.addErrorAlert}
                       kind={kinds.DANGER}
                     >
                       {translate('AddRootFolderError')}
@@ -137,27 +140,29 @@ class ImportSeriesSelectFolder extends Component {
                             </li>
                         }
                       </ul>
-                    </Alert> :
+                    </Alert>
+                    </Box> :
                     null
                 }
 
-                <div className={hasRootFolders ? undefined : styles.startImport}>
+                <Box sx={hasRootFolders ? undefined : { mt: '40px', textAlign: 'center' }}>
                   <Button
                     kind={kinds.PRIMARY}
                     size={sizes.LARGE}
                     onPress={this.onAddNewRootFolderPress}
                   >
-                    <Icon
-                      className={styles.importButtonIcon}
-                      name={icons.DRIVE}
-                    />
+                    <Box component="span" sx={{ mr: '8px', display: 'inline-flex' }}>
+                      <Icon
+                        name={icons.DRIVE}
+                      />
+                    </Box>
                     {
                       hasRootFolders ?
                         translate('ChooseAnotherFolder') :
                         translate('StartImport')
                     }
                   </Button>
-                </div>
+                </Box>
 
                 <FileBrowserModal
                   isOpen={this.state.isAddNewRootFolderModalOpen}

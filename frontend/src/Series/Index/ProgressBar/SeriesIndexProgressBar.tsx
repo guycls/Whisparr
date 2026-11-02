@@ -8,7 +8,6 @@ import createSeriesQueueItemsDetailsSelector, {
 import { SeriesStatus } from 'Series/Series';
 import getProgressBarKind from 'Utilities/Series/getProgressBarKind';
 import translate from 'Utilities/String/translate';
-import styles from './SeriesIndexProgressBar.css';
 
 interface SeriesIndexProgressBarProps {
   seriesId: number;
@@ -34,7 +33,6 @@ function SeriesIndexProgressBar(props: SeriesIndexProgressBarProps) {
     totalEpisodeCount,
     width,
     detailedProgressBar,
-    isStandalone,
   } = props;
 
   const queueDetails: SeriesQueueDetails = useSelector(
@@ -49,8 +47,6 @@ function SeriesIndexProgressBar(props: SeriesIndexProgressBarProps) {
 
   return (
     <ProgressBar
-      className={styles.progressBar}
-      containerClassName={isStandalone ? undefined : styles.progress}
       progress={progress}
       kind={getProgressBarKind(
         status,

@@ -1,16 +1,20 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragLayer } from 'react-dnd';
 import DragPreviewLayer from 'Components/DragPreviewLayer';
 import { QUALITY_PROFILE_ITEM } from 'Helpers/dragTypes';
-import dimensions from 'Styles/Variables/dimensions.js';
 import QualityProfileItem from './QualityProfileItem';
-import styles from './QualityProfileItemDragPreview.css';
 
-const formGroupExtraSmallWidth = parseInt(dimensions.formGroupExtraSmallWidth);
-const formLabelSmallWidth = parseInt(dimensions.formLabelSmallWidth);
-const formLabelRightMarginWidth = parseInt(dimensions.formLabelRightMarginWidth);
-const dragHandleWidth = parseInt(dimensions.dragHandleWidth);
+const sxDragPreview = {
+  width: 380,
+  opacity: 0.75
+};
+
+const formGroupExtraSmallWidth = parseInt('550px');
+const formLabelSmallWidth = parseInt('150px');
+const formLabelRightMarginWidth = parseInt('20px');
+const dragHandleWidth = parseInt('40px');
 
 function collectDragLayer(monitor) {
   return {
@@ -62,10 +66,9 @@ class QualityProfileItemDragPreview extends Component {
 
     return (
       <DragPreviewLayer>
-        <div
-          className={styles.dragPreview}
+        <Box
           style={style}
-        >
+         sx={sxDragPreview}>
           <QualityProfileItem
             editGroups={editGroups}
             isPreview={true}
@@ -74,7 +77,7 @@ class QualityProfileItemDragPreview extends Component {
             allowed={allowed}
             isDragging={false}
           />
-        </div>
+        </Box>
       </DragPreviewLayer>
     );
   }

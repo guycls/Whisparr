@@ -11,7 +11,6 @@ import EpisodeStatus from 'Episode/EpisodeStatus';
 import EpisodeTitleLink from 'Episode/EpisodeTitleLink';
 import EpisodeFileLanguageConnector from 'EpisodeFile/EpisodeFileLanguageConnector';
 import SeriesTitleLink from 'Series/SeriesTitleLink';
-import styles from './CutoffUnmetRow.css';
 
 function CutoffUnmetRow(props) {
   const {
@@ -64,7 +63,7 @@ function CutoffUnmetRow(props) {
             return (
               <TableRowCell
                 key={name}
-                className={styles.episode}
+                sx={{ width: 100 }}
               >
                 <EpisodeNumber
                   seasonNumber={seasonNumber}
@@ -96,7 +95,7 @@ function CutoffUnmetRow(props) {
             return (
               <TableRowCell
                 key={name}
-                className={styles.actors}
+                sx={{ width: 400 }}
               >
                 <span title={joinedPerformers}>
                   {joinedPerformers}
@@ -128,7 +127,7 @@ function CutoffUnmetRow(props) {
             return (
               <TableRowCell
                 key={name}
-                className={styles.languages}
+                sx={{ width: 100 }}
               >
                 <EpisodeFileLanguageConnector
                   episodeFileId={episodeFileId}
@@ -141,7 +140,7 @@ function CutoffUnmetRow(props) {
             return (
               <TableRowCell
                 key={name}
-                className={styles.status}
+                sx={{ width: 100 }}
               >
                 <EpisodeStatus
                   episodeId={id}

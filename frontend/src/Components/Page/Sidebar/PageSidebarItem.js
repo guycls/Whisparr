@@ -1,10 +1,12 @@
-import classNames from 'classnames';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
+import { withUrlBase } from 'Components/Link/Link';
 import { map } from 'Helpers/elementChildren';
-import styles from './PageSidebarItem.css';
 
 class PageSidebarItem extends Component {
 
@@ -18,7 +20,7 @@ class PageSidebarItem extends Component {
       onPress
     } = this.props;
 
-    if (isChildItem || !isParentItem) {
+    if ((isChildItem || !isParentItem) && onPress) {
       onPress();
     }
   };
@@ -38,42 +40,55 @@ class PageSidebarItem extends Component {
       children
     } = this.props;
 
+    const label = typeof title === 'function' ? title() : title;
+
     return (
-      <div
-        className={classNames(
-          styles.item,
-          isActiveParent && styles.isActiveItem
-        )}
-      >
-        <Link
-          className={classNames(
-            isChildItem ? styles.childLink : styles.link,
-            isActiveParent && styles.isActiveParentLink,
-            isActive && styles.isActiveLink
-          )}
-          to={to}
-          onPress={this.onPress}
+      <div>
+        <ListItemButton
+          component={RouterLink}
+          to={withUrlBase(to)}
+          selected={isActive || isActiveParent}
+          onClick={this.onPress}
+          sx={{
+            mx: 0.75,
+            my: '2px',
+            width: 'auto',
+            minHeight: 36,
+            borderRadius: 1,
+            pl: isChildItem ? 3.5 : 1.25,
+            pr: 1,
+            '&.Mui-selected': {
+              bgcolor: 'action.selected',
+            },
+            '&.Mui-selected:hover': {
+              bgcolor: 'action.selected',
+            },
+          }}
         >
           {
             !!iconName &&
-              <span className={styles.iconContainer}>
-                <Icon
-                  name={iconName}
-                />
-              </span>
+              <ListItemIcon sx={{ minWidth: 28 }}>
+                <Icon name={iconName} />
+              </ListItemIcon>
           }
 
-          <span className={isChildItem ? styles.noIcon : null}>
-            {typeof title === 'function' ? title() : title}
-          </span>
+          <ListItemText
+            primary={label}
+            slotProps={{
+              primary: {
+                sx: {
+                  whiteSpace: 'normal',
+                  lineHeight: 1.3,
+                },
+              },
+            }}
+          />
 
           {
             !!StatusComponent &&
-              <span className={styles.status}>
-                <StatusComponent />
-              </span>
+              <StatusComponent />
           }
-        </Link>
+        </ListItemButton>
 
         {
           children &&

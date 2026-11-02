@@ -4,21 +4,20 @@ import { useSelector } from 'react-redux';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import useMeasure from 'Helpers/Hooks/useMeasure';
 import Series from 'Series/Series';
-import dimensions from 'Styles/Variables/dimensions';
 import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
 import selectOverviewOptions from './selectOverviewOptions';
 import SeriesIndexOverview from './SeriesIndexOverview';
 
 // Poster container dimensions
-const columnPadding = parseInt(dimensions.seriesIndexColumnPadding);
+const columnPadding = parseInt('10px');
 const columnPaddingSmallScreen = parseInt(
-  dimensions.seriesIndexColumnPaddingSmallScreen
+  '5px'
 );
-const progressBarHeight = parseInt(dimensions.progressBarSmallHeight);
-const detailedProgressBarHeight = parseInt(dimensions.progressBarMediumHeight);
-const bodyPadding = parseInt(dimensions.pageContentBodyPadding);
+const progressBarHeight = parseInt('5px');
+const detailedProgressBarHeight = parseInt('15px');
+const bodyPadding = parseInt('20px');
 const bodyPaddingSmallScreen = parseInt(
-  dimensions.pageContentBodyPaddingSmallScreen
+  '10px'
 );
 
 interface RowItemData {

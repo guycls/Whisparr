@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import CheckInput from 'Components/Form/CheckInput';
 import Icon from 'Components/Icon';
 import { icons, kinds } from 'Helpers/Props';
-import styles from './OrganizePreviewRow.css';
 
 class OrganizePreviewRow extends Component {
 
@@ -43,13 +43,26 @@ class OrganizePreviewRow extends Component {
     } = this.props;
 
     return (
-      <div className={styles.row}>
-        <CheckInput
-          containerClassName={styles.selectedContainer}
-          name={id.toString()}
-          value={isSelected}
-          onChange={this.onSelectedChange}
-        />
+      <Box
+        sx={{
+          display: 'flex',
+          mb: '5px',
+          py: '5px',
+          borderBottom: '1px solid var(--borderColor)',
+          '&:last-of-type': {
+            mb: 0,
+            pb: 0,
+            borderBottom: 'none'
+          }
+        }}
+      >
+        <Box sx={{ mr: '30px' }}>
+          <CheckInput
+            name={id.toString()}
+            value={isSelected}
+            onChange={this.onSelectedChange}
+          />
+        </Box>
 
         <div>
           <div>
@@ -58,9 +71,9 @@ class OrganizePreviewRow extends Component {
               kind={kinds.DANGER}
             />
 
-            <span className={styles.path}>
+            <Box component="span" sx={{ ml: '10px' }}>
               {existingPath}
-            </span>
+            </Box>
           </div>
 
           <div>
@@ -69,12 +82,12 @@ class OrganizePreviewRow extends Component {
               kind={kinds.SUCCESS}
             />
 
-            <span className={styles.path}>
+            <Box component="span" sx={{ ml: '10px' }}>
               {newPath}
-            </span>
+            </Box>
           </div>
         </div>
-      </div>
+      </Box>
     );
   }
 }

@@ -1,33 +1,30 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import styles from './PageContentFooter.css';
+import React from 'react';
 
-class PageContentFooter extends Component {
+function PageContentFooter(props) {
+  const {
+    className,
+    children
+  } = props;
 
-  //
-  // Render
-
-  render() {
-    const {
-      className,
-      children
-    } = this.props;
-
-    return (
-      <div className={className}>
-        {children}
-      </div>
-    );
-  }
+  return (
+    <Box
+      className={className}
+      sx={{
+        flex: '0 0 auto',
+        borderTop: 1,
+        borderColor: 'divider'
+      }}
+    >
+      {children}
+    </Box>
+  );
 }
 
 PageContentFooter.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node.isRequired
-};
-
-PageContentFooter.defaultProps = {
-  className: styles.contentFooter
 };
 
 export default PageContentFooter;

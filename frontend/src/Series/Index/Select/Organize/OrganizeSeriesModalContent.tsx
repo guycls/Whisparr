@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { orderBy } from 'lodash';
 import React, { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,7 +16,6 @@ import Series from 'Series/Series';
 import { executeCommand } from 'Store/Actions/commandActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
 import translate from 'Utilities/String/translate';
-import styles from './OrganizeSeriesModalContent.css';
 
 interface OrganizeSeriesModalContentProps {
   seriesIds: number[];
@@ -61,14 +62,16 @@ function OrganizeSeriesModalContent(props: OrganizeSeriesModalContentProps) {
       <ModalBody>
         <Alert>
           {translate('OrganizeSelectedSitesModalAlert')}
-          <Icon className={styles.renameIcon} name={icons.ORGANIZE} />
+          <Box component="span" sx={{ ml: '5px', display: 'inline-flex' }}>
+            <Icon name={icons.ORGANIZE} />
+          </Box>
         </Alert>
 
-        <div className={styles.message}>
+        <Typography sx={{ mt: '20px', mb: '10px' }}>
           {translate('OrganizeSelectedSitesModalConfirmation', {
             count: seriesTitles.length,
           })}
-        </div>
+        </Typography>
 
         <ul>
           {seriesTitles.map((title) => {

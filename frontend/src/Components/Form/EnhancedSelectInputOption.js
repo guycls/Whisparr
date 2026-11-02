@@ -1,11 +1,10 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import CheckInput from './CheckInput';
-import styles from './EnhancedSelectInputOption.css';
 
 class EnhancedSelectInputOption extends Component {
 
@@ -43,17 +42,37 @@ class EnhancedSelectInputOption extends Component {
       children
     } = this.props;
 
+    const selected = isSelected && !isMultiSelect;
+
     return (
       <Link
-        className={classNames(
-          className,
-          isSelected && !isMultiSelect && styles.isSelected,
-          isDisabled && !isMultiSelect && styles.isDisabled,
-          isHidden && styles.isHidden,
-          isMobile && styles.isMobile
-        )}
+        className={className}
         component="div"
         isDisabled={isDisabled}
+        sx={{
+          display: isHidden ? 'none' : 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '5px 10px',
+          width: '100%',
+          minWidth: 0,
+          borderRadius: 0,
+          textTransform: 'none',
+          fontWeight: 'normal',
+          color: 'inherit',
+          cursor: isDisabled ? 'not-allowed' : 'default',
+          backgroundColor: selected ?
+            (isMobile ? 'inherit' : 'var(--inputSelectedBackgroundColor)') :
+            (isDisabled && !isMultiSelect ? '#aaa' : undefined),
+          height: isMobile ? 50 : undefined,
+          borderBottom: isMobile ? '1px solid var(--borderColor)' : undefined,
+          '&:last-child': isMobile ? { border: 'none' } : undefined,
+          '&:hover': {
+            backgroundColor: selected && !isMobile ?
+              'var(--inputSelectedBackgroundColor)' :
+              (isMobile ? 'unset' : 'var(--inputHoverBackgroundColor)')
+          }
+        }}
         onPress={this.onPress}
       >
 
@@ -64,25 +83,29 @@ class EnhancedSelectInputOption extends Component {
 
         {
           isMultiSelect &&
-            <CheckInput
-              className={styles.optionCheckInput}
-              containerClassName={styles.optionCheck}
-              name={`select-${id}`}
-              value={isSelected}
-              isDisabled={isDisabled}
-              onChange={this.onCheckPress}
-            />
+            <Box sx={{ flex: '0 0 0' }}>
+              <CheckInput
+                name={`select-${id}`}
+                value={isSelected}
+                isDisabled={isDisabled}
+                onChange={this.onCheckPress}
+              />
+            </Box>
         }
 
         {children}
 
         {
           isMobile &&
-            <div className={styles.iconContainer}>
+            <Box
+              sx={{
+                color: selected ? 'var(--primaryColor)' : undefined
+              }}
+            >
               <Icon
                 name={isSelected ? icons.CHECK_CIRCLE : icons.CIRCLE_OUTLINE}
               />
-            </div>
+            </Box>
         }
       </Link>
     );
@@ -90,7 +113,7 @@ class EnhancedSelectInputOption extends Component {
 }
 
 EnhancedSelectInputOption.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   depth: PropTypes.number.isRequired,
   isSelected: PropTypes.bool.isRequired,
@@ -103,7 +126,6 @@ EnhancedSelectInputOption.propTypes = {
 };
 
 EnhancedSelectInputOption.defaultProps = {
-  className: styles.option,
   depth: 0,
   isDisabled: false,
   isHidden: false,

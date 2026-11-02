@@ -1,4 +1,5 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
+import { SxProps, Theme } from '@mui/material/styles';
 import { throttle } from 'lodash';
 import React, {
   ForwardedRef,
@@ -9,7 +10,6 @@ import React, {
   useRef,
 } from 'react';
 import { ScrollDirection } from 'Helpers/Props/scrollDirections';
-import styles from './Scroller.css';
 
 export interface OnScroll {
   scrollLeft: number;
@@ -24,6 +24,8 @@ interface ScrollerProps {
   scrollTop?: number;
   initialScrollTop?: number;
   children?: ReactNode;
+  style?: React.CSSProperties;
+  sx?: SxProps<Theme>;
   onScroll?: (payload: OnScroll) => void;
 }
 
@@ -38,15 +40,16 @@ const Scroller = forwardRef(
       scrollTop,
       initialScrollTop,
       onScroll,
+      sx,
       ...otherProps
     } = props;
 
-    const internalRef = useRef();
+    const internalRef = useRef<HTMLDivElement>(null);
     const currentRef = (ref as MutableRefObject<HTMLDivElement>) ?? internalRef;
 
     useEffect(
       () => {
-        if (initialScrollTop != null) {
+        if (initialScrollTop != null && currentRef.current) {
           currentRef.current.scrollTop = initialScrollTop;
         }
       },
@@ -55,6 +58,10 @@ const Scroller = forwardRef(
     );
 
     useEffect(() => {
+      if (!currentRef.current) {
+        return;
+      }
+
       if (scrollTop != null) {
         currentRef.current.scrollTop = scrollTop;
       }
@@ -66,6 +73,10 @@ const Scroller = forwardRef(
 
     useEffect(() => {
       const div = currentRef.current;
+
+      if (!div) {
+        return;
+      }
 
       const handleScroll = throttle(() => {
         const scrollLeft = div.scrollLeft;
@@ -81,20 +92,54 @@ const Scroller = forwardRef(
       };
     }, [currentRef, onScroll]);
 
+    let overflowX: 'auto' | 'hidden' | 'scroll' = 'hidden';
+    let overflowY: 'auto' | 'hidden' | 'scroll' = 'hidden';
+
+    if (scrollDirection === 'vertical') {
+      overflowY = autoScroll ? 'auto' : 'scroll';
+    } else if (scrollDirection === 'horizontal') {
+      overflowX = autoScroll ? 'auto' : 'scroll';
+    } else if (scrollDirection === 'both') {
+      overflowX = autoScroll ? 'auto' : 'scroll';
+      overflowY = autoScroll ? 'auto' : 'scroll';
+    }
+
     return (
-      <div
+      <Box
         {...otherProps}
         ref={currentRef}
-        className={classNames(
-          className,
-          styles.scroller,
-          styles[scrollDirection],
-          autoScroll && styles.autoScroll
-        )}
+        className={className}
         tabIndex={-1}
+        sx={[
+          {
+            WebkitOverflowScrolling: 'touch',
+            scrollbarColor: 'var(--scrollbarBackgroundColor) transparent',
+            scrollbarWidth: 'thin',
+            overflowX,
+            overflowY,
+            '&::-webkit-scrollbar': {
+              width: 10,
+              height: 10,
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              minHeight: 100,
+              border: '1px solid transparent',
+              borderRadius: '5px',
+              backgroundColor: 'var(--scrollbarBackgroundColor)',
+              backgroundClip: 'padding-box',
+              '&:hover': {
+                backgroundColor: 'var(--scrollbarHoverBackgroundColor)',
+              },
+            },
+          },
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ]}
       >
         {children}
-      </div>
+      </Box>
     );
   }
 );

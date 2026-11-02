@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Button from 'Components/Link/Button';
@@ -8,7 +9,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import CustomFilter from './CustomFilter';
-import styles from './CustomFiltersModalContent.css';
 
 function CustomFiltersModalContent(props) {
   const {
@@ -51,11 +51,11 @@ function CustomFiltersModalContent(props) {
             })
         }
 
-        <div className={styles.addButtonContainer}>
+        <Box sx={{ mt: '15px' }}>
           <Button onPress={onAddCustomFilter}>
             {translate('AddCustomFilter')}
           </Button>
-        </div>
+        </Box>
       </ModalBody>
 
       <ModalFooter>

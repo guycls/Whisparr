@@ -1,7 +1,6 @@
-import classNames from 'classnames';
+import TextField from '@mui/material/TextField';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import styles from './TextInput.css';
 
 class TextInput extends Component {
 
@@ -132,33 +131,38 @@ class TextInput extends Component {
       value,
       hasError,
       hasWarning,
-      hasButton,
       step,
       min,
       max,
+      sx,
       onBlur,
       onCopy
     } = this.props;
 
     return (
-      <input
-        ref={this.setInputRef}
+      <TextField
+        className={className}
+        inputRef={this.setInputRef}
+        fullWidth={true}
+        size="small"
+        sx={sx}
         type={type}
-        readOnly={readOnly}
+        slotProps={{
+          input: {
+            readOnly
+          },
+          htmlInput: {
+            step,
+            min,
+            max
+          }
+        }}
         autoFocus={autoFocus}
         placeholder={placeholder}
-        className={classNames(
-          className,
-          readOnly && styles.readOnly,
-          hasError && styles.hasError,
-          hasWarning && styles.hasWarning,
-          hasButton && styles.hasButton
-        )}
         name={name}
         value={value}
-        step={step}
-        min={min}
-        max={max}
+        error={!!hasError}
+        color={hasWarning ? 'warning' : 'primary'}
         onChange={this.onChange}
         onFocus={this.onFocus}
         onBlur={onBlur}
@@ -174,7 +178,8 @@ class TextInput extends Component {
 }
 
 TextInput.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  sx: PropTypes.object,
   type: PropTypes.string.isRequired,
   readOnly: PropTypes.bool,
   autoFocus: PropTypes.bool,
@@ -195,7 +200,6 @@ TextInput.propTypes = {
 };
 
 TextInput.defaultProps = {
-  className: styles.input,
   type: 'text',
   readOnly: false,
   autoFocus: false,

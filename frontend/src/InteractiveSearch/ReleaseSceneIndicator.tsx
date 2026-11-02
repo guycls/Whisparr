@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import _ from 'lodash';
 import React from 'react';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
@@ -7,7 +7,43 @@ import Icon from 'Components/Icon';
 import Popover from 'Components/Tooltip/Popover';
 import { icons, tooltipPositions } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ReleaseSceneIndicator.css';
+
+type SceneLevel =
+  | 'none'
+  | 'mixed'
+  | 'unknown'
+  | 'mapped'
+  | 'normal'
+  | 'notRequested';
+
+const levelSx: Record<SceneLevel, object> = {
+  none: {
+    borderColor: 'var(--textColor)',
+    color: 'var(--textColor)',
+    opacity: 0.2,
+    '&:hover': { opacity: 1 },
+  },
+  mixed: {
+    borderColor: 'var(--dangerColor)',
+    color: 'var(--dangerColor)',
+  },
+  unknown: {
+    borderColor: 'var(--warningColor)',
+    color: 'var(--warningColor)',
+  },
+  mapped: {
+    borderColor: 'var(--textColor)',
+    color: 'var(--textColor)',
+  },
+  normal: {
+    borderColor: 'var(--textColor)',
+    color: 'var(--textColor)',
+  },
+  notRequested: {
+    borderColor: 'var(--dangerColor)',
+    color: 'var(--dangerColor)',
+  },
+};
 
 function formatReleaseNumber(
   seasonNumber: number | undefined,
@@ -40,7 +76,7 @@ function formatReleaseNumber(
 }
 
 interface ReleaseSceneIndicatorProps {
-  className: string;
+  className?: string;
   seasonNumber?: number;
   episodeNumbers?: number[];
   absoluteEpisodeNumbers?: number[];
@@ -107,10 +143,10 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
   const isMixed = sceneOrigin === 'mixed';
   const isUnknown = sceneOrigin === 'unknown' || sceneOrigin === 'unknown:tvdb';
 
-  let level = styles.levelNone;
+  let level: SceneLevel = 'none';
 
   if (isMixed) {
-    level = styles.levelMixed;
+    level = 'mixed';
     messages.push(
       <div key="source">
         {translate('ReleaseSceneIndicatorSourceMessage', {
@@ -119,7 +155,7 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
       </div>
     );
   } else if (isUnknown) {
-    level = styles.levelUnknown;
+    level = 'unknown';
     messages.push(
       <div key="unknown">
         {translate('ReleaseSceneIndicatorUnknownMessage')}
@@ -137,14 +173,14 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
       );
     }
   } else if (mappingDifferent) {
-    level = styles.levelMapped;
+    level = 'mapped';
   } else if (sceneOrigin) {
-    level = styles.levelNormal;
+    level = 'normal';
   }
 
   if (!episodeRequested) {
     if (!isMixed && !isUnknown) {
-      level = styles.levelNotRequested;
+      level = 'notRequested';
     }
     if (mappedNumber) {
       messages.push(
@@ -162,11 +198,24 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
   }
 
   const table = (
-    <DescriptionList className={styles.descriptionList}>
+    <Box
+      sx={{
+        mr: '10px',
+        '& dt': {
+          '@media (min-width: 768px)': {
+            width: '80px !important',
+          },
+        },
+        '& dd': {
+          '@media (min-width: 768px)': {
+            marginLeft: '100px !important',
+          },
+        },
+      }}
+    >
+    <DescriptionList>
       {comment !== undefined && (
         <DescriptionListItem
-          titleClassName={styles.title}
-          descriptionClassName={styles.description}
           title={translate('Mapping')}
           data={comment}
         />
@@ -174,8 +223,6 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
 
       {title !== undefined && (
         <DescriptionListItem
-          titleClassName={styles.title}
-          descriptionClassName={styles.description}
           title={translate('Title')}
           data={title}
         />
@@ -183,8 +230,6 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
 
       {releaseNumber !== undefined && (
         <DescriptionListItem
-          titleClassName={styles.title}
-          descriptionClassName={styles.description}
           title={translate('Release')}
           data={releaseNumber ?? 'unknown'}
         />
@@ -192,28 +237,40 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
 
       {releaseNumber !== undefined && (
         <DescriptionListItem
-          titleClassName={styles.title}
-          descriptionClassName={styles.description}
           title={translate('TheTvdb')}
           data={mappedNumber ?? 'unknown'}
         />
       )}
     </DescriptionList>
+    </Box>
   );
 
   return (
     <Popover
       anchor={
-        <div className={classNames(level, styles.container, className)}>
+        <Box
+          className={className}
+          sx={{
+            m: '2px',
+            px: '2px',
+            border: '1px solid',
+            borderRadius: '2px',
+            whiteSpace: 'nowrap',
+            fontSize: 12,
+            cursor: 'default',
+            flexShrink: 0,
+            ...levelSx[level],
+          }}
+        >
           <Icon name={icons.SCENE_MAPPING} />
-        </div>
+        </Box>
       }
       title={translate('SceneInfo')}
       body={
         <div>
           {table}
           {(messages.length && (
-            <div className={styles.messages}>{messages}</div>
+            <Box sx={{ mt: '15px' }}>{messages}</Box>
           )) ||
             null}
         </div>

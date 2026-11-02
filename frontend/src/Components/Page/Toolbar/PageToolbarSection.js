@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Measure from 'Components/Measure';
@@ -7,14 +7,11 @@ import MenuContent from 'Components/Menu/MenuContent';
 import ToolbarMenuButton from 'Components/Menu/ToolbarMenuButton';
 import { forEach } from 'Helpers/elementChildren';
 import { align, icons } from 'Helpers/Props';
-import dimensions from 'Styles/Variables/dimensions';
 import translate from 'Utilities/String/translate';
 import PageToolbarOverflowMenuItem from './PageToolbarOverflowMenuItem';
-import styles from './PageToolbarSection.css';
 
-const BUTTON_WIDTH = parseInt(dimensions.toolbarButtonWidth);
-const SEPARATOR_MARGIN = parseInt(dimensions.toolbarSeparatorMargin);
-const SEPARATOR_WIDTH = 2 * SEPARATOR_MARGIN + 1;
+const BUTTON_WIDTH = 76;
+const SEPARATOR_WIDTH = 17;
 
 function calculateOverflowItems(children, isMeasured, width, collapseButtons) {
   let buttonCount = 0;
@@ -136,18 +133,23 @@ class PageToolbarSection extends Component {
         whitelist={['width']}
         onMeasure={this.onMeasure}
       >
-        <div
-          className={styles.sectionContainer}
-          style={{
-            flexGrow: buttonCount
+        <Box
+          sx={{
+            flexGrow: buttonCount,
+            display: 'flex',
+            justifyContent: alignContent === align.RIGHT ? 'flex-end' : alignContent === align.CENTER ? 'center' : 'flex-start',
+            alignItems: 'center',
+            minWidth: 0
           }}
         >
           {
             isMeasured ?
-              <div className={classNames(
-                styles.section,
-                styles[alignContent]
-              )}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
               >
                 {
                   buttons.map((button) => {
@@ -159,7 +161,6 @@ class PageToolbarSection extends Component {
                   !!overflowItems.length &&
                     <Menu>
                       <ToolbarMenuButton
-                        className={styles.overflowMenuButton}
                         iconName={icons.OVERFLOW}
                         text={translate('More')}
                       />
@@ -183,10 +184,10 @@ class PageToolbarSection extends Component {
                       </MenuContent>
                     </Menu>
                 }
-              </div> :
+              </Box> :
               null
           }
-        </div>
+        </Box>
       </Measure>
     );
   }

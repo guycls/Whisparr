@@ -1,41 +1,41 @@
+import MuiIconButton from '@mui/material/IconButton';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ModalContent.css';
 
 function ModalContent(props) {
   const {
-    className,
     children,
     showCloseButton,
-    onModalClose,
-    ...otherProps
+    onModalClose
   } = props;
 
   return (
-    <div
-      className={className}
-      {...otherProps}
-    >
+    <>
       {
         showCloseButton &&
-          <Link
-            className={styles.closeButton}
-            onPress={onModalClose}
+          <MuiIconButton
+            aria-label={translate('Close')}
+            onClick={onModalClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              zIndex: 1
+            }}
           >
             <Icon
               name={icons.CLOSE}
               size={18}
               title={translate('Close')}
             />
-          </Link>
+          </MuiIconButton>
       }
 
       {children}
-    </div>
+    </>
   );
 }
 
@@ -47,7 +47,6 @@ ModalContent.propTypes = {
 };
 
 ModalContent.defaultProps = {
-  className: styles.modalContent,
   showCloseButton: true
 };
 

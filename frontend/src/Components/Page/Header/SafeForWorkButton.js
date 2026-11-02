@@ -1,10 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
+import IconButton from 'Components/Link/IconButton';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './SafeForWorkButton.css';
 
 function SafeForWorkButton(props) {
   const {
@@ -13,16 +11,12 @@ function SafeForWorkButton(props) {
   } = props;
 
   return (
-    <Link
-      className={styles.button}
+    <IconButton
       title={safeForWorkMode ? translate('HiddenClickToShow') : translate('ShownClickToHide')}
+      name={safeForWorkMode ? icons.SFW : icons.NSFW}
+      size={18}
       onPress={onSafeForWorkModePress}
-    >
-      <Icon
-        name={safeForWorkMode ? icons.SFW : icons.NSFW}
-        size={21}
-      />
-    </Link>
+    />
   );
 }
 

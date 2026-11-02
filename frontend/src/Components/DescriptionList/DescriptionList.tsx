@@ -1,15 +1,17 @@
+import Box from '@mui/material/Box';
 import React from 'react';
-import styles from './DescriptionList.css';
 
 interface DescriptionListProps {
   className?: string;
   children?: React.ReactNode;
 }
 
-function DescriptionList(props: DescriptionListProps) {
-  const { className = styles.descriptionList, children } = props;
-
-  return <dl className={className}>{children}</dl>;
+function DescriptionList({ className, children }: DescriptionListProps) {
+  return (
+    <Box className={className} component="dl" sx={{ mt: 0, mb: 0 }}>
+      {children}
+    </Box>
+  );
 }
 
 export default DescriptionList;

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
@@ -24,7 +25,14 @@ import selectSettings from 'Store/Selectors/selectSettings';
 import ImportListExclusion from 'typings/ImportListExclusion';
 import { PendingSection } from 'typings/Pending';
 import translate from 'Utilities/String/translate';
-import styles from './EditImportListExclusionModalContent.css';
+
+const sxBody = {
+  flex: '1 1 430px',
+};
+
+const sxDeleteButton = {
+  mr: 'auto',
+};
 
 const newImportListExclusion = {
   title: '',
@@ -122,7 +130,8 @@ function EditImportListExclusionModalContent(
           : translate('AddImportListExclusion')}
       </ModalHeader>
 
-      <ModalBody className={styles.body}>
+      <Box sx={sxBody}>
+<ModalBody>
         {isFetching && <LoadingIndicator />}
 
         {!isFetching && !!error && (
@@ -159,16 +168,18 @@ function EditImportListExclusionModalContent(
           </Form>
         )}
       </ModalBody>
+</Box>
 
       <ModalFooter>
         {id && (
-          <Button
-            className={styles.deleteButton}
+          <Box sx={sxDeleteButton}>
+<Button
             kind={kinds.DANGER}
             onPress={onDeleteImportListExclusionPress}
           >
             {translate('Delete')}
           </Button>
+</Box>
         )}
 
         <Button onPress={onModalClose}>{translate('Cancel')}</Button>

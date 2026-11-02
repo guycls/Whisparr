@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, {
   useCallback,
   useEffect,
@@ -61,7 +62,6 @@ import SeriesIndexFooter from './SeriesIndexFooter';
 import SeriesIndexRefreshSeriesButton from './SeriesIndexRefreshSeriesButton';
 import SeriesIndexTable from './Table/SeriesIndexTable';
 import SeriesIndexTableOptions from './Table/SeriesIndexTableOptions';
-import styles from './SeriesIndex.css';
 
 function getViewComponent(view: string) {
   if (view === 'posters') {
@@ -345,13 +345,40 @@ function SeriesIndex(props: SeriesIndexProps) {
             />
           </PageToolbarSection>
         </PageToolbar>
-        <div className={styles.pageContentBodyWrapper}>
+        <Box
+          sx={(theme) => ({
+            display: 'flex',
+            flex: '1 0 1px',
+            overflow: 'hidden',
+            [theme.breakpoints.down('md')]: {
+              flexBasis: 'auto',
+            },
+            '& > div:first-of-type': {
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              flex: '1 0 1px',
+              [theme.breakpoints.down('md')]: {
+                flexBasis: '1px',
+              },
+            },
+            '& > div:first-of-type > .MuiBox-root': {
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              ...(view === 'posters'
+                ? {
+                    padding: '15px',
+                    [theme.breakpoints.down('md')]: {
+                      padding: '5px',
+                    },
+                  }
+                : {}),
+            },
+          })}
+        >
           <PageContentBody
             ref={scrollerRef}
-            className={styles.contentBody}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            innerClassName={styles[`${view}InnerContentBody`]}
             initialScrollTop={initialScrollTop}
             onScroll={onScroll}
           >
@@ -362,7 +389,13 @@ function SeriesIndex(props: SeriesIndexProps) {
             ) : null}
 
             {isLoaded ? (
-              <div className={styles.contentBodyContainer}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flexGrow: 1,
+                }}
+              >
                 <ViewComponent
                   scrollerRef={scrollerRef}
                   items={items}
@@ -374,7 +407,7 @@ function SeriesIndex(props: SeriesIndexProps) {
                 />
 
                 <SeriesIndexFooter />
-              </div>
+              </Box>
             ) : null}
 
             {!error && isPopulated && !items.length ? (
@@ -387,7 +420,7 @@ function SeriesIndex(props: SeriesIndexProps) {
               onItemPress={onJumpBarItemPress}
             />
           ) : null}
-        </div>
+        </Box>
 
         {isSelectMode ? <SeriesIndexSelectFooter /> : null}
 

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Form from 'Components/Form/Form';
@@ -13,13 +14,41 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
-import dimensions from 'Styles/Variables/dimensions';
 import translate from 'Utilities/String/translate';
 import QualityProfileFormatItems from './QualityProfileFormatItems';
 import QualityProfileItems from './QualityProfileItems';
-import styles from './EditQualityProfileModalContent.css';
 
-const MODAL_BODY_PADDING = parseInt(dimensions.modalBodyPadding);
+const sxFormGroupsContainer = (theme) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  [`@media (max-width: ${theme.breakpoints.values.lg + 100}px)`]: {
+    display: 'block'
+  }
+});
+
+const sxFormGroupWrapper = {
+  flex: '0 0 550px'
+};
+
+const sxFormatItemLarge = (theme) => ({
+  flex: '0 0 550px',
+  [`@media (max-width: ${theme.breakpoints.values.lg + 100}px)`]: {
+    display: 'none'
+  }
+});
+
+const sxDeleteButtonContainer = {
+  mr: 'auto'
+};
+
+const sxFormatItemSmall = (theme) => ({
+  display: 'none',
+  [`@media (max-width: ${theme.breakpoints.values.lg + 100}px)`]: {
+    display: 'block'
+  }
+});
+
+const MODAL_BODY_PADDING = parseInt('30px');
 
 function getCustomFormatRender(formatItems, otherProps) {
   return (
@@ -163,8 +192,8 @@ class EditQualityProfileModalContent extends Component {
                   <Form
                     {...otherProps}
                   >
-                    <div className={styles.formGroupsContainer}>
-                      <div className={styles.formGroupWrapper}>
+                    <Box sx={sxFormGroupsContainer}>
+                      <Box sx={sxFormGroupWrapper}>
                         <FormGroup size={sizes.EXTRA_SMALL}>
                           <FormLabel size={sizes.SMALL}>
                             {translate('Name')}
@@ -263,12 +292,12 @@ class EditQualityProfileModalContent extends Component {
                             null
                         }
 
-                        <div className={styles.formatItemLarge}>
+                        <Box sx={sxFormatItemLarge}>
                           {getCustomFormatRender(formatItems, otherProps)}
-                        </div>
-                      </div>
+                        </Box>
+                      </Box>
 
-                      <div className={styles.formGroupWrapper}>
+                      <Box sx={sxFormGroupWrapper}>
                         <QualityProfileItems
                           editGroups={editGroups}
                           qualityProfileItems={items.value}
@@ -276,12 +305,12 @@ class EditQualityProfileModalContent extends Component {
                           warnings={items.warnings}
                           {...otherProps}
                         />
-                      </div>
+                      </Box>
 
-                      <div className={styles.formatItemSmall}>
+                      <Box sx={sxFormatItemSmall}>
                         {getCustomFormatRender(formatItems, otherProps)}
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   </Form>
 
               }
@@ -297,14 +326,13 @@ class EditQualityProfileModalContent extends Component {
           <ModalFooter>
             {
               id ?
-                <div
-                  className={styles.deleteButtonContainer}
+                <Box
                   title={
                     isInUse ?
                       translate('QualityProfileInUse') :
                       undefined
                   }
-                >
+                 sx={sxDeleteButtonContainer}>
                   <Button
                     kind={kinds.DANGER}
                     isDisabled={isInUse}
@@ -312,7 +340,7 @@ class EditQualityProfileModalContent extends Component {
                   >
                     {translate('Delete')}
                   </Button>
-                </div> :
+                </Box> :
                 null
             }
 

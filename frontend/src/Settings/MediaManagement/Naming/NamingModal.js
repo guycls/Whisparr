@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FieldSet from 'Components/FieldSet';
@@ -14,7 +15,28 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { icons, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import NamingOption from './NamingOption';
-import styles from './NamingModal.css';
+
+const sxGroups = (theme) => ({
+  display: 'flex',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  mb: theme.spacing(2.5)
+});
+
+const sxNamingSelectContainer = {
+  display: 'flex',
+  justifyContent: 'flex-end'
+};
+
+const sxNamingSelect = (theme) => ({
+  ml: theme.spacing(1.25),
+  width: 200
+});
+
+const sxFootNote = (theme) => ({
+  display: 'flex',
+  color: theme.palette.text.secondary
+});
 
 const separatorOptions = [
   {
@@ -243,28 +265,30 @@ class NamingModal extends Component {
           </ModalHeader>
 
           <ModalBody>
-            <div className={styles.namingSelectContainer}>
-              <SelectInput
-                className={styles.namingSelect}
+            <Box sx={sxNamingSelectContainer}>
+              <Box sx={sxNamingSelect}>
+<SelectInput
                 name="separator"
                 value={tokenSeparator}
                 values={separatorOptions}
                 onChange={this.onTokenSeparatorChange}
               />
+</Box>
 
-              <SelectInput
-                className={styles.namingSelect}
+              <Box sx={sxNamingSelect}>
+<SelectInput
                 name="case"
                 value={tokenCase}
                 values={caseOptions}
                 onChange={this.onTokenCaseChange}
               />
-            </div>
+</Box>
+            </Box>
 
             {
               !advancedSettings &&
                 <FieldSet legend={translate('FileNames')}>
-                  <div className={styles.groups}>
+                  <Box sx={sxGroups}>
                     {
                       fileNameTokens.map(({ token, example }) => {
                         return (
@@ -284,12 +308,12 @@ class NamingModal extends Component {
                       }
                       )
                     }
-                  </div>
+                  </Box>
                 </FieldSet>
             }
 
             <FieldSet legend={translate('Site')}>
-              <div className={styles.groups}>
+              <Box sx={sxGroups}>
                 {
                   seriesTokens.map(({ token, example }) => {
                     return (
@@ -307,11 +331,11 @@ class NamingModal extends Component {
                   }
                   )
                 }
-              </div>
+              </Box>
             </FieldSet>
 
             <FieldSet legend={translate('SiteID')}>
-              <div className={styles.groups}>
+              <Box sx={sxGroups}>
                 {
                   seriesIdTokens.map(({ token, example }) => {
                     return (
@@ -329,14 +353,14 @@ class NamingModal extends Component {
                   }
                   )
                 }
-              </div>
+              </Box>
             </FieldSet>
 
             {
               episode &&
                 <div>
                   <FieldSet legend={translate('ReleaseDate')}>
-                    <div className={styles.groups}>
+                    <Box sx={sxGroups}>
                       {
                         airDateTokens.map(({ token, example }) => {
                           return (
@@ -354,7 +378,7 @@ class NamingModal extends Component {
                         }
                         )
                       }
-                    </div>
+                    </Box>
                   </FieldSet>
                 </div>
             }
@@ -363,7 +387,7 @@ class NamingModal extends Component {
               additional &&
                 <div>
                   <FieldSet legend={translate('EpisodeTitle')}>
-                    <div className={styles.groups}>
+                    <Box sx={sxGroups}>
                       {
                         episodeTitleTokens.map(({ token, example }) => {
                           return (
@@ -381,11 +405,11 @@ class NamingModal extends Component {
                         }
                         )
                       }
-                    </div>
+                    </Box>
                   </FieldSet>
 
                   <FieldSet legend={translate('Quality')}>
-                    <div className={styles.groups}>
+                    <Box sx={sxGroups}>
                       {
                         qualityTokens.map(({ token, example }) => {
                           return (
@@ -403,11 +427,11 @@ class NamingModal extends Component {
                         }
                         )
                       }
-                    </div>
+                    </Box>
                   </FieldSet>
 
                   <FieldSet legend={translate('MediaInfo')}>
-                    <div className={styles.groups}>
+                    <Box sx={sxGroups}>
                       {
                         mediaInfoTokens.map(({ token, example, footNote }) => {
                           return (
@@ -426,16 +450,16 @@ class NamingModal extends Component {
                         }
                         )
                       }
-                    </div>
+                    </Box>
 
-                    <div className={styles.footNote}>
-                      <Icon className={styles.icon} name={icons.FOOTNOTE} />
+                    <Box sx={sxFootNote}>
+                      <Icon name={icons.FOOTNOTE} />
                       <InlineMarkdown data={translate('MediaInfoFootNote')} />
-                    </div>
+                    </Box>
                   </FieldSet>
 
                   <FieldSet legend={translate('Other')}>
-                    <div className={styles.groups}>
+                    <Box sx={sxGroups}>
                       {
                         otherTokens.map(({ token, example }) => {
                           return (
@@ -453,11 +477,11 @@ class NamingModal extends Component {
                         }
                         )
                       }
-                    </div>
+                    </Box>
                   </FieldSet>
 
                   <FieldSet legend={translate('Original')}>
-                    <div className={styles.groups}>
+                    <Box sx={sxGroups}>
                       {
                         originalTokens.map(({ token, example }) => {
                           return (
@@ -476,7 +500,7 @@ class NamingModal extends Component {
                         }
                         )
                       }
-                    </div>
+                    </Box>
                   </FieldSet>
                 </div>
             }

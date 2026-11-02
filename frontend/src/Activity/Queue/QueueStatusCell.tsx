@@ -6,7 +6,6 @@ import {
   StatusMessage,
 } from 'typings/Queue';
 import QueueStatus from './QueueStatus';
-import styles from './QueueStatusCell.css';
 
 interface QueueStatusCellProps {
   sourceTitle: string;
@@ -28,7 +27,7 @@ function QueueStatusCell(props: QueueStatusCellProps) {
   } = props;
 
   return (
-    <TableRowCell className={styles.status}>
+    <TableRowCell sx={{ width: 30 }}>
       <QueueStatus
         sourceTitle={sourceTitle}
         status={status}

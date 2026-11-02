@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { useCallback, useState } from 'react';
 import Card from 'Components/Card';
@@ -8,7 +9,30 @@ import TagList from 'Components/TagList';
 import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditAutoTaggingModal from './EditAutoTaggingModal';
-import styles from './AutoTagging.css';
+
+const sxAutoTagging = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxNameContainer = {
+  display: 'flex',
+  justifyContent: 'space-between'
+};
+
+const sxName = (theme) => ({
+  mb: theme.spacing(2.5),
+  fontWeight: 300,
+  fontSize: 24,
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+});
+
+const sxCloneButton = {
+  height: 36
+};
 
 export default function AutoTagging(props) {
   const {
@@ -51,25 +75,24 @@ export default function AutoTagging(props) {
   }, [id, onCloneAutoTaggingPress]);
 
   return (
-    <Card
-      className={styles.autoTagging}
+    <Box sx={sxAutoTagging}>
+<Card
       overlayContent={true}
       onPress={onEditPress}
     >
-      <div className={styles.nameContainer}>
-        <div className={styles.name}>
+      <Box sx={sxNameContainer}>
+        <Box sx={sxName}>
           {name}
-        </div>
+        </Box>
 
         <div>
           <IconButton
-            className={styles.cloneButton}
             title={translate('CloneAutoTag')}
             name={icons.CLONE}
             onPress={onClonePress}
-          />
+           sx={sxCloneButton} />
         </div>
-      </div>
+      </Box>
 
       <TagList
         tags={tags}
@@ -121,6 +144,7 @@ export default function AutoTagging(props) {
         onCancel={onDeleteModalClose}
       />
     </Card>
+</Box>
   );
 }
 

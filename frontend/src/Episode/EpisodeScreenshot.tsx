@@ -1,10 +1,9 @@
-import classNames from 'classnames';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Box from '@mui/material/Box';
+import React, { CSSProperties, useCallback, useEffect, useMemo, useState } from 'react';
+import Icon from 'Components/Icon';
+import { icons } from 'Helpers/Props';
 import { Image } from 'Series/Series';
-import styles from './EpisodeScreenshot.css';
 
-const placeholder =
-  'data:image/png;base64,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';
 
 function findScreenshot(images?: Image[]) {
   return images?.find((image) => image.coverType === 'screenshot');
@@ -22,12 +21,13 @@ export function hasEpisodeScreenshot(images?: Image[]) {
 
 interface EpisodeScreenshotProps {
   className?: string;
+  style?: CSSProperties;
   images?: Image[];
   blur?: boolean;
 }
 
 function EpisodeScreenshot(props: EpisodeScreenshotProps) {
-  const { className, images, blur = false } = props;
+  const { className, style, images, blur = false } = props;
 
   const screenshot = useMemo(() => findScreenshot(images), [images]);
   const remoteUrl = screenshot?.remoteUrl;
@@ -55,17 +55,37 @@ function EpisodeScreenshot(props: EpisodeScreenshotProps) {
 
   const showPlaceholder = hasError || !url;
 
+  if (showPlaceholder) {
+    return (
+      <Box
+        className={className}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
+          color: 'text.disabled',
+          ...style,
+        }}
+      >
+        <Icon name={icons.SERIES_CONTINUING} size={28} />
+      </Box>
+    );
+  }
+
   return (
-    <img
-      className={classNames(
-        className,
-        showPlaceholder && styles.placeholder,
-        blur && !showPlaceholder && styles.blur
-      )}
-      src={showPlaceholder ? placeholder : url}
+    <Box
+      component="img"
+      className={className}
+      src={url}
       alt=""
       referrerPolicy="no-referrer"
       onError={handleError}
+      sx={{
+        ...style,
+        ...(blur ? { filter: 'blur(40px)' } : null),
+      }}
     />
   );
 }

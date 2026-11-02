@@ -1,9 +1,8 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Link from 'Components/Link/Link';
 import EpisodeDetailsModal from 'Episode/EpisodeDetailsModal';
-import styles from './EpisodeTitleLink.css';
 
 class EpisodeTitleLink extends Component {
 
@@ -41,13 +40,34 @@ class EpisodeTitleLink extends Component {
 
     return (
       <div>
-        <Link
-          className={classNames(styles.link, className)}
-          title={episodeTitle}
-          onPress={this.onLinkPress}
+        <Box
+          sx={{
+            maxWidth: 800,
+            '@media (min-width: 2560px)': { maxWidth: 1200 },
+            '@media (min-width: 3840px)': { maxWidth: 2000 },
+            '& .MuiButton-root': {
+              display: 'inline-block',
+              overflow: 'hidden',
+              maxWidth: '100%',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              cursor: 'pointer',
+              userSelect: 'text',
+              '&:hover': {
+                color: 'var(--linkHoverColor)',
+                textDecoration: 'underline'
+              }
+            }
+          }}
         >
+          <Link
+            className={className}
+            title={episodeTitle}
+            onPress={this.onLinkPress}
+          >
           {episodeTitle}
-        </Link>
+          </Link>
+        </Box>
 
         <EpisodeDetailsModal
           isOpen={this.state.isDetailsModalOpen}

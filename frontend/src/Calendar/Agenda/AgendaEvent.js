@@ -1,8 +1,9 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import CalendarEventQueueDetails from 'Calendar/Events/CalendarEventQueueDetails';
+import calendarStatusSx from 'Calendar/calendarStatusSx';
 import getStatusStyle from 'Calendar/getStatusStyle';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
@@ -11,7 +12,6 @@ import episodeEntities from 'Episode/episodeEntities';
 import { icons, kinds } from 'Helpers/Props';
 import formatTime from 'Utilities/Date/formatTime';
 import translate from 'Utilities/String/translate';
-import styles from './AgendaEvent.css';
 
 class AgendaEvent extends Component {
   //
@@ -67,56 +67,136 @@ class AgendaEvent extends Component {
     const isMonitored = series.monitored && monitored;
     const statusStyle = getStatusStyle(hasFile, downloading, startTime, endTime, isMonitored);
 
+    const statusIconStyle = {
+      marginLeft: 3,
+      cursor: 'default',
+      pointerEvents: 'all'
+    };
+    const truncateSx = {
+      overflow: 'hidden',
+      maxWidth: '100%',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    };
+
     return (
-      <div className={styles.event}>
-        <Link
-          className={styles.underlay}
+      <Box
+        sx={{
+          position: 'relative',
+          p: '5px',
+          borderBottom: '1px solid var(--borderColor)'
+        }}
+      >
+        <Box
+          component={Link}
           onPress={this.onPress}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            p: 0,
+            minWidth: 0,
+            '&:hover': {
+              backgroundColor: 'var(--tableRowHoverBackgroundColor)'
+            }
+          }}
         />
 
-        <div className={styles.overlay}>
-          <div className={styles.date}>
+        <Box
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            overflowX: 'hidden',
+            fontSize: 14,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            flexDirection: { xs: 'column', md: 'row' },
+            '& a, & button': {
+              pointerEvents: 'all'
+            }
+          }}
+        >
+          <Box
+            sx={{
+              flex: { xs: '0 0 100%', md: '0 0 250px' },
+              fontWeight: 'bold',
+              ml: { xs: '10px', md: 0 }
+            }}
+          >
             {
               showDate &&
                 startTime.format(longDateFormat)
             }
-          </div>
+          </Box>
 
-          <div
-            className={classNames(
-              styles.eventWrapper,
-              styles[statusStyle],
-              colorImpairedMode && 'colorImpaired'
-            )}
+          <Box
+            sx={{
+              display: { xs: 'block', md: 'flex' },
+              flex: { xs: '0 0 auto', md: '1 0 1px' },
+              overflowX: 'hidden',
+              pl: '6px',
+              borderLeftWidth: 4,
+              borderLeftStyle: 'solid',
+              ...calendarStatusSx(statusStyle, false, colorImpairedMode)
+            }}
           >
-            <div className={styles.time}>
+            <Box
+              sx={{
+                flex: { xs: '0 0 100%', md: '0 0 125px' },
+                mr: '10px',
+                border: 'none !important'
+              }}
+            >
               {formatTime(releaseDate, timeFormat)} - {formatTime(endTime.toISOString(), timeFormat, { includeMinuteZero: true })}
-            </div>
+            </Box>
 
-            <div className={styles.seriesTitle}>
+            <Box
+              sx={{
+                ...truncateSx,
+                flex: { xs: '0 0 100%', md: '0 1 300px' },
+                mr: '10px'
+              }}
+            >
               {series.title}
-            </div>
+            </Box>
 
             {
               showEpisodeInformation &&
-                <div className={styles.seasonEpisodeNumber}>
+                <Box sx={{ flex: { xs: '0 0 auto', md: '0 0 100px' } }}>
                   {seasonNumber}x{releaseDate}
 
-                  <div className={styles.episodeSeparator}> - </div>
-                </div>
+                  <Box
+                    component="span"
+                    sx={{
+                      display: { xs: 'inline-block', md: 'none' },
+                      mx: '5px'
+                    }}
+                  >
+                    -
+                  </Box>
+                </Box>
             }
 
-            <div className={styles.episodeTitle}>
+            <Box
+              sx={{
+                ...truncateSx,
+                flex: '1 1 1px',
+                mr: '10px'
+              }}
+            >
               {
                 showEpisodeInformation &&
                 title
               }
-            </div>
+            </Box>
 
             {
               unverifiedSceneNumbering ?
                 <Icon
-                  className={styles.statusIcon}
+                  style={statusIconStyle}
                   name={icons.WARNING}
                   title={translate('SceneNumberNotVerified')}
                 /> :
@@ -125,19 +205,19 @@ class AgendaEvent extends Component {
 
             {
               !!queueItem &&
-                <span className={styles.statusIcon}>
+                <Box component="span" sx={statusIconStyle}>
                   <CalendarEventQueueDetails
                     seasonNumber={seasonNumber}
                     absoluteEpisodeNumber={absoluteEpisodeNumber}
                     {...queueItem}
                   />
-                </span>
+                </Box>
             }
 
             {
               !queueItem && grabbed &&
                 <Icon
-                  className={styles.statusIcon}
+                  style={statusIconStyle}
                   name={icons.DOWNLOADING}
                   title={translate('EpisodeIsDownloading')}
                 />
@@ -148,14 +228,14 @@ class AgendaEvent extends Component {
               !!episodeFile &&
               episodeFile.qualityCutoffNotMet &&
                 <Icon
-                  className={styles.statusIcon}
+                  style={statusIconStyle}
                   name={icons.EPISODE_FILE}
                   kind={kinds.WARNING}
                   title={translate('QualityCutoffNotMet')}
                 />
             }
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         <EpisodeDetailsModal
           isOpen={this.state.isDetailsModalOpen}
@@ -166,7 +246,7 @@ class AgendaEvent extends Component {
           showOpenSeriesButton={true}
           onModalClose={this.onDetailsModalClose}
         />
-      </div>
+      </Box>
     );
   }
 }

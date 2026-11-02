@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -8,7 +9,33 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import CustomFormat from './CustomFormat';
 import EditCustomFormatModalConnector from './EditCustomFormatModalConnector';
-import styles from './CustomFormats.css';
+
+const sxCustomFormats = {
+  display: 'flex',
+  flexWrap: 'wrap'
+};
+
+const sxAddCustomFormat = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxAddCustomFormatContent = (theme) => ({
+  p: theme.spacing(1.25),
+  bgcolor: theme.palette.action.hover,
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
+  fontSize: 45
+});
+
+const sxCenter = (theme) => ({
+  display: 'inline-block',
+  pt: theme.spacing(0.625),
+  px: theme.spacing(2.5),
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 1,
+  bgcolor: theme.palette.background.paper
+});
 
 class CustomFormats extends Component {
 
@@ -64,7 +91,7 @@ class CustomFormats extends Component {
           errorMessage={translate('CustomFormatsLoadError')}
           {...otherProps}c={true}
         >
-          <div className={styles.customFormats}>
+          <Box sx={sxCustomFormats}>
             {
               items.map((item) => {
                 return (
@@ -79,18 +106,21 @@ class CustomFormats extends Component {
               })
             }
 
-            <Card
-              className={styles.addCustomFormat}
-              onPress={this.onEditCustomFormatPress}
-            >
-              <div className={styles.center}>
-                <Icon
-                  name={icons.ADD}
-                  size={45}
-                />
-              </div>
-            </Card>
-          </div>
+            <Box sx={sxAddCustomFormat}>
+              <Card
+                onPress={this.onEditCustomFormatPress}
+              >
+                <Box sx={sxAddCustomFormatContent}>
+                  <Box sx={sxCenter}>
+                    <Icon
+                      name={icons.ADD}
+                      size={45}
+                    />
+                  </Box>
+                </Box>
+              </Card>
+            </Box>
+          </Box>
 
           <EditCustomFormatModalConnector
             isOpen={this.state.isCustomFormatModalOpen}

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Form from 'Components/Form/Form';
@@ -15,7 +16,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import AdvancedSettingsButton from 'Settings/AdvancedSettingsButton';
 import translate from 'Utilities/String/translate';
-import styles from './EditIndexerModalContent.css';
 
 function EditIndexerModalContent(props) {
   const {
@@ -211,13 +211,14 @@ function EditIndexerModalContent(props) {
       <ModalFooter>
         {
           id &&
-            <Button
-              className={styles.deleteButton}
-              kind={kinds.DANGER}
-              onPress={onDeleteIndexerPress}
-            >
-              {translate('Delete')}
-            </Button>
+            <Box sx={{ mr: 'auto' }}>
+              <Button
+                kind={kinds.DANGER}
+                onPress={onDeleteIndexerPress}
+              >
+                {translate('Delete')}
+              </Button>
+            </Box>
         }
 
         <AdvancedSettingsButton

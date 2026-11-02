@@ -1,11 +1,16 @@
-import React, { ComponentPropsWithoutRef } from 'react';
-import styles from './TableRowCell.css';
+import TableCell, { TableCellProps } from '@mui/material/TableCell';
+import React from 'react';
 
-export type TableRowCellProps = ComponentPropsWithoutRef<'td'>;
+export type TableRowCellProps = TableCellProps;
 
 export default function TableRowCell({
-  className = styles.cell,
-  ...tdProps
+  className,
+  children,
+  ...cellProps
 }: TableRowCellProps) {
-  return <td className={className} {...tdProps} />;
+  return (
+    <TableCell className={className} {...cellProps}>
+      {children}
+    </TableCell>
+  );
 }

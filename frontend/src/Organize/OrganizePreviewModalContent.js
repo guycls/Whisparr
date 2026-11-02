@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -16,7 +17,6 @@ import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
 import OrganizePreviewRow from './OrganizePreviewRow';
-import styles from './OrganizePreviewModalContent.css';
 
 function getValue(allSelected, allUnselected) {
   if (allSelected) {
@@ -127,16 +127,23 @@ class OrganizePreviewModalContent extends Component {
             !isFetching && isPopulated && !!items.length &&
               <div>
                 <Alert>
-                  <div>
-                    <InlineMarkdown data={translate('OrganizeRelativePaths', { path })} blockClassName={styles.path} />
-                  </div>
+                  <Box sx={{ '& code': { ml: '5px', fontWeight: 'bold' } }}>
+                    <InlineMarkdown data={translate('OrganizeRelativePaths', { path })} />
+                  </Box>
 
-                  <div>
-                    <InlineMarkdown data={translate('OrganizeNamingPattern', { episodeFormat })} blockClassName={styles.episodeFormat} />
-                  </div>
+                  <Box
+                    sx={{
+                      '& code': {
+                        ml: '5px',
+                        fontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace'
+                      }
+                    }}
+                  >
+                    <InlineMarkdown data={translate('OrganizeNamingPattern', { episodeFormat })} />
+                  </Box>
                 </Alert>
 
-                <div className={styles.previews}>
+                <Box sx={{ mt: '10px' }}>
                   {
                     items.map((item) => {
                       return (
@@ -151,7 +158,7 @@ class OrganizePreviewModalContent extends Component {
                       );
                     })
                   }
-                </div>
+                </Box>
               </div>
           }
         </ModalBody>
@@ -159,13 +166,13 @@ class OrganizePreviewModalContent extends Component {
         <ModalFooter>
           {
             isPopulated && !!items.length &&
-              <CheckInput
-                className={styles.selectAllInput}
-                containerClassName={styles.selectAllInputContainer}
-                name="selectAll"
-                value={selectAllValue}
-                onChange={this.onSelectAllChange}
-              />
+              <Box sx={{ mr: 'auto', lineHeight: '30px' }}>
+                <CheckInput
+                  name="selectAll"
+                  value={selectAllValue}
+                  onChange={this.onSelectAllChange}
+                />
+              </Box>
           }
 
           <Button

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,7 +16,12 @@ import {
 } from 'Store/Actions/settingsActions';
 import translate from 'Utilities/String/translate';
 import AddSpecificationItem from './AddSpecificationItem';
-import styles from './AddSpecificationModalContent.css';
+
+const sxSpecifications = {
+  display: 'flex',
+  justifyContent: 'center',
+  flexWrap: 'wrap'
+};
 
 export default function AddSpecificationModalContent(props) {
   const {
@@ -71,7 +77,7 @@ export default function AddSpecificationModalContent(props) {
                 </div>
               </Alert>
 
-              <div className={styles.specifications}>
+              <Box sx={sxSpecifications}>
                 {
                   schema.map((specification) => {
                     return (
@@ -83,7 +89,7 @@ export default function AddSpecificationModalContent(props) {
                     );
                   })
                 }
-              </div>
+              </Box>
 
             </div> :
             null

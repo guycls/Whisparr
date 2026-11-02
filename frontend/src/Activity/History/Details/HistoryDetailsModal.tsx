@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import Button from 'Components/Link/Button';
 import SpinnerButton from 'Components/Link/SpinnerButton';
@@ -10,7 +11,6 @@ import { kinds } from 'Helpers/Props';
 import { HistoryData, HistoryEventType } from 'typings/History';
 import translate from 'Utilities/String/translate';
 import HistoryDetails from './HistoryDetails';
-import styles from './HistoryDetailsModal.css';
 
 function getHeaderTitle(eventType: HistoryEventType) {
   switch (eventType) {
@@ -70,14 +70,15 @@ function HistoryDetailsModal(props: HistoryDetailsModalProps) {
 
         <ModalFooter>
           {eventType === 'grabbed' && (
-            <SpinnerButton
-              className={styles.markAsFailedButton}
-              kind={kinds.DANGER}
-              isSpinning={isMarkingAsFailed}
-              onPress={onMarkAsFailedPress}
-            >
-              {translate('MarkAsFailed')}
-            </SpinnerButton>
+            <Box sx={{ mr: 'auto' }}>
+              <SpinnerButton
+                kind={kinds.DANGER}
+                isSpinning={isMarkingAsFailed}
+                onPress={onMarkAsFailedPress}
+              >
+                {translate('MarkAsFailed')}
+              </SpinnerButton>
+            </Box>
           )}
 
           <Button onPress={onModalClose}>{translate('Close')}</Button>

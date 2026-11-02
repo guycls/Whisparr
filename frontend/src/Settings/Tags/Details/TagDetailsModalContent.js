@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import FieldSet from 'Components/FieldSet';
@@ -10,7 +11,21 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import TagDetailsDelayProfile from './TagDetailsDelayProfile';
-import styles from './TagDetailsModalContent.css';
+
+const sxRestriction = (theme) => ({
+  mb: theme.spacing(0.625),
+  pb: theme.spacing(0.625),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  '&:last-child': {
+    m: 0,
+    p: 0,
+    borderBottom: 'none'
+  }
+});
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
 
 function TagDetailsModalContent(props) {
   const {
@@ -126,10 +141,9 @@ function TagDetailsModalContent(props) {
               {
                 releaseProfiles.map((item) => {
                   return (
-                    <div
+                    <Box
                       key={item.id}
-                      className={styles.restriction}
-                    >
+                     sx={sxRestriction}>
                       <div>
                         {
                           item.required.map((r) => {
@@ -159,7 +173,7 @@ function TagDetailsModalContent(props) {
                           })
                         }
                       </div>
-                    </div>
+                    </Box>
                   );
                 })
               }
@@ -218,8 +232,8 @@ function TagDetailsModalContent(props) {
 
       <ModalFooter>
         {
-          <Button
-            className={styles.deleteButton}
+          <Box sx={sxDeleteButton}>
+<Button
             kind={kinds.DANGER}
             title={isTagUsed ? translate('TagCannotBeDeletedWhileInUse') : undefined}
             isDisabled={isTagUsed}
@@ -227,6 +241,7 @@ function TagDetailsModalContent(props) {
           >
             {translate('Delete')}
           </Button>
+</Box>
         }
 
         <Button

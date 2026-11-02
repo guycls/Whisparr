@@ -1,7 +1,6 @@
-import classNames from 'classnames';
+import TextField from '@mui/material/TextField';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import styles from './TextArea.css';
 
 class TextArea extends Component {
 
@@ -118,23 +117,30 @@ class TextArea extends Component {
       value,
       hasError,
       hasWarning,
+      sx,
       onBlur
     } = this.props;
 
     return (
-      <textarea
-        ref={this.setInputRef}
-        readOnly={readOnly}
+      <TextField
+        className={className}
+        inputRef={this.setInputRef}
+        fullWidth={true}
+        multiline={true}
+        sx={sx}
+        minRows={3}
+        size="small"
+        slotProps={{
+          input: {
+            readOnly
+          }
+        }}
         autoFocus={autoFocus}
         placeholder={placeholder}
-        className={classNames(
-          className,
-          readOnly && styles.readOnly,
-          hasError && styles.hasError,
-          hasWarning && styles.hasWarning
-        )}
         name={name}
         value={value}
+        error={!!hasError}
+        color={hasWarning ? 'warning' : 'primary'}
         onChange={this.onChange}
         onFocus={this.onFocus}
         onBlur={onBlur}
@@ -147,7 +153,8 @@ class TextArea extends Component {
 }
 
 TextArea.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  sx: PropTypes.object,
   readOnly: PropTypes.bool,
   autoFocus: PropTypes.bool,
   placeholder: PropTypes.string,
@@ -162,7 +169,6 @@ TextArea.propTypes = {
 };
 
 TextArea.defaultProps = {
-  className: styles.input,
   type: 'text',
   readOnly: false,
   autoFocus: false,

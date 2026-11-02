@@ -1,8 +1,7 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import LazyLoad from 'react-lazyload';
 import { CoverType, Image } from './Series';
-import styles from './SeriesImage.css';
 
 function findImage(images: Image[], coverType: CoverType) {
   return images.find((image) => image.coverType === coverType);
@@ -92,8 +91,17 @@ function SeriesImage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const imageSx = blur ? { filter: 'blur(13px)' } : undefined;
+
   if (hasError || !url) {
-    return <img className={className} style={style} src={placeholder} />;
+    return (
+      <Box
+        component="img"
+        className={className}
+        style={style}
+        src={placeholder}
+      />
+    );
   }
 
   if (lazy) {
@@ -103,11 +111,18 @@ function SeriesImage({
         offset={100}
         overflow={overflow}
         placeholder={
-          <img className={className} style={style} src={placeholder} />
+          <Box
+            component="img"
+            className={className}
+            style={style}
+            src={placeholder}
+          />
         }
       >
-        <img
-          className={classNames(className, blur && styles.blur)}
+        <Box
+          component="img"
+          className={className}
+          sx={imageSx}
           style={style}
           src={url}
           rel="noreferrer"
@@ -119,8 +134,10 @@ function SeriesImage({
   }
 
   return (
-    <img
-      className={classNames(className, blur && styles.blur)}
+    <Box
+      component="img"
+      className={className}
+      sx={imageSx}
       style={style}
       src={isLoaded ? url : placeholder}
       onError={handleError}

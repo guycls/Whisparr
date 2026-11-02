@@ -1,8 +1,8 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Alert from 'Components/Alert';
 import { kinds } from 'Helpers/Props';
-import styles from './Form.css';
 
 function Form(props) {
   const {
@@ -17,7 +17,7 @@ function Form(props) {
     <div>
       {
         validationErrors.length || validationWarnings.length ?
-          <div className={styles.validationFailures}>
+          <Box sx={{ mb: '20px' }}>
             {
               validationErrors.map((error, index) => {
                 return (
@@ -43,7 +43,7 @@ function Form(props) {
                 );
               })
             }
-          </div> :
+          </Box> :
           null
       }
 

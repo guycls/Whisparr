@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import { cloneDeep, without } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -63,7 +64,6 @@ import hasDifferentItems from 'Utilities/Object/hasDifferentItems';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import InteractiveImportRow from './InteractiveImportRow';
-import styles from './InteractiveImportModalContent.css';
 
 type SelectType =
   | 'select'
@@ -795,16 +795,16 @@ function InteractiveImportModalContent(
 
       <ModalBody scrollDirection={scrollDirections.BOTH}>
         {showFilterExistingFiles && (
-          <div className={styles.filterContainer}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: '10px' }}>
             <Menu alignMenu={align.RIGHT}>
               <MenuButton>
                 <Icon name={icons.FILTER} size={22} />
 
-                <div className={styles.filterText}>
+                <Box sx={{ ml: '5px' }}>
                   {filterExistingFiles
                     ? translate('UnmappedFilesOnly')
                     : translate('AllFiles')}
-                </div>
+                </Box>
               </MenuButton>
 
               <MenuContent>
@@ -825,10 +825,10 @@ function InteractiveImportModalContent(
                 </SelectedMenuItem>
               </MenuContent>
             </Menu>
-          </div>
+          </Box>
         )}
 
-        <div className={styles.filterContainer}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: '10px' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <input
               type="checkbox"
@@ -837,7 +837,7 @@ function InteractiveImportModalContent(
             />
             {translate('ShowOnlyUnmatched')}
           </label>
-        </div>
+        </Box>
 
         {isFetching ? <LoadingIndicator /> : null}
 
@@ -877,11 +877,34 @@ function InteractiveImportModalContent(
           : null}
       </ModalBody>
 
-      <ModalFooter className={styles.footer}>
-        <div className={styles.leftButtons}>
+      <ModalFooter
+        sx={{
+          justifyContent: 'space-between',
+          p: '15px',
+          display: { xs: 'block', md: 'flex' },
+          '& a, & .MuiButton-root': {
+            ml: { xs: 0, md: undefined },
+            '&:first-of-type': {
+              mb: { xs: '5px', md: 0 },
+            },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            minWidth: 0,
+            flex: '0 1 auto',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: { xs: '3px', md: 0 },
+            alignItems: { xs: 'flex-start', md: 'center' },
+            maxWidth: { xs: 'fit-content', md: 'none' },
+          }}
+        >
           {showDelete ? (
+            <Box sx={{ mr: { xs: 0, md: '10px' } }}>
             <SpinnerButton
-              className={styles.deleteButton}
               kind={kinds.DANGER}
               isSpinning={isDeleting}
               isDisabled={
@@ -891,35 +914,49 @@ function InteractiveImportModalContent(
             >
               {translate('Delete')}
             </SpinnerButton>
+            </Box>
           ) : null}
 
           {!downloadId && showImportMode ? (
+            <Box sx={{ mr: '10px', maxWidth: '100%', width: 'auto' }}>
             <SelectInput
-              className={styles.importMode}
               name="importMode"
               value={importMode}
               values={importModeOptions}
               onChange={onImportModeChange}
             />
+            </Box>
           ) : null}
 
+          <Box sx={{ mr: '10px', maxWidth: '100%', width: 'auto' }}>
           <SelectInput
-            className={styles.bulkSelect}
             name="select"
             value={'select'}
             values={bulkSelectOptions}
             isDisabled={!selectedIds.length}
             onChange={onSelectModalSelect}
           />
-        </div>
+          </Box>
+        </Box>
 
-        <div className={styles.rightButtons}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
+            flex: '1 1 50%',
+            minWidth: 0,
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: { xs: '3px', md: 0 },
+            alignItems: { xs: 'flex-end', md: 'center' },
+          }}
+        >
           <Button onPress={onModalClose}>Cancel</Button>
 
           {interactiveImportErrorMessage && (
-            <span className={styles.errorMessage}>
+            <Box component="span" sx={{ color: 'var(--dangerColor)' }}>
               {interactiveImportErrorMessage}
-            </span>
+            </Box>
           )}
 
           <Button
@@ -929,7 +966,7 @@ function InteractiveImportModalContent(
           >
             {translate('Import')}
           </Button>
-        </div>
+        </Box>
       </ModalFooter>
 
       <SelectSeriesModal

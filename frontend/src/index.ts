@@ -1,6 +1,4 @@
 import './polyfills';
-import 'Styles/globals.css';
-import './index.css';
 
 const initializeUrl = `${
   window.Whisparr.urlBase

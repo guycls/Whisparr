@@ -3,14 +3,12 @@ import React, { Component } from 'react';
 import { DragLayer } from 'react-dnd';
 import DragPreviewLayer from 'Components/DragPreviewLayer';
 import { TABLE_COLUMN } from 'Helpers/dragTypes';
-import dimensions from 'Styles/Variables/dimensions.js';
 import TableOptionsColumn from './TableOptionsColumn';
-import styles from './TableOptionsColumnDragPreview.css';
 
-const formGroupSmallWidth = parseInt(dimensions.formGroupSmallWidth);
-const formLabelLargeWidth = parseInt(dimensions.formLabelLargeWidth);
-const formLabelRightMarginWidth = parseInt(dimensions.formLabelRightMarginWidth);
-const dragHandleWidth = parseInt(dimensions.dragHandleWidth);
+const formGroupSmallWidth = parseInt('650px');
+const formLabelLargeWidth = parseInt('250px');
+const formLabelRightMarginWidth = parseInt('20px');
+const dragHandleWidth = parseInt('40px');
 
 function collectDragLayer(monitor) {
   return {
@@ -53,8 +51,11 @@ class TableOptionsColumnDragPreview extends Component {
     return (
       <DragPreviewLayer>
         <div
-          className={styles.dragPreview}
-          style={style}
+          style={{
+            ...style,
+            width: 380,
+            opacity: 0.75
+          }}
         >
           <TableOptionsColumn
             isDragging={false}

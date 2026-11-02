@@ -1,11 +1,10 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Measure from 'Components/Measure';
-import dimensions from 'Styles/Variables/dimensions';
 import PageJumpBarItem from './PageJumpBarItem';
-import styles from './PageJumpBar.css';
 
-const ITEM_HEIGHT = parseInt(dimensions.jumpBarItemHeight);
+const ITEM_HEIGHT = parseInt('25px');
 
 class PageJumpBar extends Component {
 
@@ -123,12 +122,33 @@ class PageJumpBar extends Component {
     }
 
     return (
-      <div className={styles.jumpBar}>
+      <Box
+        sx={{
+          zIndex: 10,
+          display: 'flex',
+          alignContent: 'stretch',
+          alignItems: 'stretch',
+          alignSelf: 'stretch',
+          justifyContent: 'center',
+          flex: '0 0 30px',
+          '@media (max-width: 768px)': {
+            display: 'none'
+          }
+        }}
+      >
         <Measure
           whitelist={['height']}
           onMeasure={this.onMeasure}
         >
-          <div className={styles.jumpBarItems}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-around',
+              flex: '0 0 100%',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+          >
             {
               visibleItems.map((item) => {
                 return (
@@ -140,9 +160,9 @@ class PageJumpBar extends Component {
                 );
               })
             }
-          </div>
+          </Box>
         </Measure>
-      </div>
+      </Box>
     );
   }
 }

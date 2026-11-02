@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -11,7 +12,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import AddIndexerItem from './AddIndexerItem';
-import styles from './AddIndexerModalContent.css';
 
 class AddIndexerModalContent extends Component {
 
@@ -62,7 +62,13 @@ class AddIndexerModalContent extends Component {
                 </Alert>
 
                 <FieldSet legend={translate('Usenet')}>
-                  <div className={styles.indexers}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      flexWrap: 'wrap'
+                    }}
+                  >
                     {
                       usenetIndexers.map((indexer) => {
                         return (
@@ -75,11 +81,17 @@ class AddIndexerModalContent extends Component {
                         );
                       })
                     }
-                  </div>
+                  </Box>
                 </FieldSet>
 
                 <FieldSet legend={translate('Torrents')}>
-                  <div className={styles.indexers}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      flexWrap: 'wrap'
+                    }}
+                  >
                     {
                       torrentIndexers.map((indexer) => {
                         return (
@@ -92,7 +104,7 @@ class AddIndexerModalContent extends Component {
                         );
                       })
                     }
-                  </div>
+                  </Box>
                 </FieldSet>
               </div>
           }

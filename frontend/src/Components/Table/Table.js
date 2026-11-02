@@ -1,15 +1,14 @@
-import classNames from 'classnames';
+import MuiTable from '@mui/material/Table';
+import TableContainer from '@mui/material/TableContainer';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React from 'react';
 import IconButton from 'Components/Link/IconButton';
-import Scroller from 'Components/Scroller/Scroller';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
-import { icons, scrollDirections } from 'Helpers/Props';
+import { icons } from 'Helpers/Props';
 import TableHeader from './TableHeader';
 import TableHeaderCell from './TableHeaderCell';
 import TableSelectAllHeaderCell from './TableSelectAllHeaderCell';
-import styles from './Table.css';
 
 const tableHeaderCellProps = [
   'sortKey',
@@ -28,7 +27,6 @@ function getTableHeaderCellProps(props) {
 
 function Table(props) {
   const {
-    className,
     horizontalScroll,
     selectAll,
     columns,
@@ -42,19 +40,8 @@ function Table(props) {
   } = props;
 
   return (
-    <Scroller
-      className={classNames(
-        styles.tableContainer,
-        horizontalScroll && styles.horizontalScroll
-      )}
-      scrollDirection={
-        horizontalScroll ?
-          scrollDirections.HORIZONTAL :
-          scrollDirections.NONE
-      }
-      autoFocus={false}
-    >
-      <table className={className}>
+    <TableContainer sx={{ overflowX: horizontalScroll ? 'auto' : 'hidden' }}>
+      <MuiTable size="small">
         <TableHeader>
           {
             selectAll ?
@@ -80,7 +67,6 @@ function Table(props) {
                 return (
                   <TableHeaderCell
                     key={name}
-                    className={styles[name]}
                     name={name}
                     isSortable={false}
                     {...otherProps}
@@ -115,8 +101,8 @@ function Table(props) {
 
         </TableHeader>
         {children}
-      </table>
-    </Scroller>
+      </MuiTable>
+    </TableContainer>
   );
 }
 
@@ -135,7 +121,6 @@ Table.propTypes = {
 };
 
 Table.defaultProps = {
-  className: styles.table,
   horizontalScroll: true,
   selectAll: false
 };

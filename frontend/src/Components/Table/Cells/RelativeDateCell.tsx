@@ -4,7 +4,6 @@ import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import TableRowCell from './TableRowCell';
-import styles from './RelativeDateCell.css';
 
 interface RelativeDateCellProps {
   className?: string;
@@ -16,7 +15,7 @@ interface RelativeDateCellProps {
 
 function RelativeDateCell(props: RelativeDateCellProps) {
   const {
-    className = styles.cell,
+    className,
     date,
     includeSeconds = false,
     includeTime = false,
@@ -29,12 +28,13 @@ function RelativeDateCell(props: RelativeDateCellProps) {
     useSelector(createUISettingsSelector());
 
   if (!date) {
-    return <Component className={className} {...otherProps} />;
+    return <Component className={className} sx={{ width: 180 }} {...otherProps} />;
   }
 
   return (
     <Component
       className={className}
+      sx={{ width: 180 }}
       title={formatDateTime(date, longDateFormat, timeFormat, {
         includeSeconds,
         includeRelativeDay: !showRelativeDates,

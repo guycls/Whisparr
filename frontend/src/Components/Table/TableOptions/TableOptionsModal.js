@@ -19,7 +19,6 @@ import translate from 'Utilities/String/translate';
 import TableOptionsColumn from './TableOptionsColumn';
 import TableOptionsColumnDragPreview from './TableOptionsColumnDragPreview';
 import TableOptionsColumnDragSource from './TableOptionsColumnDragSource';
-import styles from './TableOptionsModal.css';
 
 class TableOptionsModal extends Component {
 
@@ -177,7 +176,13 @@ class TableOptionsModal extends Component {
                               text={translate('TableColumnsHelpText')}
                             />
 
-                            <div className={styles.columns}>
+                            <div
+                              style={{
+                                marginTop: 10,
+                                width: '100%',
+                                userSelect: 'none'
+                              }}
+                            >
                               {
                                 columns.map((column, index) => {
                                   const {

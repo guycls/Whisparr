@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -8,7 +9,33 @@ import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditQualityProfileModalConnector from './EditQualityProfileModalConnector';
 import QualityProfile from './QualityProfile';
-import styles from './QualityProfiles.css';
+
+const sxQualityProfiles = {
+  display: 'flex',
+  flexWrap: 'wrap'
+};
+
+const sxAddQualityProfile = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxAddQualityProfileContent = (theme) => ({
+  p: theme.spacing(1.25),
+  bgcolor: theme.palette.action.hover,
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
+  fontSize: 45
+});
+
+const sxCenter = (theme) => ({
+  display: 'inline-block',
+  pt: theme.spacing(0.625),
+  px: theme.spacing(2.5),
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 1,
+  bgcolor: theme.palette.background.paper
+});
 
 class QualityProfiles extends Component {
 
@@ -57,7 +84,7 @@ class QualityProfiles extends Component {
           errorMessage={translate('QualityProfilesLoadError')}
           {...otherProps}c={true}
         >
-          <div className={styles.qualityProfiles}>
+          <Box sx={sxQualityProfiles}>
             {
               items.map((item) => {
                 return (
@@ -72,18 +99,21 @@ class QualityProfiles extends Component {
               })
             }
 
-            <Card
-              className={styles.addQualityProfile}
-              onPress={this.onEditQualityProfilePress}
-            >
-              <div className={styles.center}>
-                <Icon
-                  name={icons.ADD}
-                  size={45}
-                />
-              </div>
-            </Card>
-          </div>
+            <Box sx={sxAddQualityProfile}>
+              <Card
+                onPress={this.onEditQualityProfilePress}
+              >
+                <Box sx={sxAddQualityProfileContent}>
+                  <Box sx={sxCenter}>
+                    <Icon
+                      name={icons.ADD}
+                      size={45}
+                    />
+                  </Box>
+                </Box>
+              </Card>
+            </Box>
+          </Box>
 
           <EditQualityProfileModalConnector
             isOpen={this.state.isQualityProfileModalOpen}

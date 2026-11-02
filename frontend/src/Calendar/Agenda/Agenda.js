@@ -1,8 +1,8 @@
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
 import AgendaEventConnector from './AgendaEventConnector';
-import styles from './Agenda.css';
 
 function Agenda(props) {
   const {
@@ -10,7 +10,7 @@ function Agenda(props) {
   } = props;
 
   return (
-    <div className={styles.agenda}>
+    <Box sx={{ mt: '10px' }}>
       {
         items.map((item, index) => {
           const momentDate = moment(item.releaseDate);
@@ -27,7 +27,7 @@ function Agenda(props) {
           );
         })
       }
-    </div>
+    </Box>
   );
 }
 

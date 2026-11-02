@@ -1,10 +1,52 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FieldSet from 'Components/FieldSet';
 import PageSectionContent from 'Components/Page/PageSectionContent';
 import translate from 'Utilities/String/translate';
 import QualityDefinitionConnector from './QualityDefinitionConnector';
-import styles from './QualityDefinitions.css';
+
+const sxHeader = (theme) => ({
+  display: 'flex',
+  fontWeight: 'bold',
+  [theme.breakpoints.down('md')]: {
+    display: 'none'
+  }
+});
+
+const sxQuality = {
+  flex: '0 1 250px'
+};
+
+const sxTitle = {
+  flex: '0 1 250px'
+};
+
+const sxSizeLimit = {
+  flex: '0 1 500px'
+};
+
+const sxMegabytesPerMinute = {
+  flex: '0 0 250px'
+};
+
+const sxSizeLimitHelpTextContainer = (theme) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  mt: theme.spacing(2.5),
+  maxWidth: 1000
+});
+
+const sxSizeLimitHelpText = (theme) => ({
+  maxWidth: 500,
+  color: theme.palette.text.secondary
+});
+
+const sxDefinitions = {
+  '&:first-child': {
+    borderTop: 'none'
+  }
+};
 
 class QualityDefinitions extends Component {
 
@@ -24,27 +66,27 @@ class QualityDefinitions extends Component {
           errorMessage={translate('QualityDefinitionsLoadError')}
           {...otherProps}
         >
-          <div className={styles.header}>
-            <div className={styles.quality}>
+          <Box sx={sxHeader}>
+            <Box sx={sxQuality}>
               {translate('Quality')}
-            </div>
-            <div className={styles.title}>
+            </Box>
+            <Box sx={sxTitle}>
               {translate('Title')}
-            </div>
-            <div className={styles.sizeLimit}>
+            </Box>
+            <Box sx={sxSizeLimit}>
               {translate('SizeLimit')}
-            </div>
+            </Box>
 
             {
               advancedSettings ?
-                <div className={styles.megabytesPerMinute}>
+                <Box sx={sxMegabytesPerMinute}>
                   {translate('MegabytesPerMinute')}
-                </div> :
+                </Box> :
                 null
             }
-          </div>
+          </Box>
 
-          <div className={styles.definitions}>
+          <Box sx={sxDefinitions}>
             {
               items.map((item) => {
                 return (
@@ -56,13 +98,13 @@ class QualityDefinitions extends Component {
                 );
               })
             }
-          </div>
+          </Box>
 
-          <div className={styles.sizeLimitHelpTextContainer}>
-            <div className={styles.sizeLimitHelpText}>
+          <Box sx={sxSizeLimitHelpTextContainer}>
+            <Box sx={sxSizeLimitHelpText}>
               {translate('QualityLimitsHelpText')}
-            </div>
-          </div>
+            </Box>
+          </Box>
         </PageSectionContent>
       </FieldSet>
     );

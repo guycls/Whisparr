@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Button from 'Components/Link/Button';
@@ -8,7 +9,6 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './MoveSeriesModal.css';
 
 function MoveSeriesModal(props) {
   const {
@@ -54,12 +54,13 @@ function MoveSeriesModal(props) {
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            className={styles.doNotMoveButton}
-            onPress={onSavePress}
-          >
-            {translate('MoveSiteFoldersDontMoveFiles')}
-          </Button>
+          <Box sx={{ mr: 'auto' }}>
+            <Button
+              onPress={onSavePress}
+            >
+              {translate('MoveSiteFoldersDontMoveFiles')}
+            </Button>
+          </Box>
 
           <Button
             kind={kinds.DANGER}

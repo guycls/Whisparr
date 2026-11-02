@@ -26,7 +26,6 @@ import { fetchStatus } from 'Store/Actions/systemActions';
 import createSettingsSectionSelector from 'Store/Selectors/createSettingsSectionSelector';
 import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
-import styles from './AuthenticationRequiredModalContent.css';
 
 const SECTION = 'general';
 
@@ -86,7 +85,7 @@ export default function AuthenticationRequiredModalContent() {
       <ModalHeader>{translate('AuthenticationRequired')}</ModalHeader>
 
       <ModalBody>
-        <Alert className={styles.authRequiredAlert} kind={kinds.WARNING}>
+        <Alert kind={kinds.WARNING}>
           {translate('AuthenticationRequiredWarning')}
         </Alert>
 

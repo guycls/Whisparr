@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
@@ -20,7 +21,6 @@ import {
 } from 'Store/Actions/interactiveImportActions';
 import translate from 'Utilities/String/translate';
 import RecentFolderRow from './RecentFolderRow';
-import styles from './InteractiveImportSelectFolderModalContent.css';
 
 const recentFoldersColumns = [
   {
@@ -111,7 +111,7 @@ function InteractiveImportSelectFolderModalContent(
         />
 
         {recentFolders.length ? (
-          <div className={styles.recentFoldersContainer}>
+          <Box sx={{ mt: '15px' }}>
             <Table columns={recentFoldersColumns}>
               <TableBody>
                 {recentFolders
@@ -130,36 +130,52 @@ function InteractiveImportSelectFolderModalContent(
                   })}
               </TableBody>
             </Table>
-          </div>
+          </Box>
         ) : null}
 
-        <div className={styles.buttonsContainer}>
-          <div className={styles.buttonContainer}>
+        <Box sx={{ mt: '30px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              mt: '10px',
+              '& .MuiButton-root': { width: 300 },
+            }}
+          >
             <Button
-              className={styles.button}
               kind={kinds.PRIMARY}
               size={sizes.LARGE}
               isDisabled={!folder}
               onPress={onQuickImportPress}
             >
-              <Icon className={styles.buttonIcon} name={icons.QUICK} />
+              <Box component="span" sx={{ mr: '5px', display: 'inline-flex' }}>
+                <Icon name={icons.QUICK} />
+              </Box>
               {translate('MoveAutomatically')}
             </Button>
-          </div>
+          </Box>
 
-          <div className={styles.buttonContainer}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              mt: '10px',
+              '& .MuiButton-root': { width: 300 },
+            }}
+          >
             <Button
-              className={styles.button}
               kind={kinds.PRIMARY}
               size={sizes.LARGE}
               isDisabled={!folder}
               onPress={onInteractiveImportPress}
             >
-              <Icon className={styles.buttonIcon} name={icons.INTERACTIVE} />
+              <Box component="span" sx={{ mr: '5px', display: 'inline-flex' }}>
+                <Icon name={icons.INTERACTIVE} />
+              </Box>
               {translate('InteractiveImport')}
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       </ModalBody>
 
       <ModalFooter>

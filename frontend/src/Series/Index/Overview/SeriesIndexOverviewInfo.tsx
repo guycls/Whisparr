@@ -1,9 +1,9 @@
 import { IconDefinition } from '@fortawesome/free-regular-svg-icons';
+import Box from '@mui/material/Box';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { icons } from 'Helpers/Props';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
-import dimensions from 'Styles/Variables/dimensions';
 import QualityProfile from 'typings/QualityProfile';
 import { UiSettings } from 'typings/UiSettings';
 import formatDateTime from 'Utilities/Date/formatDateTime';
@@ -11,7 +11,6 @@ import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import SeriesIndexOverviewInfoRow from './SeriesIndexOverviewInfoRow';
-import styles from './SeriesIndexOverviewInfo.css';
 
 interface RowProps {
   name: string;
@@ -47,7 +46,7 @@ interface SeriesIndexOverviewInfoProps {
   sortKey: string;
 }
 
-const infoRowHeight = parseInt(dimensions.seriesIndexOverviewInfoRowHeight);
+const infoRowHeight = parseInt('21px');
 
 const rows = [
   {
@@ -233,7 +232,14 @@ function SeriesIndexOverviewInfo(props: SeriesIndexOverviewInfoProps) {
   }, [props]);
 
   return (
-    <div className={styles.infos}>
+    <Box
+      sx={{
+        display: 'flex',
+        flex: '0 0 250px',
+        flexDirection: 'column',
+        ml: { xs: 0, md: '10px' },
+      }}
+    >
       {!!nextAiring && (
         <SeriesIndexOverviewInfoRow
           title={translate('NextAiringDate', {
@@ -269,7 +275,7 @@ function SeriesIndexOverviewInfo(props: SeriesIndexOverviewInfoProps) {
 
         return <SeriesIndexOverviewInfoRow key={row.name} {...infoRowProps} />;
       })}
-    </div>
+    </Box>
   );
 }
 

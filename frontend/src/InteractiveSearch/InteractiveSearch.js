@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from 'Components/Alert';
@@ -14,7 +15,6 @@ import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import InteractiveSearchFilterModalConnector from './InteractiveSearchFilterModalConnector';
 import InteractiveSearchRow from './InteractiveSearchRow';
-import styles from './InteractiveSearch.css';
 
 const columns = [
   {
@@ -176,33 +176,42 @@ function InteractiveSearch(props) {
     <div>
       {
         stackedTitleLayout ?
-          <div className={styles.filterMenuContainerEpisode}>
-            <TextInput
-              className={styles.filterInput}
-              placeholder={translate('FilterReleasesPlaceholder')}
-              name="filter"
-              value={filter}
-              onChange={onFilterChange}
-            />
-
-            <div onKeyDown={onIndexerSearchKeyDown}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '40% 40% 5% 15%',
+              alignItems: 'center',
+              gap: '10px',
+              mb: '10px'
+            }}
+          >
+            <Box sx={{ width: '100%', minWidth: 0, maxWidth: 400 }}>
               <TextInput
-                className={styles.indexerSearchInput}
+                placeholder={translate('FilterReleasesPlaceholder')}
+                name="filter"
+                value={filter}
+                onChange={onFilterChange}
+              />
+            </Box>
+
+            <Box sx={{ width: '100%', minWidth: 0 }} onKeyDown={onIndexerSearchKeyDown}>
+              <TextInput
                 placeholder={translate('IndexerSearch')}
                 name="indexerSearch"
                 value={indexerSearchInput}
                 onChange={onIndexerSearchChange}
               />
-            </div>
+            </Box>
 
-            <SpinnerIconButton
-              className={styles.indexerSearchButton}
-              name={icons.SEARCH}
-              isSpinning={isFetching}
-              onPress={onIndexerSearchPress}
-            />
+            <Box sx={{ justifySelf: 'center' }}>
+              <SpinnerIconButton
+                name={icons.SEARCH}
+                isSpinning={isFetching}
+                onPress={onIndexerSearchPress}
+              />
+            </Box>
 
-            <div className={styles.filterMenuColumn}>
+            <Box sx={{ width: '100%', minWidth: 0 }}>
               <FilterMenu
                 alignMenu={align.RIGHT}
                 selectedFilterKey={selectedFilterKey}
@@ -213,16 +222,25 @@ function InteractiveSearch(props) {
                 filterModalConnectorComponentProps={{ type }}
                 onFilterSelect={onFilterSelect}
               />
-            </div>
-          </div> :
-          <div className={styles.filterMenuContainer}>
-            <TextInput
-              className={styles.filterInput}
-              placeholder={translate('FilterReleasesPlaceholder')}
-              name="filter"
-              value={filter}
-              onChange={onFilterChange}
-            />
+            </Box>
+          </Box> :
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '10px',
+              mb: '10px'
+            }}
+          >
+            <Box sx={{ width: '100%', minWidth: 0, flex: '1 1 auto', maxWidth: 400 }}>
+              <TextInput
+                placeholder={translate('FilterReleasesPlaceholder')}
+                name="filter"
+                value={filter}
+                onChange={onFilterChange}
+              />
+            </Box>
 
             <FilterMenu
               alignMenu={align.RIGHT}
@@ -234,19 +252,26 @@ function InteractiveSearch(props) {
               filterModalConnectorComponentProps={{ type }}
               onFilterSelect={onFilterSelect}
             />
-          </div>
+          </Box>
       }
 
       {
         isFetching ? (
-          <div className={styles.loadingContainer}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              mb: '10px'
+            }}
+          >
             <LoadingIndicator />
             {
               searchStatusMessage ?
-                <div className={styles.statusMessage}>{searchStatusMessage}</div> :
+                <Box sx={{ mt: '10px', color: 'var(--dimColor)', textAlign: 'center' }}>{searchStatusMessage}</Box> :
                 null
             }
-          </div>
+          </Box>
         ) : null
       }
 
@@ -321,17 +346,17 @@ function InteractiveSearch(props) {
 
       {
         totalReleasesCount !== items.length && !!items.length ?
-          <div className={styles.filteredMessage}>
+          <Box sx={{ mt: '10px' }}>
             {translate('SomeResultsAreHiddenByTheAppliedFilter')}
-          </div> :
+          </Box> :
           null
       }
 
       {
         hasTextFilter && items.length !== textFilteredItems.length && !!textFilteredItems.length ?
-          <div className={styles.filteredMessage}>
+          <Box sx={{ mt: '10px' }}>
             {translate('SomeResultsAreHiddenByTheAppliedFilter')}
-          </div> :
+          </Box> :
           null
       }
     </div>

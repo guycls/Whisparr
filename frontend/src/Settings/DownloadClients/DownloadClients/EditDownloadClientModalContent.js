@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -16,7 +17,14 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './EditDownloadClientModalContent.css';
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
+
+const sxMessage = (theme) => ({
+  mb: theme.spacing(3.75)
+});
 
 class EditDownloadClientModalContent extends Component {
 
@@ -79,12 +87,13 @@ class EditDownloadClientModalContent extends Component {
               <Form {...otherProps}>
                 {
                   !!message &&
-                    <Alert
-                      className={styles.message}
+                    <Box sx={sxMessage}>
+<Alert
                       kind={message.value.type}
                     >
                       {message.value.message}
                     </Alert>
+</Box>
                 }
 
                 <FormGroup>
@@ -190,13 +199,14 @@ class EditDownloadClientModalContent extends Component {
         <ModalFooter>
           {
             id &&
-              <Button
-                className={styles.deleteButton}
+              <Box sx={sxDeleteButton}>
+<Button
                 kind={kinds.DANGER}
                 onPress={onDeleteDownloadClientPress}
               >
                 {translate('Delete')}
               </Button>
+</Box>
           }
 
           <SpinnerErrorButton

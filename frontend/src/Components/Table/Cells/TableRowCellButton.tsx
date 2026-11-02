@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import Link, { LinkProps } from 'Components/Link/Link';
 import TableRowCell from './TableRowCell';
-import styles from './TableRowCellButton.css';
 
 interface TableRowCellButtonProps extends LinkProps {
   className?: string;
@@ -9,7 +8,7 @@ interface TableRowCellButtonProps extends LinkProps {
 }
 
 function TableRowCellButton(props: TableRowCellButtonProps) {
-  const { className = styles.cell, ...otherProps } = props;
+  const { className, ...otherProps } = props;
 
   return (
     <Link

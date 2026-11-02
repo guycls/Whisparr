@@ -1,10 +1,9 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import * as calendarViews from 'Calendar/calendarViews';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
-import styles from './DayOfWeek.css';
 
 class DayOfWeek extends Component {
 
@@ -32,14 +31,18 @@ class DayOfWeek extends Component {
     }
 
     return (
-      <div className={classNames(
-        styles.dayOfWeek,
-        view === calendarViews.DAY && styles.isSingleDay,
-        highlightToday && styles.isToday
-      )}
+      <Box
+        sx={{
+          flex: '1 0 14.28%',
+          width: view === calendarViews.DAY ? '100%' : undefined,
+          backgroundColor: highlightToday ?
+            'var(--calendarTodayBackgroundColor)' :
+            'var(--calendarBackgroundColor)',
+          textAlign: 'center'
+        }}
       >
         {formatedDate}
-      </div>
+      </Box>
     );
   }
 }

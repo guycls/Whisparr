@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
@@ -34,7 +36,6 @@ import SiteRipMatchingFileList, {
 import SiteRipSceneDetails from './SiteRipSceneDetails';
 import SiteRipScenePicker from './SiteRipScenePicker';
 import { useSiteRipSeriesEpisodes } from './useSiteRipSeriesEpisodes';
-import styles from './SiteRipMatchingView.css';
 
 interface SiteRipMatchingViewProps {
   seriesId: number;
@@ -366,28 +367,68 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
   };
 
   return (
-    <div className={styles.matchingView}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        minHeight: 480,
+      }}
+    >
       {isLoading ? (
-        <div className={styles.loadingContainer}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            my: '30px',
+          }}
+        >
           <LoadingIndicator />
-          <div className={styles.statusMessage}>{getLoadingMessage()}</div>
+          <Typography sx={{ mt: '10px' }}>{getLoadingMessage()}</Typography>
           {showMatchProgressBar ? (
-            <div className={styles.progressBarContainer}>
-              <div
-                className={styles.progressBarFill}
+            <Box
+              sx={{
+                width: 'min(100%, 360px)',
+                height: 6,
+                mt: '12px',
+                bgcolor: 'divider',
+                borderRadius: '3px',
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                sx={{
+                  height: '100%',
+                  bgcolor: 'primary.main',
+                  transition: 'width 0.2s ease',
+                }}
                 style={{ width: `${matchProgressPercent}%` }}
               />
-            </div>
+            </Box>
           ) : null}
           {showScenesProgressBar ? (
-            <div className={styles.progressBarContainer}>
-              <div
-                className={styles.progressBarFill}
+            <Box
+              sx={{
+                width: 'min(100%, 360px)',
+                height: 6,
+                mt: '12px',
+                bgcolor: 'divider',
+                borderRadius: '3px',
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                sx={{
+                  height: '100%',
+                  bgcolor: 'primary.main',
+                  transition: 'width 0.2s ease',
+                }}
                 style={{ width: `${scenesProgressPercent}%` }}
               />
-            </div>
+            </Box>
           ) : null}
-        </div>
+        </Box>
       ) : null}
 
       {filesErrorMessage ? (
@@ -403,7 +444,16 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
       ) : null}
 
       {!isLoading && matches.length ? (
-        <div className={styles.splitPane}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)',
+            gap: '20px',
+            width: '100%',
+            minHeight: 480,
+            maxHeight: 520,
+          }}
+        >
           <SiteRipMatchingFileList
             items={filteredAndSortedItems}
             selections={selections}
@@ -422,7 +472,27 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
             onSelectionChange={onSelectionChange}
           />
 
-          <div className={styles.rightPane}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 0,
+              gap: '16px',
+              borderLeft: 1,
+              borderColor: 'divider',
+              pl: '16px',
+              '& .site-rip-scene-details-root': {
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 1,
+                minHeight: 0,
+              },
+              '& .site-rip-scene-details-scroller': {
+                flex: 1,
+                maxHeight: 320,
+              },
+            }}
+          >
             <SiteRipScenePicker
               seriesId={seriesId}
               activeFileIndex={activeFileIndex}
@@ -440,10 +510,10 @@ function SiteRipMatchingView(props: SiteRipMatchingViewProps) {
               seriesId={seriesId}
               episodeId={activeEpisodeId}
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

@@ -1,9 +1,16 @@
+import Box from '@mui/material/Box';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import EnhancedSelectInputSelectedValue from './EnhancedSelectInputSelectedValue';
-import styles from './HintedSelectInputSelectedValue.css';
+
+const truncateSx = {
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
 
 function HintedSelectInputSelectedValue(props) {
   const {
@@ -19,13 +26,18 @@ function HintedSelectInputSelectedValue(props) {
 
   return (
     <EnhancedSelectInputSelectedValue
-      className={styles.selectedValue}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        overflow: 'hidden'
+      }}
       {...otherProps}
     >
-      <div className={styles.valueText}>
+      <Box sx={{ ...truncateSx, flex: '0 0 auto' }}>
         {
           isMultiSelect ?
-            value.map((key, index) => {
+            value.map((key) => {
               const v = valuesMap[key];
               return (
                 <Label key={key}>
@@ -39,13 +51,22 @@ function HintedSelectInputSelectedValue(props) {
         {
           isMultiSelect ? null : value
         }
-      </div>
+      </Box>
 
       {
         hint != null && includeHint ?
-          <div className={styles.hintText}>
+          <Box
+            sx={{
+              ...truncateSx,
+              flex: '1 10 0',
+              ml: '15px',
+              color: 'var(--gray)',
+              textAlign: 'right',
+              fontSize: 12
+            }}
+          >
             {hint}
-          </div> :
+          </Box> :
           null
       }
     </EnhancedSelectInputSelectedValue>

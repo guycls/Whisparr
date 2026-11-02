@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import IconButton from 'Components/Link/IconButton';
 import { icons } from 'Helpers/Props';
 import TextInput from './TextInput';
-import styles from './KeyValueListInputItem.css';
 
 class KeyValueListInputItem extends Component {
 
@@ -62,10 +62,18 @@ class KeyValueListInputItem extends Component {
     } = this.props;
 
     return (
-      <div className={styles.itemContainer}>
-        <div className={styles.keyInputWrapper}>
+      <Box
+        sx={{
+          display: 'flex',
+          mb: '3px',
+          borderBottom: '1px solid var(--inputBorderColor)',
+          '&:last-child': {
+            mb: 0
+          }
+        }}
+      >
+        <Box sx={{ flex: '6 0 0' }}>
           <TextInput
-            className={styles.keyInput}
             name="key"
             value={keyValue}
             placeholder={keyPlaceholder}
@@ -73,11 +81,10 @@ class KeyValueListInputItem extends Component {
             onFocus={this.onFocus}
             onBlur={this.onBlur}
           />
-        </div>
+        </Box>
 
-        <div className={styles.valueInputWrapper}>
+        <Box sx={{ flex: '1 0 0', minWidth: 40 }}>
           <TextInput
-            className={styles.valueInput}
             name="value"
             value={value}
             placeholder={valuePlaceholder}
@@ -85,9 +92,9 @@ class KeyValueListInputItem extends Component {
             onFocus={this.onFocus}
             onBlur={this.onBlur}
           />
-        </div>
+        </Box>
 
-        <div className={styles.buttonWrapper}>
+        <Box sx={{ flex: '0 0 22px' }}>
           {
             isNew ?
               null :
@@ -97,8 +104,8 @@ class KeyValueListInputItem extends Component {
                 onPress={this.onRemovePress}
               />
           }
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 }

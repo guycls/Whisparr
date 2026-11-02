@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import React, { useCallback, useState } from 'react';
 import ReactSlider from 'react-slider';
 import Menu from 'Components/Menu/Menu';
@@ -12,11 +14,22 @@ import {
   QUALITY_FILTER_TIERS,
 } from 'Utilities/Quality/qualityFilterTiers';
 import translate from 'Utilities/String/translate';
-import styles from './SeriesDetailsQualityFilterMenu.css';
 
 interface QualityFilter {
   minIndex: number;
   maxIndex: number;
+}
+
+function getTierLabelAlign(tierPosition: number, tierCount: number) {
+  if (tierPosition === 0) {
+    return 'left';
+  }
+
+  if (tierPosition === tierCount - 1) {
+    return 'right';
+  }
+
+  return 'center';
 }
 
 interface SeriesDetailsQualityFilterMenuProps {
@@ -53,8 +66,20 @@ function SeriesDetailsQualityFilterMenu(
   }, []);
 
   const trackRenderer = useCallback(
-    (trackProps: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...trackProps} className={styles.track} />
+    (
+      trackProps: React.HTMLAttributes<HTMLDivElement>,
+      state: { index: number }
+    ) => (
+      <Box
+        {...trackProps}
+        sx={{
+          top: 11,
+          mx: '9px',
+          height: 3,
+          bgcolor: state.index === 0 ? 'grey.300' : 'primary.main',
+          boxShadow: '0 0 0 #000',
+        }}
+      />
     ),
     []
   );
@@ -71,11 +96,40 @@ function SeriesDetailsQualityFilterMenu(
         : formatQualityTierLabel(tier);
 
       return (
-        <div {...thumbProps} className={styles.thumb}>
+        <Box
+          {...thumbProps}
+          sx={{
+            zIndex: 1,
+            width: 18,
+            height: 18,
+            border: 3,
+            borderColor: 'primary.main',
+            borderRadius: '50%',
+            bgcolor: 'common.white',
+            cursor: 'pointer',
+          }}
+        >
           {showEndpointLabels ? (
-            <div className={styles.thumbLabel}>{label}</div>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                px: '6px',
+                py: '2px',
+                borderRadius: '3px',
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                whiteSpace: 'nowrap',
+                fontSize: 12,
+                pointerEvents: 'none',
+              }}
+            >
+              {label}
+            </Box>
           ) : null}
-        </div>
+        </Box>
       );
     },
     [minIndex, maxIndex, showEndpointLabels]
@@ -98,26 +152,52 @@ function SeriesDetailsQualityFilterMenu(
         showIndicator={isFilterActive}
       />
 
-      <MenuContent className={styles.menuContent}>
-        <div className={styles.panel}>
-          <div className={styles.tierLabels}>
-            {QUALITY_FILTER_TIERS.map((tier) => (
-              <span key={tier.index} className={styles.tierLabel}>
+      <MenuContent>
+        <Box sx={{ width: 300, p: '12px 16px 16px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              mb: 1,
+              color: 'text.secondary',
+              fontSize: 12,
+            }}
+          >
+            {QUALITY_FILTER_TIERS.map((tier, tierPosition) => (
+              <Box
+                component="span"
+                key={tier.index}
+                sx={{
+                  flex: 1,
+                  textAlign: getTierLabelAlign(
+                    tierPosition,
+                    QUALITY_FILTER_TIERS.length
+                  ),
+                }}
+              >
                 {tier.isUnknown
                   ? translate('SeriesDetailsQualityFilterUnknown')
                   : formatQualityTierLabel(tier)}
-              </span>
+              </Box>
             ))}
-          </div>
+          </Box>
 
-          <div
-            className={styles.sliderContainer}
+          <Box
+            sx={{
+              position: 'relative',
+              py: 2,
+              pb: 1,
+              '& .quality-filter-slider': {
+                width: '100%',
+                height: 28,
+              },
+            }}
             onPointerDown={onPointerDown}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
           >
             <ReactSlider
-              className={styles.slider}
+              className="quality-filter-slider"
               min={0}
               max={QUALITY_FILTER_MAX_INDEX}
               step={1}
@@ -128,15 +208,22 @@ function SeriesDetailsQualityFilterMenu(
               renderThumb={thumbRenderer}
               onChange={onSliderChange}
             />
-          </div>
+          </Box>
 
-          <div className={styles.rangeSummary}>
+          <Typography
+            sx={{
+              mt: 1,
+              textAlign: 'center',
+              color: 'text.secondary',
+              fontSize: 12,
+            }}
+          >
             {translate('SeriesDetailsQualityFilterRange', {
               minLabel,
               maxLabel,
             })}
-          </div>
-        </div>
+          </Typography>
+        </Box>
       </MenuContent>
     </Menu>
   );

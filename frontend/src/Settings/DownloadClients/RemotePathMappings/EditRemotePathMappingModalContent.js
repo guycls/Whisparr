@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Form from 'Components/Form/Form';
@@ -14,7 +15,14 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import { stringSettingShape } from 'Helpers/Props/Shapes/settingShape';
 import translate from 'Utilities/String/translate';
-import styles from './EditRemotePathMappingModalContent.css';
+
+const sxBody = {
+  flex: '1 1 430px'
+};
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
 
 function EditRemotePathMappingModalContent(props) {
   const {
@@ -44,7 +52,8 @@ function EditRemotePathMappingModalContent(props) {
         {id ? translate('EditRemotePathMapping') : translate('AddRemotePathMapping')}
       </ModalHeader>
 
-      <ModalBody className={styles.body}>
+      <Box sx={sxBody}>
+<ModalBody>
         {
           isFetching &&
             <LoadingIndicator />
@@ -99,17 +108,19 @@ function EditRemotePathMappingModalContent(props) {
             </Form>
         }
       </ModalBody>
+</Box>
 
       <ModalFooter>
         {
           id &&
-            <Button
-              className={styles.deleteButton}
+            <Box sx={sxDeleteButton}>
+<Button
               kind={kinds.DANGER}
               onPress={onDeleteRemotePathMappingPress}
             >
               {translate('Delete')}
             </Button>
+</Box>
         }
 
         <Button

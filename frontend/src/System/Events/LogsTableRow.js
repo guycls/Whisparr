@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
@@ -6,7 +7,15 @@ import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRowButton from 'Components/Table/TableRowButton';
 import { icons } from 'Helpers/Props';
 import LogsTableDetailsModal from './LogsTableDetailsModal';
-import styles from './LogsTableRow.css';
+
+const levelColors = {
+  info: '#1e90ff',
+  debug: '#808080',
+  trace: '#d3d3d3',
+  warn: 'var(--warningColor)',
+  error: 'var(--dangerColor)',
+  fatal: 'var(--purple)'
+};
 
 function getIconName(level) {
   switch (level) {
@@ -85,13 +94,17 @@ class LogsTableRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.level}
+                  sx={{ width: 20 }}
                 >
-                  <Icon
-                    className={styles[level]}
-                    name={getIconName(level)}
-                    title={level}
-                  />
+                  <Box
+                    component="span"
+                    sx={{ color: levelColors[level], display: 'inline-flex' }}
+                  >
+                    <Icon
+                      name={getIconName(level)}
+                      title={level}
+                    />
+                  </Box>
                 </TableRowCell>
               );
             }
@@ -125,7 +138,7 @@ class LogsTableRow extends Component {
               return (
                 <TableRowCell
                   key={name}
-                  className={styles.actions}
+                  sx={{ width: 45 }}
                 />
               );
             }

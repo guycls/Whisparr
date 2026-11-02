@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useState } from 'react';
 import FormInputButton from 'Components/Form/FormInputButton';
 import Icon from 'Components/Icon';
 import { icons, kinds } from 'Helpers/Props';
 import { ButtonProps } from './Button';
-import styles from './ClipboardButton.css';
 
 export interface ClipboardButtonProps extends Omit<ButtonProps, 'children'> {
   value: string;
@@ -13,7 +13,7 @@ export type ClipboardState = 'success' | 'error' | null;
 
 export default function ClipboardButton({
   value,
-  className = styles.button,
+  className,
   ...otherProps
 }: ClipboardButtonProps) {
   const [state, setState] = useState<ClipboardState>(null);
@@ -49,20 +49,16 @@ export default function ClipboardButton({
       onClick={handleClick}
       {...otherProps}
     >
-      <span className={state ? styles.showStateIcon : undefined}>
+      <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
         {state ? (
-          <span className={styles.stateIconContainer}>
-            <Icon
-              name={state === 'error' ? icons.DANGER : icons.CHECK}
-              kind={state === 'error' ? kinds.DANGER : kinds.SUCCESS}
-            />
-          </span>
-        ) : null}
-
-        <span className={styles.clipboardIconContainer}>
+          <Icon
+            name={state === 'error' ? icons.DANGER : icons.CHECK}
+            kind={state === 'error' ? kinds.DANGER : kinds.SUCCESS}
+          />
+        ) : (
           <Icon name={icons.CLIPBOARD} />
-        </span>
-      </span>
+        )}
+      </Box>
     </FormInputButton>
   );
 }

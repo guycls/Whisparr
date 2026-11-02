@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 import React from 'react';
 import { ParseModel } from 'App/State/ParseAppState';
 import FieldSet from 'Components/FieldSet';
@@ -5,7 +7,6 @@ import EpisodeFormats from 'Episode/EpisodeFormats';
 import SeriesTitleLink from 'Series/SeriesTitleLink';
 import translate from 'Utilities/String/translate';
 import ParseResultItem from './ParseResultItem';
-import styles from './ParseResult.css';
 
 interface ParseResultProps {
   item: ParseModel;
@@ -71,26 +72,26 @@ function ParseResult(props: ParseResultProps) {
       </FieldSet>
 
       <FieldSet legend={translate('EpisodeInfo')}>
-        <div className={styles.container}>
-          <div className={styles.column}>
+        <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
+          <Box sx={{ flex: '0 0 50%' }}>
             <ParseResultItem
               title={translate('AirDate')}
               data={airDate ?? '-'}
             />
-          </div>
+          </Box>
 
-          <div className={styles.column}>
+          <Box sx={{ flex: '0 0 50%' }}>
             <ParseResultItem
               title={translate('Special')}
               data={special ? translate('True') : translate('False')}
             />
-          </div>
-        </div>
+          </Box>
+        </Stack>
       </FieldSet>
 
       <FieldSet legend={translate('Quality')}>
-        <div className={styles.container}>
-          <div className={styles.column}>
+        <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
+          <Box sx={{ flex: '0 0 50%' }}>
             <ParseResultItem
               title={translate('Quality')}
               data={quality.quality.name}
@@ -108,9 +109,9 @@ function ParseResult(props: ParseResultProps) {
               title={translate('Repack')}
               data={quality.revision.isRepack ? translate('True') : '-'}
             />
-          </div>
+          </Box>
 
-          <div className={styles.column}>
+          <Box sx={{ flex: '0 0 50%' }}>
             <ParseResultItem
               title={translate('Version')}
               data={
@@ -122,8 +123,8 @@ function ParseResult(props: ParseResultProps) {
               title={translate('Real')}
               data={quality.revision.real ? translate('True') : '-'}
             />
-          </div>
-        </div>
+          </Box>
+        </Stack>
       </FieldSet>
 
       <FieldSet legend={translate('Languages')}>

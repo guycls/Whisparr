@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback } from 'react';
 import Button from 'Components/Link/Button';
 import Modal from 'Components/Modal/Modal';
@@ -7,7 +8,6 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ConnectionLostModal.css';
 
 interface ConnectionLostModalProps {
   isOpen: boolean;
@@ -30,9 +30,9 @@ function ConnectionLostModal(props: ConnectionLostModalProps) {
             {translate('ConnectionLostToBackend', { appName: 'Whisparr' })}
           </div>
 
-          <div className={styles.automatic}>
+          <Box sx={{ mt: '20px' }}>
             {translate('ConnectionLostReconnect', { appName: 'Whisparr' })}
-          </div>
+          </Box>
         </ModalBody>
         <ModalFooter>
           <Button kind={kinds.PRIMARY} onPress={handleModalClose}>

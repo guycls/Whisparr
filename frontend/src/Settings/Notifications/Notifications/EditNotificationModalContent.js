@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Alert from 'Components/Alert';
@@ -16,7 +17,14 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import NotificationEventItems from './NotificationEventItems';
-import styles from './EditNotificationModalContent.css';
+
+const sxDeleteButton = {
+  mr: 'auto'
+};
+
+const sxMessage = (theme) => ({
+  mb: theme.spacing(3.75)
+});
 
 function EditNotificationModalContent(props) {
   const {
@@ -69,12 +77,13 @@ function EditNotificationModalContent(props) {
             <Form {...otherProps}>
               {
                 !!message &&
-                  <Alert
-                    className={styles.message}
+                  <Box sx={sxMessage}>
+<Alert
                     kind={message.value.type}
                   >
                     {message.value.message}
                   </Alert>
+</Box>
               }
 
               <FormGroup>
@@ -127,13 +136,14 @@ function EditNotificationModalContent(props) {
       <ModalFooter>
         {
           id &&
-            <Button
-              className={styles.deleteButton}
+            <Box sx={sxDeleteButton}>
+<Button
               kind={kinds.DANGER}
               onPress={onDeleteNotificationPress}
             >
               {translate('Delete')}
             </Button>
+</Box>
         }
 
         <SpinnerErrorButton

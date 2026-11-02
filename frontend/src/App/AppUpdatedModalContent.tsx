@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Button from 'Components/Link/Button';
@@ -14,7 +15,6 @@ import UpdateChanges from 'System/Updates/UpdateChanges';
 import Update from 'typings/Update';
 import translate from 'Utilities/String/translate';
 import AppState from './State/AppState';
-import styles from './AppUpdatedModalContent.css';
 
 function mergeUpdates(items: Update[], version: string, prevVersion?: string) {
   let installedIndex = items.findIndex((u) => u.version === version);
@@ -93,24 +93,38 @@ function AppUpdatedModalContent(props: AppUpdatedModalContentProps) {
       <ModalHeader>{translate('AppUpdated')}</ModalHeader>
 
       <ModalBody>
-        <div>
-          <InlineMarkdown
-            data={translate('AppUpdatedVersion', { version })}
-            blockClassName={styles.version}
-          />
-        </div>
+        <Box
+          sx={{
+            '& code': {
+              margin: '0 3px',
+              fontWeight: 'bold',
+              fontFamily: 'var(--defaultFontFamily)',
+            },
+          }}
+        >
+          <InlineMarkdown data={translate('AppUpdatedVersion', { version })} />
+        </Box>
 
         {isPopulated && !error && !!update ? (
           <div>
             {update.changes ? (
-              <div className={styles.maintenance}>
+              <Box sx={{ mt: '20px' }}>
                 {translate('MaintenanceRelease')}
-              </div>
+              </Box>
             ) : null}
 
             {update.changes ? (
               <div>
-                <div className={styles.changes}>{translate('WhatsNew')}</div>
+                <Box
+                  sx={{
+                    mt: '20px',
+                    pb: '5px',
+                    borderBottom: '1px solid #e5e5e5',
+                    fontSize: 18,
+                  }}
+                >
+                  {translate('WhatsNew')}
+                </Box>
 
                 <UpdateChanges
                   title={translate('New')}

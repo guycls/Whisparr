@@ -1,9 +1,9 @@
-import $ from 'jquery';
 import { batchActions } from 'redux-batched-actions';
 import { messageTypes } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import { isSameCommand } from 'Utilities/Command';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
+import param from 'Utilities/param';
 import { hideMessage, showMessage } from './appActions';
 import { removeItem, set, updateItem } from './baseActions';
 import createFetchHandler from './Creators/createFetchHandler';
@@ -178,7 +178,7 @@ export const actionHandlers = handleThunks({
     dispatch(set({ section, isDeleting: true }));
 
     const ajaxOptions = {
-      url: `/command/${id}?${$.param(queryParams, true)}`,
+      url: `/command/${id}?${param(queryParams, true)}`,
       method: 'DELETE'
     };
 

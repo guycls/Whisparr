@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { orderBy } from 'lodash';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,7 +20,6 @@ import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
 import { CheckInputChanged } from 'typings/inputs';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
-import styles from './DeleteSeriesModalContent.css';
 
 interface DeleteSeriesModalContentProps {
   seriesIds: number[];
@@ -144,7 +145,7 @@ function DeleteSeriesModalContent(props: DeleteSeriesModalContentProps) {
           </FormGroup>
         </div>
 
-        <div className={styles.message}>
+        <Typography sx={{ mt: '20px', mb: '10px' }}>
           {deleteFiles
             ? translate('DeleteSiteFolderCountWithFilesConfirmation', {
                 count: series.length,
@@ -152,7 +153,7 @@ function DeleteSeriesModalContent(props: DeleteSeriesModalContentProps) {
             : translate('DeleteSiteFolderCountConfirmation', {
                 count: series.length,
               })}
-        </div>
+        </Typography>
 
         <ul>
           {series.map((s) => {
@@ -164,19 +165,32 @@ function DeleteSeriesModalContent(props: DeleteSeriesModalContentProps) {
 
                 {deleteFiles && (
                   <span>
-                    <span className={styles.pathContainer}>
-                      -<span className={styles.path}>{s.path}</span>
-                    </span>
+                    <Box component="span" sx={{ ml: '5px' }}>
+                      -
+                      <Box
+                        component="span"
+                        sx={{
+                          ml: '5px',
+                          color: 'error.main',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {s.path}
+                      </Box>
+                    </Box>
 
                     {!!episodeFileCount && (
-                      <span className={styles.statistics}>
+                      <Box
+                        component="span"
+                        sx={{ ml: '10px', color: 'warning.main' }}
+                      >
                         (
                         {translate('DeleteSiteFolderEpisodeCount', {
                           episodeFileCount,
                           size: formatBytes(sizeOnDisk),
                         })}
                         )
-                      </span>
+                      </Box>
                     )}
                   </span>
                 )}
@@ -186,12 +200,12 @@ function DeleteSeriesModalContent(props: DeleteSeriesModalContentProps) {
         </ul>
 
         {deleteFiles && !!totalEpisodeFileCount ? (
-          <div className={styles.deleteFilesMessage}>
+          <Typography sx={{ mt: '20px', color: 'warning.main' }}>
             {translate('DeleteSiteFolderEpisodeCount', {
               episodeFileCount: totalEpisodeFileCount,
               size: formatBytes(totalSizeOnDisk),
             })}
-          </div>
+          </Typography>
         ) : null}
       </ModalBody>
 

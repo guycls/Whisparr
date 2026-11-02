@@ -1,8 +1,9 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import React from 'react';
 import Button from 'Components/Link/Button';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './NoSeries.css';
 
 interface NoSeriesProps {
   totalItems: number;
@@ -16,34 +17,38 @@ function NoSeries(props: NoSeriesProps) {
 
   if (totalItems > 0) {
     return (
-      <div>
-        <div className={styles.message}>
+      <Box>
+        <Typography
+          sx={{ mt: '10px', mb: '30px', textAlign: 'center', fontSize: 20 }}
+        >
           {translate('AllSitesAreHiddenByTheAppliedFilter')}
-        </div>
-      </div>
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div>
-      <div className={styles.message}>
+    <Box>
+      <Typography
+        sx={{ mt: '10px', mb: '30px', textAlign: 'center', fontSize: 20 }}
+      >
         {translate('NoSitesFoundImportOrAdd')}
-      </div>
+      </Typography>
 
       {seriesType !== 'jav' && (
-        <div className={styles.buttonContainer}>
+        <Box sx={{ mt: '20px', textAlign: 'center' }}>
           <Button to="/add/import" kind={kinds.PRIMARY}>
             {translate('ImportExistingSites')}
           </Button>
-        </div>
+        </Box>
       )}
 
-      <div className={styles.buttonContainer}>
+      <Box sx={{ mt: '20px', textAlign: 'center' }}>
         <Button to={addNewPath} kind={kinds.PRIMARY}>
           {translate('AddNewSite')}
         </Button>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

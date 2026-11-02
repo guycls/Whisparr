@@ -1,36 +1,25 @@
-import classNames from 'classnames';
+import FormHelperText from '@mui/material/FormHelperText';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
-import styles from './FormInputHelpText.css';
 
 function FormInputHelpText(props) {
   const {
-    className,
     text,
     link,
     tooltip,
     isError,
-    isWarning,
-    isCheckInput
+    isWarning
   } = props;
 
   return (
-    <div className={classNames(
-      className,
-      isError && styles.isError,
-      isWarning && styles.isWarning,
-      isCheckInput && styles.isCheckInput
-    )}
-    >
+    <FormHelperText error={isError || isWarning}>
       {text}
-
       {
         link ?
           <Link
-            className={styles.link}
             to={link}
             title={tooltip}
           >
@@ -40,22 +29,20 @@ function FormInputHelpText(props) {
           </Link> :
           null
       }
-
       {
         !link && tooltip ?
           <Icon
-            containerClassName={styles.details}
             name={icons.INFO}
             title={tooltip}
           /> :
           null
       }
-    </div>
+    </FormHelperText>
   );
 }
 
 FormInputHelpText.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   text: PropTypes.string.isRequired,
   link: PropTypes.string,
   tooltip: PropTypes.string,
@@ -65,7 +52,6 @@ FormInputHelpText.propTypes = {
 };
 
 FormInputHelpText.defaultProps = {
-  className: styles.helpText,
   isError: false,
   isWarning: false,
   isCheckInput: false

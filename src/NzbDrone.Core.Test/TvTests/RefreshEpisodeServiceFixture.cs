@@ -225,6 +225,41 @@ namespace NzbDrone.Core.Test.TvTests
         }
 
         [Test]
+        public void should_delete_duplicate_existing_episodes_with_the_same_tvdb_id()
+        {
+            var remote = Builder<Episode>.CreateNew()
+                .With(e => e.TvdbId = 42)
+                .With(e => e.SeasonNumber = 2022)
+                .With(e => e.Title = "Same Title")
+                .With(e => e.AirDate = "2022-09-10")
+                .With(e => e.EpisodeFileId = 0)
+                .Build();
+
+            var existing = Builder<Episode>.CreateListOfSize(2)
+                .All()
+                .With(e => e.TvdbId = 42)
+                .With(e => e.SeasonNumber = 2022)
+                .With(e => e.Title = "Same Title")
+                .With(e => e.AirDate = "2022-09-10")
+                .With(e => e.EpisodeFileId = 0)
+                .TheFirst(1)
+                .With(e => e.Id = 10)
+                .TheNext(1)
+                .With(e => e.Id = 20)
+                .Build()
+                .ToList();
+
+            Mocker.GetMock<IEpisodeService>().Setup(c => c.GetEpisodeBySeries(It.IsAny<int>()))
+                .Returns(existing);
+
+            Subject.RefreshEpisodeInfo(GetSeries(), new List<Episode> { remote });
+
+            _updatedEpisodes.Should().ContainSingle(e => e.Id == 10);
+            _insertedEpisodes.Should().BeEmpty();
+            _deletedEpisodes.Should().ContainSingle(e => e.Id == 20);
+        }
+
+        [Test]
         [Ignore("tpdb will always have an air date, if no air date then date of import is used as an air date, blame Gykes if not the case")]
         public void should_override_empty_airdate_for_direct_to_dvd()
         {

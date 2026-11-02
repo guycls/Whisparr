@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Alert from 'Components/Alert';
@@ -21,7 +22,6 @@ import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import createPathsSelector from './createPathsSelector';
 import FileBrowserRow from './FileBrowserRow';
-import styles from './FileBrowserModalContent.css';
 
 const columns: Column[] = [
   {
@@ -139,12 +139,10 @@ function FileBrowserModalContent(props: FileBrowserModalContentProps) {
     <ModalContent onModalClose={onModalClose}>
       <ModalHeader>{translate('FileBrowser')}</ModalHeader>
 
-      <ModalBody
-        className={styles.modalBody}
-        scrollDirection={scrollDirections.NONE}
-      >
+      <ModalBody scrollDirection={scrollDirections.NONE}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         {isWindowsService ? (
-          <Alert className={styles.mappedDrivesWarning} kind={kinds.WARNING}>
+          <Alert kind={kinds.WARNING}>
             <InlineMarkdown
               data={translate('MappedNetworkDrivesWindowsService', {
                 url: 'https://wiki.servarr.com/whisparr/faq#why-can-whisparr-not-see-my-files-on-a-remote-server',
@@ -154,7 +152,6 @@ function FileBrowserModalContent(props: FileBrowserModalContentProps) {
         ) : null}
 
         <PathInput
-          className={styles.pathInput}
           placeholder={translate('FileBrowserPlaceholderText')}
           hasFileBrowser={false}
           includeFiles={includeFiles}
@@ -168,7 +165,7 @@ function FileBrowserModalContent(props: FileBrowserModalContentProps) {
 
         <Scroller
           ref={scrollerRef}
-          className={styles.scroller}
+          sx={{ mt: '20px' }}
           scrollDirection="both"
         >
           {error ? <div>{translate('ErrorLoadingContents')}</div> : null}
@@ -221,11 +218,14 @@ function FileBrowserModalContent(props: FileBrowserModalContentProps) {
             </Table>
           ) : null}
         </Scroller>
+        </Box>
       </ModalBody>
 
       <ModalFooter>
         {isFetching ? (
-          <LoadingIndicator className={styles.loading} size={20} />
+          <Box sx={{ display: 'inline-block', mr: 'auto' }}>
+            <LoadingIndicator size={20} />
+          </Box>
         ) : null}
 
         <Button onPress={onModalClose}>{translate('Cancel')}</Button>

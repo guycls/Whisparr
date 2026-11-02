@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
@@ -21,7 +22,6 @@ import EditSeriesModal from './Edit/EditSeriesModal';
 import OrganizeSeriesModal from './Organize/OrganizeSeriesModal';
 import ChangeMonitoringModal from './SeasonPass/ChangeMonitoringModal';
 import TagsModal from './Tags/TagsModal';
-import styles from './SeriesIndexSelectFooter.css';
 
 interface SavePayload {
   monitored?: boolean;
@@ -180,58 +180,125 @@ function SeriesIndexSelectFooter() {
   const anySelected = selectedCount > 0;
 
   return (
-    <PageContentFooter className={styles.footer}>
-      <div className={styles.buttons}>
-        <div className={styles.actionButtons}>
-          <SpinnerButton
-            isSpinning={isSaving && isSavingSeries}
-            isDisabled={!anySelected || isOrganizingSeries}
-            onPress={onEditPress}
+    <PageContentFooter>
+      <Box
+        sx={(theme) => ({
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          width: '100%',
+          p: '20px',
+          bgcolor: 'background.paper',
+          [theme.breakpoints.down('lg')]: {
+            flexWrap: 'wrap',
+          },
+          [theme.breakpoints.down('md')]: {
+            flexDirection: 'column',
+          },
+        })}
+      >
+        <Box
+          sx={(theme) => ({
+            display: 'flex',
+            [theme.breakpoints.down('lg')]: {
+              justifyContent: 'center',
+              width: '100%',
+            },
+            [theme.breakpoints.down('md')]: {
+              flexDirection: 'column',
+              mt: '20px',
+              gap: '20px',
+            },
+          })}
+        >
+          <Box
+            sx={(theme) => ({
+              display: 'flex',
+              gap: '10px',
+              [theme.breakpoints.down('md')]: {
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+              },
+            })}
           >
-            {translate('Edit')}
-          </SpinnerButton>
+            <SpinnerButton
+              isSpinning={isSaving && isSavingSeries}
+              isDisabled={!anySelected || isOrganizingSeries}
+              onPress={onEditPress}
+            >
+              {translate('Edit')}
+            </SpinnerButton>
 
-          <SpinnerButton
-            kind={kinds.WARNING}
-            isSpinning={isOrganizingSeries}
-            isDisabled={!anySelected || isOrganizingSeries}
-            onPress={onOrganizePress}
+            <SpinnerButton
+              kind={kinds.WARNING}
+              isSpinning={isOrganizingSeries}
+              isDisabled={!anySelected || isOrganizingSeries}
+              onPress={onOrganizePress}
+            >
+              {translate('RenameFiles')}
+            </SpinnerButton>
+
+            <SpinnerButton
+              isSpinning={isSaving && isSavingTags}
+              isDisabled={!anySelected || isOrganizingSeries}
+              onPress={onTagsPress}
+            >
+              {translate('SetTags')}
+            </SpinnerButton>
+
+            <SpinnerButton
+              isSpinning={isSaving && isSavingMonitoring}
+              isDisabled={!anySelected || isOrganizingSeries}
+              onPress={onMonitoringPress}
+            >
+              {translate('UpdateMonitoring')}
+            </SpinnerButton>
+          </Box>
+
+          <Box
+            sx={(theme) => ({
+              display: 'flex',
+              gap: '10px',
+              ml: '50px',
+              [theme.breakpoints.down('md')]: {
+                justifyContent: 'center',
+                ml: 0,
+              },
+            })}
           >
-            {translate('RenameFiles')}
-          </SpinnerButton>
+            <SpinnerButton
+              kind={kinds.DANGER}
+              isSpinning={isDeleting}
+              isDisabled={!anySelected || isDeleting}
+              onPress={onDeletePress}
+            >
+              {translate('Delete')}
+            </SpinnerButton>
+          </Box>
+        </Box>
 
-          <SpinnerButton
-            isSpinning={isSaving && isSavingTags}
-            isDisabled={!anySelected || isOrganizingSeries}
-            onPress={onTagsPress}
-          >
-            {translate('SetTags')}
-          </SpinnerButton>
-
-          <SpinnerButton
-            isSpinning={isSaving && isSavingMonitoring}
-            isDisabled={!anySelected || isOrganizingSeries}
-            onPress={onMonitoringPress}
-          >
-            {translate('UpdateMonitoring')}
-          </SpinnerButton>
-        </div>
-
-        <div className={styles.deleteButtons}>
-          <SpinnerButton
-            kind={kinds.DANGER}
-            isSpinning={isDeleting}
-            isDisabled={!anySelected || isDeleting}
-            onPress={onDeletePress}
-          >
-            {translate('Delete')}
-          </SpinnerButton>
-        </div>
-      </div>
-
-      <div className={styles.selected}>
-        {translate('CountSitesSelected', { count: selectedCount })}
-      </div>
+        <Box
+          sx={(theme) => ({
+            display: 'flex',
+            justifyContent: 'flex-end',
+            flexGrow: 1,
+            fontWeight: 'bold',
+            [theme.breakpoints.down('lg')]: {
+              justifyContent: 'center',
+              mb: '20px',
+              width: '100%',
+              order: -1,
+            },
+            [theme.breakpoints.down('md')]: {
+              justifyContent: 'center',
+              order: -1,
+              mb: 0,
+            },
+          })}
+        >
+          {translate('CountSitesSelected', { count: selectedCount })}
+        </Box>
+      </Box>
 
       <EditSeriesModal
         isOpen={isEditModalOpen}

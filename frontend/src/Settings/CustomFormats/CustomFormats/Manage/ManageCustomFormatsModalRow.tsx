@@ -5,7 +5,6 @@ import Column from 'Components/Table/Column';
 import TableRow from 'Components/Table/TableRow';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
-import styles from './ManageCustomFormatsModalRow.css';
 
 interface ManageCustomFormatsModalRowProps {
   id: number;
@@ -42,9 +41,9 @@ function ManageCustomFormatsModalRow(props: ManageCustomFormatsModalRowProps) {
         onSelectedChange={onSelectedChangeWrapper}
       />
 
-      <TableRowCell className={styles.name}>{name}</TableRowCell>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>{name}</TableRowCell>
 
-      <TableRowCell className={styles.includeCustomFormatWhenRenaming}>
+      <TableRowCell sx={{ wordBreak: 'break-all' }}>
         {includeCustomFormatWhenRenaming ? translate('Yes') : translate('No')}
       </TableRowCell>
     </TableRow>

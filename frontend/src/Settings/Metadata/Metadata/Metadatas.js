@@ -1,10 +1,15 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import FieldSet from 'Components/FieldSet';
 import PageSectionContent from 'Components/Page/PageSectionContent';
 import translate from 'Utilities/String/translate';
 import Metadata from './Metadata';
-import styles from './Metadatas.css';
+
+const sxMetadatas = {
+  display: 'flex',
+  flexWrap: 'wrap'
+};
 
 function Metadatas(props) {
   const {
@@ -18,7 +23,7 @@ function Metadatas(props) {
         errorMessage={translate('MetadataLoadError')}
         {...otherProps}
       >
-        <div className={styles.metadatas}>
+        <Box sx={sxMetadatas}>
           {
             items.map((item) => {
               return (
@@ -29,7 +34,7 @@ function Metadatas(props) {
               );
             })
           }
-        </div>
+        </Box>
       </PageSectionContent>
     </FieldSet>
   );

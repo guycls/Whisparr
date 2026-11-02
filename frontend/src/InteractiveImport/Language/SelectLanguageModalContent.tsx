@@ -17,7 +17,6 @@ import { inputTypes, kinds, sizes } from 'Helpers/Props';
 import Language from 'Language/Language';
 import createLanguagesSelector from 'Store/Selectors/createLanguagesSelector';
 import translate from 'Utilities/String/translate';
-import styles from './SelectLanguageModalContent.css';
 
 interface SelectLanguageModalContentProps {
   languageIds: number[];
@@ -97,7 +96,11 @@ function SelectLanguageModalContent(props: SelectLanguageModalContentProps) {
                 <FormGroup
                   key={language.id}
                   size={sizes.EXTRA_SMALL}
-                  className={styles.languageInput}
+                  sx={{
+                    mb: 0,
+                    maxWidth: 550,
+                    flexDirection: { xs: 'column', lg: 'row' },
+                  }}
                 >
                   <FormLabel>{language.name}</FormLabel>
                   <FormInputGroup

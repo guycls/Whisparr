@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
@@ -9,8 +10,6 @@ import { fetchStatus } from 'Store/Actions/systemActions';
 import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import StartTime from './StartTime';
-import styles from './About.css';
-
 function About() {
   const dispatch = useDispatch();
   const { item } = useSelector((state: AppState) => state.system.status);
@@ -37,7 +36,8 @@ function About() {
 
   return (
     <FieldSet legend={translate('About')}>
-      <DescriptionList className={styles.descriptionList}>
+      <Box sx={{ mb: '10px' }}>
+      <DescriptionList>
         <DescriptionListItem title={translate('Version')} data={version} />
 
         {packageVersion && (
@@ -96,6 +96,7 @@ function About() {
           data={<StartTime startTime={startTime} />}
         />
       </DescriptionList>
+      </Box>
     </FieldSet>
   );
 }

@@ -1,6 +1,6 @@
-import $ from 'jquery';
 import _ from 'lodash';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
+import param from 'Utilities/param';
 import getProviderState from 'Utilities/State/getProviderState';
 import { set } from '../baseActions';
 
@@ -38,7 +38,7 @@ function createTestProviderHandler(section, url) {
     lastTestData = testData;
 
     const ajaxOptions = {
-      url: `${url}/test?${$.param(params, true)}`,
+      url: `${url}/test?${param(params, true)}`,
       method: 'POST',
       contentType: 'application/json',
       dataType: 'json',

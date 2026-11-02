@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
@@ -11,7 +12,12 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import AddDownloadClientItem from './AddDownloadClientItem';
-import styles from './AddDownloadClientModalContent.css';
+
+const sxDownloadClients = {
+  display: 'flex',
+  justifyContent: 'center',
+  flexWrap: 'wrap'
+};
 
 class AddDownloadClientModalContent extends Component {
 
@@ -62,7 +68,7 @@ class AddDownloadClientModalContent extends Component {
                 </Alert>
 
                 <FieldSet legend={translate('Usenet')}>
-                  <div className={styles.downloadClients}>
+                  <Box sx={sxDownloadClients}>
                     {
                       usenetDownloadClients.map((downloadClient) => {
                         return (
@@ -75,11 +81,11 @@ class AddDownloadClientModalContent extends Component {
                         );
                       })
                     }
-                  </div>
+                  </Box>
                 </FieldSet>
 
                 <FieldSet legend={translate('Torrents')}>
-                  <div className={styles.downloadClients}>
+                  <Box sx={sxDownloadClients}>
                     {
                       torrentDownloadClients.map((downloadClient) => {
                         return (
@@ -92,7 +98,7 @@ class AddDownloadClientModalContent extends Component {
                         );
                       })
                     }
-                  </div>
+                  </Box>
                 </FieldSet>
               </div>
           }

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Button from 'Components/Link/Button';
@@ -9,7 +10,10 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ExportCustomFormatModalContent.css';
+
+const sxButton = {
+  position: 'relative'
+};
 
 class ExportCustomFormatModalContent extends Component {
 
@@ -57,12 +61,13 @@ class ExportCustomFormatModalContent extends Component {
           </div>
         </ModalBody>
         <ModalFooter>
-          <ClipboardButton
-            className={styles.button}
+          <Box sx={sxButton}>
+<ClipboardButton
             value={json}
             title={translate('CopyToClipboard')}
             kind={kinds.DEFAULT}
           />
+</Box>
           <Button
             onPress={onModalClose}
           >

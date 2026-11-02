@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FormInputGroup from 'Components/Form/FormInputGroup';
@@ -10,8 +11,6 @@ import PageContentFooter from 'Components/Page/PageContentFooter';
 import Popover from 'Components/Tooltip/Popover';
 import { icons, inputTypes, kinds, tooltipPositions } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ImportSeriesFooter.css';
-
 const MIXED = 'mixed';
 
 class ImportSeriesFooter extends Component {
@@ -97,10 +96,17 @@ class ImportSeriesFooter extends Component {
 
     return (
       <PageContentFooter>
-        <div className={styles.inputContainer}>
-          <div className={styles.label}>
+        <Box
+          sx={{
+            mr: '20px',
+            minWidth: 150,
+            mt: { xs: 0, md: 0 },
+            '& + &': { mt: { xs: '10px', md: 0 } }
+          }}
+        >
+          <Box sx={{ mb: '3px', fontWeight: 'bold' }}>
             {translate('Monitor')}
-          </div>
+          </Box>
 
           <FormInputGroup
             type={inputTypes.MONITOR_EPISODES_SELECT}
@@ -110,12 +116,18 @@ class ImportSeriesFooter extends Component {
             includeMixed={isMonitorMixed}
             onChange={this.onInputChange}
           />
-        </div>
+        </Box>
 
-        <div className={styles.inputContainer}>
-          <div className={styles.label}>
+        <Box
+          sx={{
+            mr: '20px',
+            minWidth: 150,
+            mt: { xs: '10px', md: 0 }
+          }}
+        >
+          <Box sx={{ mb: '3px', fontWeight: 'bold' }}>
             {translate('QualityProfile')}
-          </div>
+          </Box>
 
           <FormInputGroup
             type={inputTypes.QUALITY_PROFILE_SELECT}
@@ -125,16 +137,22 @@ class ImportSeriesFooter extends Component {
             includeMixed={isQualityProfileIdMixed}
             onChange={this.onInputChange}
           />
-        </div>
+        </Box>
 
-        <div>
-          <div className={styles.label}>
+        <Box sx={{ mt: { xs: '10px', md: 0 } }}>
+          <Box sx={{ mb: '3px', fontWeight: 'bold' }}>
             &nbsp;
-          </div>
+          </Box>
 
-          <div className={styles.importButtonContainer}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mt: { xs: '10px', md: 0 },
+              '& .MuiButton-root': { height: 35 }
+            }}
+          >
             <SpinnerButton
-              className={styles.importButton}
               kind={kinds.PRIMARY}
               isSpinning={isImporting}
               isDisabled={!selectedCount || isLookingUpSeries}
@@ -145,34 +163,37 @@ class ImportSeriesFooter extends Component {
 
             {
               isLookingUpSeries ?
+                <Box sx={{ ml: '10px' }}>
                 <Button
-                  className={styles.loadingButton}
                   kind={kinds.WARNING}
                   onPress={onCancelLookupPress}
                 >
                   {translate('CancelProcessing')}
-                </Button> :
+                </Button>
+                </Box> :
                 null
             }
 
             {
               hasUnsearchedItems ?
+                <Box sx={{ ml: '10px' }}>
                 <Button
-                  className={styles.loadingButton}
                   kind={kinds.SUCCESS}
                   onPress={onLookupPress}
                 >
                   {translate('StartProcessing')}
-                </Button> :
+                </Button>
+                </Box> :
                 null
             }
 
             {
               isLookingUpSeries ?
-                <LoadingIndicator
-                  className={styles.loading}
-                  size={24}
-                /> :
+                <Box sx={{ m: '0 10px 0 12px', textAlign: 'left' }}>
+                  <LoadingIndicator
+                    size={24}
+                  />
+                </Box> :
                 null
             }
 
@@ -186,11 +207,12 @@ class ImportSeriesFooter extends Component {
               importError ?
                 <Popover
                   anchor={
-                    <Icon
-                      className={styles.importError}
-                      name={icons.WARNING}
-                      kind={kinds.WARNING}
-                    />
+                    <Box component="span" sx={{ ml: '10px', display: 'inline-flex' }}>
+                      <Icon
+                        name={icons.WARNING}
+                        kind={kinds.WARNING}
+                      />
+                    </Box>
                   }
                   title={translate('ImportErrors')}
                   body={
@@ -216,8 +238,8 @@ class ImportSeriesFooter extends Component {
                 /> :
                 null
             }
-          </div>
-        </div>
+          </Box>
+        </Box>
       </PageContentFooter>
     );
   }

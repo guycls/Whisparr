@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -6,15 +6,11 @@ import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
 import FormInputButton from './FormInputButton';
 import TextInput from './TextInput';
-import styles from './CaptchaInput.css';
 
 function CaptchaInput(props) {
   const {
-    className,
     name,
     value,
-    hasError,
-    hasWarning,
     refreshing,
     siteKey,
     secretToken,
@@ -25,14 +21,8 @@ function CaptchaInput(props) {
 
   return (
     <div>
-      <div className={styles.captchaInputWrapper}>
+      <Box sx={{ display: 'flex' }}>
         <TextInput
-          className={classNames(
-            className,
-            styles.hasButton,
-            hasError && styles.hasError,
-            hasWarning && styles.hasWarning
-          )}
           name={name}
           value={value}
           onChange={onChange}
@@ -46,24 +36,24 @@ function CaptchaInput(props) {
             isSpinning={refreshing}
           />
         </FormInputButton>
-      </div>
+      </Box>
 
       {
         !!siteKey && !!secretToken &&
-          <div className={styles.recaptchaWrapper}>
+          <Box sx={{ mt: '10px' }}>
             <ReCAPTCHA
               sitekey={siteKey}
               stoken={secretToken}
               onChange={onCaptchaChange}
             />
-          </div>
+          </Box>
       }
     </div>
   );
 }
 
 CaptchaInput.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   name: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   hasError: PropTypes.bool,
@@ -77,7 +67,6 @@ CaptchaInput.propTypes = {
 };
 
 CaptchaInput.defaultProps = {
-  className: styles.input,
   value: ''
 };
 

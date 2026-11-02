@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SeriesMonitoringOptionsPopoverContent from 'AddSeries/SeriesMonitoringOptionsPopoverContent';
@@ -17,7 +18,6 @@ import Popover from 'Components/Tooltip/Popover';
 import { icons, inputTypes, kinds, tooltipPositions } from 'Helpers/Props';
 import SeriesPoster from 'Series/SeriesPoster';
 import translate from 'Utilities/String/translate';
-import styles from './AddNewSeriesModalContent.css';
 
 class AddNewSeriesModalContent extends Component {
 
@@ -65,31 +65,42 @@ class AddNewSeriesModalContent extends Component {
 
           {
             !title.contains(year) && !!year &&
-              <span className={styles.year}>({year})</span>
+              <Box component="span" sx={{ ml: '5px', color: 'var(--disabledColor)' }}>({year})</Box>
           }
         </ModalHeader>
 
         <ModalBody>
-          <div className={styles.container}>
+          <Box sx={{ display: 'flex' }}>
             {
               isSmallScreen ?
                 null :
-                <div className={styles.poster}>
+                <Box
+                  sx={{
+                    flex: '0 0 170px',
+                    mr: '20px',
+                    maxWidth: 250,
+                    maxHeight: 250,
+                    '& img': {
+                      objectFit: 'contain',
+                      maxWidth: 250,
+                      maxHeight: 250
+                    }
+                  }}
+                >
                   <SeriesPoster
-                    className={styles.poster}
                     blur={safeForWorkMode}
                     images={images}
                     size={250}
                   />
-                </div>
+                </Box>
             }
 
-            <div className={styles.info}>
+            <Box sx={{ flexGrow: 1 }}>
               {
                 overview ?
-                  <div className={styles.overview}>
+                  <Box sx={{ mb: '30px' }}>
                     {overview}
-                  </div> :
+                  </Box> :
                   null
               }
 
@@ -120,10 +131,11 @@ class AddNewSeriesModalContent extends Component {
 
                     <Popover
                       anchor={
-                        <Icon
-                          className={styles.labelIcon}
-                          name={icons.INFO}
-                        />
+                        <Box component="span" sx={{ ml: '8px', display: 'inline-flex' }}>
+                          <Icon
+                            name={icons.INFO}
+                          />
+                        </Box>
                       }
                       title={translate('MonitoringOptions')}
                       body={<SeriesMonitoringOptionsPopoverContent />}
@@ -145,10 +157,11 @@ class AddNewSeriesModalContent extends Component {
 
                     <Popover
                       anchor={
-                        <Icon
-                          className={styles.labelIcon}
-                          name={icons.INFO}
-                        />
+                        <Box component="span" sx={{ ml: '8px', display: 'inline-flex' }}>
+                          <Icon
+                            name={icons.INFO}
+                          />
+                        </Box>
                       }
                       title={translate('SeriesTypes')}
                       body={<SeriesTypePopoverContent />}
@@ -186,49 +199,71 @@ class AddNewSeriesModalContent extends Component {
                   />
                 </FormGroup>
               </Form>
-            </div>
-          </div>
+            </Box>
+          </Box>
         </ModalBody>
 
-        <ModalFooter className={styles.modalFooter}>
+        <ModalFooter
+          sx={{
+            display: { xs: 'block', md: 'flex' },
+            textAlign: { xs: 'center', md: 'right' }
+          }}
+        >
           <div>
-            <label className={styles.searchLabelContainer}>
-              <span className={styles.searchLabel}>
+            <Box
+              component="label"
+              sx={{ display: 'flex', justifyContent: 'flex-end', mt: '2px' }}
+            >
+              <Box component="span" sx={{ mr: '8px', fontWeight: 'normal' }}>
                 {translate('AddNewSiteSearchForMissingEpisodes')}
-              </span>
+              </Box>
 
-              <CheckInput
-                containerClassName={styles.searchInputContainer}
-                className={styles.searchInput}
-                name="searchForMissingEpisodes"
-                onChange={onInputChange}
-                {...searchForMissingEpisodes}
-              />
-            </label>
+              <Box sx={{ flex: '0 1 0' }}>
+                <CheckInput
+                  name="searchForMissingEpisodes"
+                  onChange={onInputChange}
+                  {...searchForMissingEpisodes}
+                />
+              </Box>
+            </Box>
 
-            <label className={styles.searchLabelContainer}>
-              <span className={styles.searchLabel}>
+            <Box
+              component="label"
+              sx={{ display: 'flex', justifyContent: 'flex-end', mt: '2px' }}
+            >
+              <Box component="span" sx={{ mr: '8px', fontWeight: 'normal' }}>
                 {translate('AddNewSiteSearchForCutoffUnmetEpisodes')}
-              </span>
+              </Box>
 
-              <CheckInput
-                containerClassName={styles.searchInputContainer}
-                className={styles.searchInput}
-                name="searchForCutoffUnmetEpisodes"
-                onChange={onInputChange}
-                {...searchForCutoffUnmetEpisodes}
-              />
-            </label>
+              <Box sx={{ flex: '0 1 0' }}>
+                <CheckInput
+                  name="searchForCutoffUnmetEpisodes"
+                  onChange={onInputChange}
+                  {...searchForCutoffUnmetEpisodes}
+                />
+              </Box>
+            </Box>
           </div>
 
-          <SpinnerButton
-            className={styles.addButton}
-            kind={kinds.SUCCESS}
-            isSpinning={isAdding}
-            onPress={this.onAddSeriesPress}
+          <Box
+            sx={{
+              mt: { xs: '10px', md: 0 },
+              '& .MuiButton-root': {
+                overflow: 'hidden',
+                maxWidth: '100%',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }
+            }}
           >
-            {translate('AddSiteWithTitle', { title })}
-          </SpinnerButton>
+            <SpinnerButton
+              kind={kinds.SUCCESS}
+              isSpinning={isAdding}
+              onPress={this.onAddSeriesPress}
+            >
+              {translate('AddSiteWithTitle', { title })}
+            </SpinnerButton>
+          </Box>
         </ModalFooter>
       </ModalContent>
     );

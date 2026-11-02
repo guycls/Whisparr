@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { Fragment } from 'react';
 import Icon from 'Components/Icon';
 import Popover from 'Components/Tooltip/Popover';
@@ -7,8 +8,6 @@ import padNumber from 'Utilities/Number/padNumber';
 import filterAlternateTitles from 'Utilities/Series/filterAlternateTitles';
 import translate from 'Utilities/String/translate';
 import SceneInfo from './SceneInfo';
-import styles from './EpisodeNumber.css';
-
 function getWarningMessage(unverifiedSceneNumbering: boolean) {
   const messages = [];
 
@@ -72,12 +71,13 @@ function EpisodeNumber(props: EpisodeNumberProps) {
         <span>{releaseDate}</span>
 
         {warningMessage ? (
-          <Icon
-            className={styles.warning}
-            name={icons.WARNING}
-            kind={kinds.WARNING}
-            title={warningMessage}
-          />
+          <Box component="span" sx={{ ml: '8px' }}>
+            <Icon
+              name={icons.WARNING}
+              kind={kinds.WARNING}
+              title={warningMessage}
+            />
+          </Box>
         ) : null}
       </span>
     );
@@ -96,9 +96,9 @@ function EpisodeNumber(props: EpisodeNumberProps) {
               {showSeasonNumber ? padNumber(episodeNumber, 2) : episodeNumber}
 
               {false && (
-                <span className={styles.absoluteEpisodeNumber}>
+                <Box component="span" sx={{ ml: '5px' }}>
                   ({absoluteEpisodeNumber})
-                </span>
+                </Box>
               )}
             </span>
           }
@@ -125,20 +125,21 @@ function EpisodeNumber(props: EpisodeNumberProps) {
           {showSeasonNumber ? padNumber(episodeNumber, 2) : episodeNumber}
 
           {false && (
-            <span className={styles.absoluteEpisodeNumber}>
+            <Box component="span" sx={{ ml: '5px' }}>
               ({absoluteEpisodeNumber})
-            </span>
+            </Box>
           )}
         </span>
       )}
 
       {warningMessage ? (
-        <Icon
-          className={styles.warning}
-          name={icons.WARNING}
-          kind={kinds.WARNING}
-          title={warningMessage}
-        />
+        <Box component="span" sx={{ ml: '8px' }}>
+          <Icon
+            name={icons.WARNING}
+            kind={kinds.WARNING}
+            title={warningMessage}
+          />
+        </Box>
       ) : null}
     </span>
   );

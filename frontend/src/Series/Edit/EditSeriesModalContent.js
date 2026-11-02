@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SeriesMonitorNewItemsOptionsPopoverContent from 'AddSeries/SeriesMonitorNewItemsOptionsPopoverContent';
@@ -16,7 +17,6 @@ import Popover from 'Components/Tooltip/Popover';
 import { icons, inputTypes, kinds, tooltipPositions } from 'Helpers/Props';
 import MoveSeriesModal from 'Series/MoveSeries/MoveSeriesModal';
 import translate from 'Utilities/String/translate';
-import styles from './EditSeriesModalContent.css';
 
 class EditSeriesModalContent extends Component {
 
@@ -110,10 +110,11 @@ class EditSeriesModalContent extends Component {
                 {translate('MonitorNewScenes')}
                 <Popover
                   anchor={
-                    <Icon
-                      className={styles.labelIcon}
-                      name={icons.INFO}
-                    />
+                    <Box component="span" sx={{ ml: 1, display: 'inline-flex' }}>
+                      <Icon
+                        name={icons.INFO}
+                      />
+                    </Box>
                   }
                   title={translate('MonitorNewScenes')}
                   body={<SeriesMonitorNewItemsOptionsPopoverContent />}
@@ -202,13 +203,14 @@ class EditSeriesModalContent extends Component {
         </ModalBody>
 
         <ModalFooter>
-          <Button
-            className={styles.deleteButton}
-            kind={kinds.DANGER}
-            onPress={onDeleteSeriesPress}
-          >
-            {translate('Delete')}
-          </Button>
+          <Box sx={{ mr: 'auto' }}>
+            <Button
+              kind={kinds.DANGER}
+              onPress={onDeleteSeriesPress}
+            >
+              {translate('Delete')}
+            </Button>
+          </Box>
 
           <Button
             onPress={onModalClose}

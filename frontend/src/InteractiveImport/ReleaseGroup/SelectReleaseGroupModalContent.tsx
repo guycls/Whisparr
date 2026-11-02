@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
@@ -10,7 +11,6 @@ import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes, kinds, scrollDirections } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './SelectReleaseGroupModalContent.css';
 
 interface SelectReleaseGroupModalContentProps {
   releaseGroup: string;
@@ -42,10 +42,8 @@ function SelectReleaseGroupModalContent(
         {translate('SetReleaseGroupModalTitle', { modalTitle })}
       </ModalHeader>
 
-      <ModalBody
-        className={styles.modalBody}
-        scrollDirection={scrollDirections.NONE}
-      >
+      <ModalBody scrollDirection={scrollDirections.NONE}>
+        <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column' }}>
         <Form>
           <FormGroup>
             <FormLabel>{translate('ReleaseGroup')}</FormLabel>
@@ -59,6 +57,7 @@ function SelectReleaseGroupModalContent(
             />
           </FormGroup>
         </Form>
+        </Box>
       </ModalBody>
 
       <ModalFooter>

@@ -1,13 +1,16 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragLayer } from 'react-dnd';
 import DragPreviewLayer from 'Components/DragPreviewLayer';
 import { DELAY_PROFILE } from 'Helpers/dragTypes';
-import dimensions from 'Styles/Variables/dimensions.js';
 import DelayProfile from './DelayProfile';
-import styles from './DelayProfileDragPreview.css';
 
-const dragHandleWidth = parseInt(dimensions.dragHandleWidth);
+const sxDragPreview = {
+  opacity: 0.75
+};
+
+const dragHandleWidth = parseInt('40px');
 
 function collectDragLayer(monitor) {
   return {
@@ -51,15 +54,14 @@ class DelayProfileDragPreview extends Component {
 
     return (
       <DragPreviewLayer>
-        <div
-          className={styles.dragPreview}
+        <Box
           style={style}
-        >
+         sx={sxDragPreview}>
           <DelayProfile
             isDragging={false}
             {...item}
           />
-        </div>
+        </Box>
       </DragPreviewLayer>
     );
   }

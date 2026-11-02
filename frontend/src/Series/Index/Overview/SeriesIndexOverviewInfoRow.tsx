@@ -1,7 +1,7 @@
 import { IconDefinition } from '@fortawesome/free-regular-svg-icons';
+import Box from '@mui/material/Box';
 import React from 'react';
 import Icon from 'Components/Icon';
-import styles from './SeriesIndexOverviewInfoRow.css';
 
 interface SeriesIndexOverviewInfoRowProps {
   title?: string;
@@ -17,11 +17,24 @@ function SeriesIndexOverviewInfoRow(props: SeriesIndexOverviewInfoRowProps) {
   }
 
   return (
-    <div className={styles.infoRow} title={title}>
-      <Icon className={styles.icon} name={iconName} size={14} />
+    <Box
+      title={title}
+      sx={{
+        flex: '0 0 21px',
+        my: '2px',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <Box
+        component="span"
+        sx={{ mr: '5px', width: 25, textAlign: 'center', flexShrink: 0 }}
+      >
+        <Icon name={iconName} size={14} />
+      </Box>
 
       {label}
-    </div>
+    </Box>
   );
 }
 

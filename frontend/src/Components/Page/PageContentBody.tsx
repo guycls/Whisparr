@@ -1,7 +1,7 @@
+import Box from '@mui/material/Box';
 import React, { ForwardedRef, forwardRef, ReactNode, useCallback } from 'react';
 import Scroller, { OnScroll } from 'Components/Scroller/Scroller';
 import { isLocked } from 'Utilities/scrollLock';
-import styles from './PageContentBody.css';
 
 interface PageContentBodyProps {
   className?: string;
@@ -14,8 +14,8 @@ interface PageContentBodyProps {
 const PageContentBody = forwardRef(
   (props: PageContentBodyProps, ref: ForwardedRef<HTMLDivElement>) => {
     const {
-      className = styles.contentBody,
-      innerClassName = styles.innerContentBody,
+      className,
+      innerClassName,
       children,
       onScroll,
       ...otherProps
@@ -38,7 +38,12 @@ const PageContentBody = forwardRef(
         scrollDirection="vertical"
         onScroll={onScrollWrapper}
       >
-        <div className={innerClassName}>{children}</div>
+        <Box
+          className={innerClassName}
+          sx={{ p: { xs: 1.25, md: 2.5 } }}
+        >
+          {children}
+        </Box>
       </Scroller>
     );
   }

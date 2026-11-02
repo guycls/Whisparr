@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import React, {
   useCallback,
   useEffect,
@@ -17,7 +19,6 @@ import {
   RuntimeFilter,
 } from 'Utilities/Number/runtimeFilterUtils';
 import translate from 'Utilities/String/translate';
-import styles from './SeriesDetailsRuntimeFilterMenu.css';
 
 interface SeriesDetailsRuntimeFilterMenuProps {
   runtimeFilter: RuntimeFilter;
@@ -83,8 +84,20 @@ function SeriesDetailsRuntimeFilterMenu(
   }, [onRuntimeFilterChange]);
 
   const trackRenderer = useCallback(
-    (trackProps: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...trackProps} className={styles.track} />
+    (
+      trackProps: React.HTMLAttributes<HTMLDivElement>,
+      state: { index: number }
+    ) => (
+      <Box
+        {...trackProps}
+        sx={{
+          top: 11,
+          mx: '9px',
+          height: 3,
+          bgcolor: state.index === 0 ? 'grey.300' : 'primary.main',
+          boxShadow: '0 0 0 #000',
+        }}
+      />
     ),
     []
   );
@@ -98,11 +111,40 @@ function SeriesDetailsRuntimeFilterMenu(
       const label = formatRuntimeFilterLabel(minutes);
 
       return (
-        <div {...thumbProps} className={styles.thumb}>
+        <Box
+          {...thumbProps}
+          sx={{
+            zIndex: 1,
+            width: 18,
+            height: 18,
+            border: 3,
+            borderColor: 'primary.main',
+            borderRadius: '50%',
+            bgcolor: 'common.white',
+            cursor: 'pointer',
+          }}
+        >
           {showEndpointLabels ? (
-            <div className={styles.thumbLabel}>{label}</div>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                px: '6px',
+                py: '2px',
+                borderRadius: '3px',
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                whiteSpace: 'nowrap',
+                fontSize: 12,
+                pointerEvents: 'none',
+              }}
+            >
+              {label}
+            </Box>
           ) : null}
-        </div>
+        </Box>
       );
     },
     [minMinutes, resolvedMaxMinutes, showEndpointLabels]
@@ -119,23 +161,41 @@ function SeriesDetailsRuntimeFilterMenu(
         showIndicator={isFilterActive}
       />
 
-      <MenuContent className={styles.menuContent}>
-        <div className={styles.panel}>
-          <div className={styles.endpointLabels}>
-            <span className={styles.endpointLabel}>
+      <MenuContent>
+        <Box sx={{ width: 300, p: '12px 16px 16px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              mb: 1,
+              color: 'text.secondary',
+              fontSize: 12,
+            }}
+          >
+            <Box component="span">
               {translate('SeriesDetailsRuntimeFilterUnknown')}
-            </span>
-            <span className={styles.endpointLabel}>{maxLabel}</span>
-          </div>
+            </Box>
+            <Box component="span" sx={{ textAlign: 'right' }}>
+              {maxLabel}
+            </Box>
+          </Box>
 
-          <div
-            className={styles.sliderContainer}
+          <Box
+            sx={{
+              position: 'relative',
+              py: 2,
+              pb: 1,
+              '& .runtime-filter-slider': {
+                width: '100%',
+                height: 28,
+              },
+            }}
             onPointerDown={onPointerDown}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
           >
             <ReactSlider
-              className={styles.slider}
+              className="runtime-filter-slider"
               min={0}
               max={resolvedMaxRuntime}
               step={sliderStep}
@@ -147,15 +207,22 @@ function SeriesDetailsRuntimeFilterMenu(
               renderThumb={thumbRenderer}
               onChange={onSliderChange}
             />
-          </div>
+          </Box>
 
-          <div className={styles.rangeSummary}>
+          <Typography
+            sx={{
+              mt: 1,
+              textAlign: 'center',
+              color: 'text.secondary',
+              fontSize: 12,
+            }}
+          >
             {translate('SeriesDetailsRuntimeFilterRange', {
               minLabel,
               maxLabel,
             })}
-          </div>
-        </div>
+          </Typography>
+        </Box>
       </MenuContent>
     </Menu>
   );

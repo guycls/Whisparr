@@ -1,5 +1,5 @@
+import Box from '@mui/material/Box';
 import React from 'react';
-import styles from './DragPreviewLayer.css';
 
 interface DragPreviewLayerProps {
   className?: string;
@@ -7,14 +7,26 @@ interface DragPreviewLayerProps {
 }
 
 function DragPreviewLayer({
-  className = styles.dragLayer,
+  className,
   children,
   ...otherProps
 }: DragPreviewLayerProps) {
   return (
-    <div className={className} {...otherProps}>
+    <Box
+      className={className}
+      sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 9999,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+      }}
+      {...otherProps}
+    >
       {children}
-    </div>
+    </Box>
   );
 }
 

@@ -1,7 +1,7 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
-import styles from './LegendIconItem.css';
 
 function LegendIconItem(props) {
   const {
@@ -13,19 +13,24 @@ function LegendIconItem(props) {
   } = props;
 
   return (
-    <div
-      className={styles.legendIconItem}
+    <Box
       title={tooltip}
+      sx={{
+        my: '3px',
+        mr: '6px',
+        width: 150,
+        cursor: 'default'
+      }}
     >
       <Icon
-        className={styles.icon}
         name={icon}
         darken={darken}
         kind={kind}
+        style={{ marginRight: 5 }}
       />
 
       {name}
-    </div>
+    </Box>
   );
 }
 

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
@@ -28,7 +29,6 @@ import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import SelectEpisodeRow from './SelectEpisodeRow';
-import styles from './SelectEpisodeModalContent.css';
 
 const columns = [
   {
@@ -198,20 +198,19 @@ function SelectEpisodeModalContent(props: SelectEpisodeModalContentProps) {
         {translate('SelectEpisodesModalTitle', { modalTitle })}
       </ModalHeader>
 
-      <ModalBody
-        className={styles.modalBody}
-        scrollDirection={scrollDirections.NONE}
-      >
-        <TextInput
-          className={styles.filterInput}
-          placeholder={translate('FilterEpisodesPlaceholder')}
-          name="filter"
-          value={filter}
-          autoFocus={true}
-          onChange={onFilterChange}
-        />
+      <ModalBody scrollDirection={scrollDirections.NONE}>
+        <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column' }}>
+        <Box sx={{ flex: '0 0 auto', mb: '20px' }}>
+          <TextInput
+            placeholder={translate('FilterEpisodesPlaceholder')}
+            name="filter"
+            value={filter}
+            autoFocus={true}
+            onChange={onFilterChange}
+          />
+        </Box>
 
-        <Scroller className={styles.scroller} autoFocus={false}>
+        <Scroller sx={{ flex: '1 1 auto' }} autoFocus={false}>
           {isFetching ? <LoadingIndicator /> : null}
 
           {error ? <div>{errorMessage}</div> : null}
@@ -249,12 +248,34 @@ function SelectEpisodeModalContent(props: SelectEpisodeModalContentProps) {
             ? translate('NoEpisodesFoundForSelectedYear')
             : null}
         </Scroller>
+        </Box>
       </ModalBody>
 
-      <ModalFooter className={styles.footer}>
-        <div className={styles.details}>{details}</div>
+      <ModalFooter
+        sx={{
+          display: { xs: 'block', md: 'flex' },
+          justifyContent: 'space-between',
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          sx={{
+            mr: { xs: 0, md: '20px' },
+            mb: { xs: '10px', md: 0 },
+            color: 'var(--dimColor)',
+            wordBreak: 'break-word',
+          }}
+        >
+          {details}
+        </Box>
 
-        <div className={styles.buttons}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: { xs: 'space-between', md: 'flex-start' },
+            flexGrow: { xs: 1, md: 0 },
+          }}
+        >
           <Button onPress={onModalClose}>{translate('Cancel')}</Button>
 
           <Button
@@ -264,7 +285,7 @@ function SelectEpisodeModalContent(props: SelectEpisodeModalContentProps) {
           >
             {translate('SelectEpisodes')}
           </Button>
-        </div>
+        </Box>
       </ModalFooter>
     </ModalContent>
   );

@@ -1,7 +1,7 @@
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
-import styles from './UpdateChanges.css';
 
 class UpdateChanges extends Component {
 
@@ -20,7 +20,7 @@ class UpdateChanges extends Component {
 
     return (
       <div>
-        <div className={styles.title}>{title}</div>
+        <Typography sx={{ mt: '10px', fontSize: 16 }}>{title}</Typography>
         <ul>
           {
             changes.map((change, index) => {

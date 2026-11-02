@@ -1,10 +1,26 @@
+import Typography from '@mui/material/Typography';
 import React from 'react';
 import Link from 'Components/Link/Link';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
 import translate from 'Utilities/String/translate';
 import SettingsToolbarConnector from './SettingsToolbarConnector';
-import styles from './Settings.css';
+
+const settingsLinkSx = (theme) => ({
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  color: theme.palette.text.primary,
+  fontSize: 21,
+  '&:hover': {
+    color: theme.palette.text.secondary,
+    textDecoration: 'none'
+  }
+});
+
+const summarySx = (theme) => ({
+  mt: theme.spacing(1.25),
+  mb: theme.spacing(3.75),
+  color: theme.palette.text.secondary
+});
 
 function Settings() {
   return (
@@ -15,147 +31,199 @@ function Settings() {
 
       <PageContentBody>
         <Link
-          className={styles.link}
           to="/settings/mediamanagement"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('MediaManagement')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('MediaManagementSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/profiles"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('Profiles')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('ProfilesSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/quality"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('Quality')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('QualitySettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/customformats"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('CustomFormats')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('CustomFormatsSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/indexers"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('Indexers')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('IndexersSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/downloadclients"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('DownloadClients')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('DownloadClientsSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/importlists"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('ImportLists')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('ImportListsSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/connect"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('Connect')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('ConnectSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/metadata"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('Metadata')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('MetadataSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/metadatasource"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('MetadataSource')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('MetadataSourceSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/tags"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('Tags')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('TagsSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/general"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('General')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('GeneralSettingsSummary')}
-        </div>
+        </Typography>
 
         <Link
-          className={styles.link}
           to="/settings/ui"
+          underline="none"
+          sx={settingsLinkSx}
         >
           {translate('Ui')}
         </Link>
 
-        <div className={styles.summary}>
+        <Typography
+          component="div"
+          sx={summarySx}
+        >
           {translate('UiSettingsSummary')}
-        </div>
+        </Typography>
       </PageContentBody>
     </PageContent>
   );

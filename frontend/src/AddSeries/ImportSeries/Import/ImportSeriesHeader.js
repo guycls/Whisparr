@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import SeriesMonitoringOptionsPopoverContent from 'AddSeries/SeriesMonitoringOptionsPopoverContent';
@@ -8,7 +9,6 @@ import VirtualTableSelectAllHeaderCell from 'Components/Table/VirtualTableSelect
 import Popover from 'Components/Tooltip/Popover';
 import { icons, tooltipPositions } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './ImportSeriesHeader.css';
 
 function ImportSeriesHeader(props) {
   const {
@@ -26,24 +26,25 @@ function ImportSeriesHeader(props) {
       />
 
       <VirtualTableHeaderCell
-        className={styles.folder}
+        sx={{ flex: '1 0 200px' }}
         name="folder"
       >
         {translate('Folder')}
       </VirtualTableHeaderCell>
 
       <VirtualTableHeaderCell
-        className={styles.monitor}
+        sx={{ flex: '0 1 200px', minWidth: 185 }}
         name="monitor"
       >
         {translate('Monitor')}
 
         <Popover
           anchor={
-            <Icon
-              className={styles.detailsIcon}
-              name={icons.INFO}
-            />
+            <Box component="span" sx={{ ml: '8px', display: 'inline-flex' }}>
+              <Icon
+                name={icons.INFO}
+              />
+            </Box>
           }
           title={translate('MonitoringOptions')}
           body={<SeriesMonitoringOptionsPopoverContent />}
@@ -52,14 +53,14 @@ function ImportSeriesHeader(props) {
       </VirtualTableHeaderCell>
 
       <VirtualTableHeaderCell
-        className={styles.qualityProfile}
+        sx={{ flex: '0 1 250px', minWidth: 170 }}
         name="qualityProfileId"
       >
         {translate('QualityProfile')}
       </VirtualTableHeaderCell>
 
       <VirtualTableHeaderCell
-        className={styles.series}
+        sx={{ flex: '0 1 400px', minWidth: 300 }}
         name="series"
       >
         {translate('Sites')}

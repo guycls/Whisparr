@@ -1,8 +1,8 @@
 import { IconDefinition } from '@fortawesome/fontawesome-common-types';
+import Box from '@mui/material/Box';
 import React from 'react';
 import MenuItem from 'Components/Menu/MenuItem';
 import SpinnerIcon from 'Components/SpinnerIcon';
-import styles from './PageToolbarOverflowMenuItem.css';
 
 interface PageToolbarOverflowMenuItemProps {
   iconName: IconDefinition;
@@ -27,12 +27,16 @@ function PageToolbarOverflowMenuItem(props: PageToolbarOverflowMenuItemProps) {
 
   return (
     <MenuItem key={label} isDisabled={isDisabled || isSpinning} {...otherProps}>
-      <SpinnerIcon
-        className={styles.icon}
-        name={iconName}
-        spinningName={spinningName}
-        isSpinning={isSpinning}
-      />
+      <Box
+        component="span"
+        sx={{ display: 'inline-flex', mr: 1 }}
+      >
+        <SpinnerIcon
+          name={iconName}
+          spinningName={spinningName}
+          isSpinning={isSpinning}
+        />
+      </Box>
       {label}
     </MenuItem>
   );

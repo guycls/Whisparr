@@ -1,9 +1,8 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
 import { REFRESH_SERIES, SERIES_SEARCH } from 'Commands/commandNames';
-import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
@@ -23,7 +22,44 @@ import translate from 'Utilities/String/translate';
 import createSeriesIndexItemSelector from '../createSeriesIndexItemSelector';
 import selectPosterOptions from './selectPosterOptions';
 import SeriesIndexPosterInfo from './SeriesIndexPosterInfo';
-import styles from './SeriesIndexPoster.css';
+
+const posterMetaSx = {
+  bgcolor: 'background.paper',
+  textAlign: 'center',
+  fontSize: 12,
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+};
+
+const posterTitleSx = {
+  ...posterMetaSx,
+  display: '-webkit-box',
+  whiteSpace: 'normal',
+  textOverflow: 'unset',
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+  lineHeight: 1.3,
+  minHeight: '2.6em',
+  px: '4px',
+  wordBreak: 'break-word',
+};
+
+function statusCornerSx(color: 'error.main' | 'grey.500') {
+  return {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    zIndex: 1,
+    width: 0,
+    height: 0,
+    borderWidth: '0 25px 25px 0',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderRightColor: color,
+  };
+}
 
 interface SeriesIndexPosterProps {
   seriesId: number;
@@ -138,13 +174,39 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
   };
 
   return (
-    <div className={styles.content}>
-      <div className={styles.posterContainer} title={title}>
+    <Box
+      sx={{
+        transition: 'all 200ms ease-in',
+        p: { xs: '5px', md: 0 },
+        '&:hover': {
+          zIndex: 2,
+          boxShadow: (theme) => `0 0 12px ${theme.palette.common.black}`,
+          '& .poster-controls': {
+            opacity: 0.9,
+            transition: 'opacity 200ms linear 150ms',
+          },
+        },
+      }}
+    >
+      <Box sx={{ position: 'relative', borderRadius: 1, overflow: 'hidden' }} title={title}>
         {isSelectMode ? <SeriesIndexPosterSelect seriesId={seriesId} /> : null}
 
-        <Label className={styles.controls}>
+        <Box
+          className="poster-controls"
+          sx={{
+            position: 'absolute',
+            bottom: 10,
+            left: 10,
+            zIndex: 3,
+            borderRadius: 1,
+            bgcolor: '#4f566f',
+            color: 'common.white',
+            fontSize: 12,
+            opacity: 0,
+            '& .MuiIconButton-root:hover': { color: '#ccc' },
+          }}
+        >
           <SpinnerIconButton
-            className={styles.action}
             name={icons.REFRESH}
             title={translate('RefreshSite')}
             isSpinning={isRefreshingSeries}
@@ -153,7 +215,6 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
 
           {showSearchAction ? (
             <SpinnerIconButton
-              className={styles.action}
               name={icons.SEARCH}
               title={translate('SearchForMonitoredEpisodes')}
               isSpinning={isSearchingSeries}
@@ -162,28 +223,30 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
           ) : null}
 
           <IconButton
-            className={styles.action}
             name={icons.EDIT}
             title={translate('EditSite')}
             onPress={onEditSeriesPress}
           />
-        </Label>
+        </Box>
 
         {status === 'ended' ? (
-          <div
-            className={classNames(styles.status, styles.ended)}
-            title={translate('Ended')}
-          />
+          <Box sx={statusCornerSx('error.main')} title={translate('Ended')} />
         ) : null}
 
         {status === 'deleted' ? (
-          <div
-            className={classNames(styles.status, styles.deleted)}
-            title={translate('Deleted')}
-          />
+          <Box sx={statusCornerSx('grey.500')} title={translate('Deleted')} />
         ) : null}
 
-        <Link className={styles.link} style={elementStyle} to={link}>
+        <Link
+          style={elementStyle}
+          to={link}
+          sx={{
+            position: 'relative',
+            display: 'block',
+            height: 70,
+            bgcolor: 'action.hover',
+          }}
+        >
           <SeriesPoster
             blur={safeForWorkMode}
             style={elementStyle}
@@ -196,10 +259,31 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
           />
 
           {hasPosterError ? (
-            <div className={styles.overlayTitle}>{title}</div>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: '5px',
+                width: '100%',
+                height: '100%',
+                px: '8px',
+                overflow: 'hidden',
+                color: 'common.white',
+                textAlign: 'center',
+                fontSize: 16,
+                lineHeight: 1.25,
+                wordBreak: 'break-word',
+              }}
+            >
+              {title}
+            </Box>
           ) : null}
         </Link>
-      </div>
+      </Box>
 
       <SeriesIndexProgressBar
         seriesId={seriesId}
@@ -214,26 +298,31 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
       />
 
       {showTitle ? (
-        <div className={styles.title} title={title}>
+        <Box sx={posterTitleSx} title={title}>
           {title}
-        </div>
+        </Box>
       ) : null}
 
-      {showMonitored ? (
-        <div className={styles.title}>
-          {monitored ? translate('Monitored') : translate('Unmonitored')}
-        </div>
-      ) : null}
-
-      {showQualityProfile && !!qualityProfile?.name ? (
-        <div className={styles.title} title={translate('QualityProfile')}>
-          {qualityProfile.name}
-        </div>
+      {showMonitored || (showQualityProfile && qualityProfile?.name) ? (
+        <Box sx={posterMetaSx}>
+          {[
+            showMonitored
+              ? monitored
+                ? translate('Monitored')
+                : translate('Unmonitored')
+              : null,
+            showQualityProfile && qualityProfile?.name
+              ? qualityProfile.name
+              : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </Box>
       ) : null}
 
       {nextAiring ? (
-        <div
-          className={styles.nextAiring}
+        <Box
+          sx={posterMetaSx}
           title={`${translate('NextAiring')}: ${formatDateTime(
             nextAiring,
             longDateFormat,
@@ -247,15 +336,24 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
             timeFormat,
             timeForToday: true,
           })}
-        </div>
+        </Box>
       ) : null}
 
       {showTags && tags.length ? (
-        <div className={styles.tags}>
-          <div className={styles.tagsList}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            px: '3px',
+            height: 21,
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Box sx={{ display: 'flex', overflow: 'hidden' }}>
             <TagListConnector tags={tags} />
-          </div>
-        </div>
+          </Box>
+        </Box>
       ) : null}
 
       <SeriesIndexPosterInfo
@@ -289,7 +387,7 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
         seriesId={seriesId}
         onModalClose={onDeleteSeriesModalClose}
       />
-    </div>
+    </Box>
   );
 }
 

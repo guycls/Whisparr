@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import * as calendarViews from 'Calendar/calendarViews';
 import Button from 'Components/Link/Button';
 import titleCase from 'Utilities/String/titleCase';
-// import styles from './CalendarHeaderViewButton.css';
 
 class CalendarHeaderViewButton extends Component {
 

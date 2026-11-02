@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import CheckInput from 'Components/Form/CheckInput';
 import TableRowCell from './TableRowCell';
-import styles from './TableSelectCell.css';
 
 class TableSelectCell extends Component {
 
@@ -52,9 +51,11 @@ class TableSelectCell extends Component {
     } = this.props;
 
     return (
-      <TableRowCell className={className}>
+      <TableRowCell
+        className={className}
+        sx={{ width: 30 }}
+      >
         <CheckInput
-          className={styles.input}
           name={id.toString()}
           value={isSelected}
           {...otherProps}
@@ -66,14 +67,13 @@ class TableSelectCell extends Component {
 }
 
 TableSelectCell.propTypes = {
-  className: PropTypes.string.isRequired,
+  className: PropTypes.string,
   id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   isSelected: PropTypes.bool.isRequired,
   onSelectedChange: PropTypes.func.isRequired
 };
 
 TableSelectCell.defaultProps = {
-  className: styles.selectCell,
   isSelected: false
 };
 

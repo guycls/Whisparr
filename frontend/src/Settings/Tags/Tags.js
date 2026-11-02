@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Alert from 'Components/Alert';
@@ -6,7 +7,11 @@ import PageSectionContent from 'Components/Page/PageSectionContent';
 import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import TagConnector from './TagConnector';
-import styles from './Tags.css';
+
+const sxTags = {
+  display: 'flex',
+  flexWrap: 'wrap'
+};
 
 function Tags(props) {
   const {
@@ -30,7 +35,7 @@ function Tags(props) {
         errorMessage={translate('TagsLoadError')}
         {...otherProps}
       >
-        <div className={styles.tags}>
+        <Box sx={sxTags}>
           {
             items.map((item) => {
               return (
@@ -41,7 +46,7 @@ function Tags(props) {
               );
             })
           }
-        </div>
+        </Box>
       </PageSectionContent>
     </FieldSet>
   );

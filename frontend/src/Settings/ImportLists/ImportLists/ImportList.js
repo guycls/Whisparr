@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -7,7 +8,27 @@ import { kinds } from 'Helpers/Props';
 import formatShortTimeSpan from 'Utilities/Date/formatShortTimeSpan';
 import translate from 'Utilities/String/translate';
 import EditImportListModalConnector from './EditImportListModalConnector';
-import styles from './ImportList.css';
+
+const sxList = (theme) => ({
+  width: 290,
+  m: theme.spacing(1.25)
+});
+
+const sxName = (theme) => ({
+  mb: theme.spacing(2.5),
+  fontWeight: 300,
+  fontSize: 24,
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+});
+
+const sxEnabled = (theme) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  mt: theme.spacing(0.625)
+});
 
 class ImportList extends Component {
 
@@ -61,16 +82,16 @@ class ImportList extends Component {
     } = this.props;
 
     return (
-      <Card
-        className={styles.list}
+      <Box sx={sxList}>
+<Card
         overlayContent={true}
         onPress={this.onEditImportListPress}
       >
-        <div className={styles.name}>
+        <Box sx={sxName}>
           {name}
-        </div>
+        </Box>
 
-        <div className={styles.enabled}>
+        <Box sx={sxEnabled}>
           {
             enableAutomaticAdd &&
               <Label kind={kinds.SUCCESS}>
@@ -78,13 +99,13 @@ class ImportList extends Component {
               </Label>
           }
 
-        </div>
+        </Box>
 
-        <div className={styles.enabled}>
+        <Box sx={sxEnabled}>
           <Label kind={kinds.INFO} title='List Refresh Interval'>
             {`${translate('Refresh')}: ${formatShortTimeSpan(minRefreshInterval)}`}
           </Label>
-        </div>
+        </Box>
 
         <EditImportListModalConnector
           id={id}
@@ -103,6 +124,7 @@ class ImportList extends Component {
           onCancel={this.onDeleteImportListModalClose}
         />
       </Card>
+</Box>
     );
   }
 }

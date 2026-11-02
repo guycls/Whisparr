@@ -11,8 +11,6 @@
     "lint": "eslint --config frontend/.eslintrc.js --ignore-path frontend/.eslintignore frontend/",
     "lint-fix": "yarn lint --fix",
     "typecheck": "tsc --project frontend/tsconfig.json --noEmit --skipLibCheck",
-    "stylelint-linux": "stylelint $(find frontend -name '*.css') --config frontend/.stylelintrc",
-    "stylelint-windows": "stylelint frontend/**/*.css --config frontend/.stylelintrc",
     "docker:build": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/docker-build.ps1"
   },
   "repository": "https://github.com/Whisparr/Whisparr",
@@ -24,6 +22,8 @@
     "defaults"
   ],
   "dependencies": {
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
     "@fortawesome/fontawesome-free": "6.4.0",
     "@fortawesome/fontawesome-svg-core": "6.4.0",
     "@fortawesome/free-regular-svg-icons": "6.4.0",
@@ -31,6 +31,7 @@
     "@fortawesome/react-fontawesome": "0.2.0",
     "@juggle/resize-observer": "3.4.0",
     "@microsoft/signalr": "6.0.21",
+    "@mui/material": "9.5.0",
     "@sentry/browser": "7.51.2",
     "@sentry/integrations": "7.51.2",
     "@types/node": "18.16.8",
@@ -43,7 +44,6 @@
     "fuse.js": "6.6.2",
     "history": "4.9.0",
     "jdu": "1.0.0",
-    "jquery": "3.7.0",
     "lodash": "4.17.21",
     "mobile-detect": "1.4.5",
     "moment": "2.29.4",
@@ -151,8 +151,8 @@
     "worker-loader": "3.0.8"
   },
   "volta": {
-    "node": "16.17.0",
-    "yarn": "1.22.19"
+    "node": "22.17.1",
+    "yarn": "1.22.22"
   },
   "resolutions": {
     "@types/react": "18.2.79",

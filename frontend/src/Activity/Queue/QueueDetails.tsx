@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import Icon from 'Components/Icon';
 import Popover from 'Components/Tooltip/Popover';
@@ -9,7 +10,6 @@ import {
 } from 'typings/Queue';
 import translate from 'Utilities/String/translate';
 import QueueStatus from './QueueStatus';
-import styles from './QueueDetails.css';
 
 interface QueueDetailsProps {
   title: string;
@@ -56,12 +56,17 @@ function QueueDetails(props: QueueDetailsProps) {
     }
 
     return (
-      <Popover
-        className={styles.progressBarContainer}
+      <Box
+        component={Popover}
         anchor={progressBar}
         title={`${state} - ${progress.toFixed(1)}%`}
         body={<div>{title}</div>}
         position={tooltipPositions.LEFT}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%',
+        }}
       />
     );
   }

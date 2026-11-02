@@ -18,8 +18,6 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
 import MediaInfo from './MediaInfo';
-import styles from './EpisodeFileRow.css';
-
 interface EpisodeFileRowProps {
   path: string;
   size: number;
@@ -76,7 +74,7 @@ function EpisodeFileRow(props: EpisodeFileRowProps) {
 
         if (name === 'languages') {
           return (
-            <TableRowCell key={name} className={styles.languages}>
+            <TableRowCell key={name} sx={{ width: 100 }}>
               <EpisodeLanguages languages={languages} />
             </TableRowCell>
           );
@@ -84,7 +82,7 @@ function EpisodeFileRow(props: EpisodeFileRowProps) {
 
         if (name === 'quality') {
           return (
-            <TableRowCell key={name} className={styles.quality}>
+            <TableRowCell key={name} sx={{ width: 100 }}>
               <EpisodeQuality
                 quality={quality}
                 isCutoffNotMet={qualityCutoffNotMet}
@@ -95,7 +93,7 @@ function EpisodeFileRow(props: EpisodeFileRowProps) {
 
         if (name === 'customFormats') {
           return (
-            <TableRowCell key={name} className={styles.customFormats}>
+            <TableRowCell key={name} sx={{ width: 175 }}>
               <EpisodeFormats formats={customFormats} />
             </TableRowCell>
           );
@@ -103,7 +101,7 @@ function EpisodeFileRow(props: EpisodeFileRowProps) {
 
         if (name === 'customFormatScore') {
           return (
-            <TableRowCell key={name} className={styles.customFormatScore}>
+            <TableRowCell key={name} sx={{ width: 55 }}>
               {formatCustomFormatScore(customFormatScore, customFormats.length)}
             </TableRowCell>
           );
@@ -111,7 +109,7 @@ function EpisodeFileRow(props: EpisodeFileRowProps) {
 
         if (name === 'actions') {
           return (
-            <TableRowCell key={name} className={styles.actions}>
+            <TableRowCell key={name} sx={{ width: 55 }}>
               {mediaInfo ? (
                 <Popover
                   anchor={<Icon name={icons.MEDIA_INFO} />}

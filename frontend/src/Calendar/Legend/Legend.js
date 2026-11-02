@@ -1,10 +1,10 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import LegendIconItem from './LegendIconItem';
 import LegendItem from './LegendItem';
-import styles from './Legend.css';
 
 function Legend(props) {
   const {
@@ -54,7 +54,14 @@ function Legend(props) {
   }
 
   return (
-    <div className={styles.legend}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        mt: '10px',
+        py: '3px'
+      }}
+    >
       <div>
         <LegendItem
           status="unaired"
@@ -129,7 +136,7 @@ function Legend(props) {
             {iconsToShow[2]}
           </div>
       }
-    </div>
+    </Box>
   );
 }
 

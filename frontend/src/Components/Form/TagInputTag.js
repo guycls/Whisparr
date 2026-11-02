@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import MiddleTruncate from 'react-middle-truncate';
@@ -6,7 +7,6 @@ import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import { icons, kinds } from 'Helpers/Props';
 import tagShape from 'Helpers/Props/Shapes/tagShape';
-import styles from './TagInputTag.css';
 
 class TagInputTag extends Component {
 
@@ -51,17 +51,22 @@ class TagInputTag extends Component {
     } = this.props;
 
     return (
-      <div
-        className={styles.tag}
+      <Box
         tabIndex={-1}
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          maxWidth: '100%',
+          height: 31
+        }}
       >
-        <Label
-          className={styles.label}
-          kind={kind}
-        >
+        <Label kind={kind}>
           <Link
-            className={canEdit ? styles.linkWithEdit : styles.link}
             tabIndex={-1}
+            sx={{
+              maxWidth: canEdit ? 'calc(100% - 15px)' : '100%'
+            }}
             onPress={this.onDelete}
           >
             <MiddleTruncate
@@ -73,18 +78,25 @@ class TagInputTag extends Component {
 
           {
             canEdit ?
-              <div className={styles.editContainer}>
+              <Box
+                sx={{
+                  display: 'inline-block',
+                  ml: '4px',
+                  pl: '2px',
+                  borderLeft: '1px solid #eee'
+                }}
+              >
                 <IconButton
-                  className={styles.editButton}
                   name={icons.EDIT}
                   size={9}
+                  sx={{ width: 9 }}
                   onPress={this.onEdit}
                 />
-              </div> :
+              </Box> :
               null
           }
         </Label>
-      </div>
+      </Box>
     );
   }
 }

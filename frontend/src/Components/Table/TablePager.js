@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SelectInput from 'Components/Form/SelectInput';
@@ -7,7 +7,6 @@ import Link from 'Components/Link/Link';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './TablePager.css';
 
 class TablePager extends Component {
 
@@ -71,42 +70,83 @@ class TablePager extends Component {
     const isLastPage = page === totalPages;
 
     return (
-      <div className={styles.pager}>
-        <div className={styles.loadingContainer}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          '@media (max-width: 768px)': {
+            flexWrap: 'wrap'
+          }
+        }}
+      >
+        <Box
+          sx={{
+            flex: '0 1 33%',
+            '@media (max-width: 768px)': {
+              flex: '0 1 50%'
+            }
+          }}
+        >
           {
             isFetching &&
-              <LoadingIndicator
-                className={styles.loading}
-                size={20}
-              />
+              <Box sx={{ m: 0, ml: '5px', textAlign: 'left' }}>
+                <LoadingIndicator
+                  size={20}
+                />
+              </Box>
           }
-        </div>
+        </Box>
 
-        <div className={styles.controlsContainer}>
-          <div className={styles.controls}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            flex: '0 1 33%',
+            '@media (max-width: 768px)': {
+              flex: '0 1 100%',
+              order: -1
+            }
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              textAlign: 'center'
+            }}
+          >
             <Link
-              className={classNames(
-                styles.pageLink,
-                isFirstPage && styles.disabledPageButton
-              )}
               isDisabled={isFirstPage}
+              sx={{
+                p: 0,
+                width: 30,
+                height: 30,
+                minWidth: 30,
+                lineHeight: '30px',
+                color: isFirstPage ? 'var(--disabledColor)' : undefined
+              }}
               onPress={onFirstPagePress}
             >
               <Icon name={icons.PAGE_FIRST} />
             </Link>
 
             <Link
-              className={classNames(
-                styles.pageLink,
-                isFirstPage && styles.disabledPageButton
-              )}
               isDisabled={isFirstPage}
+              sx={{
+                p: 0,
+                width: 30,
+                height: 30,
+                minWidth: 30,
+                lineHeight: '30px',
+                color: isFirstPage ? 'var(--disabledColor)' : undefined
+              }}
               onPress={onPreviousPagePress}
             >
               <Icon name={icons.PAGE_PREVIOUS} />
             </Link>
 
-            <div className={styles.pageNumber}>
+            <Box sx={{ lineHeight: '30px' }}>
               {
                 !isShowingPageSelect &&
                   <Link
@@ -120,7 +160,6 @@ class TablePager extends Component {
               {
                 isShowingPageSelect &&
                   <SelectInput
-                    className={styles.pageSelect}
                     name="pageSelect"
                     value={page}
                     values={pages}
@@ -129,38 +168,55 @@ class TablePager extends Component {
                     onBlur={this.onPageSelectBlur}
                   />
               }
-            </div>
+            </Box>
 
             <Link
-              className={classNames(
-                styles.pageLink,
-                isLastPage && styles.disabledPageButton
-              )}
               isDisabled={isLastPage}
+              sx={{
+                p: 0,
+                width: 30,
+                height: 30,
+                minWidth: 30,
+                lineHeight: '30px',
+                color: isLastPage ? 'var(--disabledColor)' : undefined
+              }}
               onPress={onNextPagePress}
             >
               <Icon name={icons.PAGE_NEXT} />
             </Link>
 
             <Link
-              className={classNames(
-                styles.pageLink,
-                isLastPage && styles.disabledPageButton
-              )}
               isDisabled={isLastPage}
+              sx={{
+                p: 0,
+                width: 30,
+                height: 30,
+                minWidth: 30,
+                lineHeight: '30px',
+                color: isLastPage ? 'var(--disabledColor)' : undefined
+              }}
               onPress={onLastPagePress}
             >
               <Icon name={icons.PAGE_LAST} />
             </Link>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        <div className={styles.recordsContainer}>
-          <div className={styles.records}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            flex: '0 1 33%',
+            '@media (max-width: 768px)': {
+              flex: '0 1 50%'
+            }
+          }}
+        >
+          <Box sx={{ color: 'var(--disabledColor)' }}>
             {translate('TotalRecords', { totalRecords })}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 

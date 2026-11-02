@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
@@ -24,11 +25,9 @@ import titleCase from 'Utilities/String/titleCase';
 import translate from 'Utilities/String/translate';
 import createHealthSelector from './createHealthSelector';
 import HealthItemLink from './HealthItemLink';
-import styles from './Health.css';
 
 const columns: Column[] = [
   {
-    className: styles.status,
     name: 'type',
     label: '',
     isVisible: true,
@@ -74,21 +73,23 @@ function Health() {
   return (
     <FieldSet
       legend={
-        <div className={styles.legend}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           {translate('Health')}
 
           {isFetching && isPopulated ? (
-            <LoadingIndicator className={styles.loading} size={20} />
+            <Box sx={{ mt: '2px', ml: '10px' }}>
+              <LoadingIndicator size={20} />
+            </Box>
           ) : null}
-        </div>
+        </Box>
       }
     >
       {isFetching && !isPopulated ? <LoadingIndicator /> : null}
 
       {isPopulated && !healthIssues ? (
-        <div className={styles.healthOk}>
+        <Box sx={{ mb: '25px' }}>
           {translate('NoIssuesWithYourConfiguration')}
-        </div>
+        </Box>
       ) : null}
 
       {healthIssues ? (
@@ -114,7 +115,7 @@ function Health() {
 
                 return (
                   <TableRow key={`health${item.message}`}>
-                    <TableRowCell>
+                    <TableRowCell sx={{ width: 20 }}>
                       <Icon
                         name={icons.DANGER}
                         kind={kind}

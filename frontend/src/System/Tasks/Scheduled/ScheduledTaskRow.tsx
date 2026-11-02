@@ -14,8 +14,6 @@ import { isCommandExecuting } from 'Utilities/Command';
 import formatDate from 'Utilities/Date/formatDate';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import formatTimeSpan from 'Utilities/Date/formatTimeSpan';
-import styles from './ScheduledTaskRow.css';
-
 interface ScheduledTaskRowProps {
   id: number;
   taskName: string;
@@ -113,40 +111,40 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
   return (
     <TableRow>
       <TableRowCell>{name}</TableRowCell>
-      <TableRowCell className={styles.interval}>
+      <TableRowCell sx={{ width: 150 }}>
         {isDisabled ? 'disabled' : duration}
       </TableRowCell>
 
       <TableRowCell
-        className={styles.lastExecution}
+        sx={{ width: 180 }}
         title={formatDateTime(lastExecution, longDateFormat, timeFormat)}
       >
         {lastExecutionTime}
       </TableRowCell>
 
       {hasLastStartTime ? (
-        <TableRowCell className={styles.lastDuration} title={lastDuration}>
+        <TableRowCell sx={{ width: 180 }} title={lastDuration}>
           {formatTimeSpan(lastDuration)}
         </TableRowCell>
       ) : (
-        <TableRowCell className={styles.lastDuration}>-</TableRowCell>
+        <TableRowCell sx={{ width: 180 }}>-</TableRowCell>
       )}
 
       {isDisabled ? (
-        <TableRowCell className={styles.nextExecution}>-</TableRowCell>
+        <TableRowCell sx={{ width: 180 }}>-</TableRowCell>
       ) : null}
 
       {executeNow && isQueued ? (
-        <TableRowCell className={styles.nextExecution}>queued</TableRowCell>
+        <TableRowCell sx={{ width: 180 }}>queued</TableRowCell>
       ) : null}
 
       {executeNow && !isQueued ? (
-        <TableRowCell className={styles.nextExecution}>now</TableRowCell>
+        <TableRowCell sx={{ width: 180 }}>now</TableRowCell>
       ) : null}
 
       {hasNextExecutionTime ? (
         <TableRowCell
-          className={styles.nextExecution}
+          sx={{ width: 180 }}
           title={formatDateTime(nextExecution, longDateFormat, timeFormat, {
             includeSeconds: true,
           })}
@@ -155,7 +153,7 @@ function ScheduledTaskRow(props: ScheduledTaskRowProps) {
         </TableRowCell>
       ) : null}
 
-      <TableRowCell className={styles.actions}>
+      <TableRowCell sx={{ width: 20 }}>
         <SpinnerIconButton
           name={icons.REFRESH}
           spinningName={icons.REFRESH}

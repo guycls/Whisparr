@@ -1,9 +1,9 @@
 /* eslint-disable no-bitwise */
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import translate from 'Utilities/String/translate';
 import EnhancedSelectInput from './EnhancedSelectInput';
-import styles from './UMaskInput.css';
 
 const umaskOptions = [
   {
@@ -90,13 +90,13 @@ class UMaskInput extends Component {
     const unit = formatPermissions(folderNum);
 
     const values = umaskOptions.map((v) => {
-      return { ...v, hint: <span className={styles.unit}>{v.hint}</span> };
+      return { ...v, hint: <Box component="span" sx={{ fontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace' }}>{v.hint}</Box> };
     });
 
     return (
       <div>
-        <div className={styles.inputWrapper}>
-          <div className={styles.inputUnitWrapper}>
+        <Box sx={{ display: 'flex' }}>
+          <Box sx={{ position: 'relative', width: '100%' }}>
             <EnhancedSelectInput
               name={name}
               value={value}
@@ -105,27 +105,68 @@ class UMaskInput extends Component {
               onChange={onChange}
             />
 
-            <div className={styles.inputUnit}>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                right: '40px',
+                mt: '7px',
+                width: 75,
+                color: '#c6c6c6',
+                textAlign: 'right',
+                pointerEvents: 'none',
+                userSelect: 'none',
+                fontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace'
+              }}
+            >
               d{unit}
-            </div>
-          </div>
-        </div>
-        <div className={styles.details}>
+            </Box>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            mt: '5px',
+            ml: '17px',
+            lineHeight: '20px',
+            '& > div': {
+              display: 'flex'
+            },
+            '& label': {
+              flex: '0 0 50px'
+            }
+          }}
+        >
           <div>
             <label>{translate('Umask')}</label>
-            <div className={styles.value}>{umask}</div>
+            <Box sx={{ width: 50, textAlign: 'right' }}>{umask}</Box>
           </div>
           <div>
             <label>{translate('Folder')}</label>
-            <div className={styles.value}>{folder}</div>
-            <div className={styles.unit}>d{formatPermissions(folderNum)}</div>
+            <Box sx={{ width: 50, textAlign: 'right' }}>{folder}</Box>
+            <Box
+              sx={{
+                width: 90,
+                textAlign: 'right',
+                fontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace'
+              }}
+            >
+              d{formatPermissions(folderNum)}
+            </Box>
           </div>
           <div>
             <label>{translate('File')}</label>
-            <div className={styles.value}>{file}</div>
-            <div className={styles.unit}>{formatPermissions(fileNum)}</div>
+            <Box sx={{ width: 50, textAlign: 'right' }}>{file}</Box>
+            <Box
+              sx={{
+                width: 90,
+                textAlign: 'right',
+                fontFamily: '"Ubuntu Mono", Menlo, Monaco, Consolas, "Courier New", monospace'
+              }}
+            >
+              {formatPermissions(fileNum)}
+            </Box>
           </div>
-        </div>
+        </Box>
       </div>
     );
   }

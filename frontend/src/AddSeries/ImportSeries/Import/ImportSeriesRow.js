@@ -5,7 +5,6 @@ import VirtualTableRowCell from 'Components/Table/Cells/VirtualTableRowCell';
 import VirtualTableSelectCell from 'Components/Table/Cells/VirtualTableSelectCell';
 import { inputTypes } from 'Helpers/Props';
 import ImportSeriesSelectSeriesConnector from './SelectSeries/ImportSeriesSelectSeriesConnector';
-import styles from './ImportSeriesRow.css';
 
 function ImportSeriesRow(props) {
   const {
@@ -23,18 +22,17 @@ function ImportSeriesRow(props) {
   return (
     <>
       <VirtualTableSelectCell
-        inputClassName={styles.selectInput}
         id={id}
         isSelected={isSelected}
         isDisabled={!selectedSeries || isExistingSeries}
         onSelectedChange={onSelectedChange}
       />
 
-      <VirtualTableRowCell className={styles.folder}>
+      <VirtualTableRowCell sx={{ flex: '1 0 200px', lineHeight: '36px' }}>
         {relativePath}
       </VirtualTableRowCell>
 
-      <VirtualTableRowCell className={styles.monitor}>
+      <VirtualTableRowCell sx={{ flex: '0 1 200px', minWidth: 185 }}>
         <FormInputGroup
           type={inputTypes.MONITOR_EPISODES_SELECT}
           name="monitor"
@@ -43,7 +41,7 @@ function ImportSeriesRow(props) {
         />
       </VirtualTableRowCell>
 
-      <VirtualTableRowCell className={styles.qualityProfile}>
+      <VirtualTableRowCell sx={{ flex: '0 1 250px', minWidth: 170 }}>
         <FormInputGroup
           type={inputTypes.QUALITY_PROFILE_SELECT}
           name="qualityProfileId"
@@ -52,7 +50,7 @@ function ImportSeriesRow(props) {
         />
       </VirtualTableRowCell>
 
-      <VirtualTableRowCell className={styles.series}>
+      <VirtualTableRowCell sx={{ flex: '0 1 400px', minWidth: 300 }}>
         <ImportSeriesSelectSeriesConnector
           id={id}
           isExistingSeries={isExistingSeries}

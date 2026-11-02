@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Card from 'Components/Card';
@@ -13,7 +14,33 @@ import sortByProp from 'Utilities/Array/sortByProp';
 import translate from 'Utilities/String/translate';
 import AutoTagging from './AutoTagging';
 import EditAutoTaggingModal from './EditAutoTaggingModal';
-import styles from './AutoTaggings.css';
+
+const sxAutoTaggings = {
+  display: 'flex',
+  flexWrap: 'wrap'
+};
+
+const sxAddAutoTagging = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxAddAutoTaggingContent = (theme) => ({
+  p: theme.spacing(1.25),
+  bgcolor: theme.palette.action.hover,
+  color: theme.palette.text.secondary,
+  textAlign: 'center',
+  fontSize: 45
+});
+
+const sxCenter = (theme) => ({
+  display: 'inline-block',
+  pt: theme.spacing(0.625),
+  px: theme.spacing(2.5),
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: 1,
+  bgcolor: theme.palette.background.paper
+});
 
 export default function AutoTaggings() {
   const {
@@ -63,7 +90,7 @@ export default function AutoTaggings() {
         isFetching={isFetching}
         isPopulated={isPopulated}
       >
-        <div className={styles.autoTaggings}>
+        <Box sx={sxAutoTaggings}>
           {
             items.map((item) => {
               return (
@@ -79,18 +106,21 @@ export default function AutoTaggings() {
             })
           }
 
-          <Card
-            className={styles.addAutoTagging}
-            onPress={onEditPress}
-          >
-            <div className={styles.center}>
-              <Icon
-                name={icons.ADD}
-                size={45}
-              />
-            </div>
-          </Card>
-        </div>
+          <Box sx={sxAddAutoTagging}>
+            <Card
+              onPress={onEditPress}
+            >
+              <Box sx={sxAddAutoTaggingContent}>
+                <Box sx={sxCenter}>
+                  <Icon
+                    name={icons.ADD}
+                    size={45}
+                  />
+                </Box>
+              </Box>
+            </Card>
+          </Box>
+        </Box>
 
         <EditAutoTaggingModal
           isOpen={isEditModalOpen}

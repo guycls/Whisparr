@@ -17,7 +17,6 @@ import Blocklist from 'typings/Blocklist';
 import { SelectStateInputProps } from 'typings/props';
 import translate from 'Utilities/String/translate';
 import BlocklistDetailsModal from './BlocklistDetailsModal';
-import styles from './BlocklistRow.css';
 
 interface BlocklistRowProps extends Blocklist {
   isSelected: boolean;
@@ -94,7 +93,7 @@ function BlocklistRow(props: BlocklistRowProps) {
 
         if (name === 'languages') {
           return (
-            <TableRowCell key={name} className={styles.languages}>
+            <TableRowCell key={name} sx={{ width: 100 }}>
               <EpisodeLanguages languages={languages} />
             </TableRowCell>
           );
@@ -102,7 +101,7 @@ function BlocklistRow(props: BlocklistRowProps) {
 
         if (name === 'quality') {
           return (
-            <TableRowCell key={name} className={styles.quality}>
+            <TableRowCell key={name} sx={{ width: 100 }}>
               <EpisodeQuality quality={quality} />
             </TableRowCell>
           );
@@ -124,7 +123,7 @@ function BlocklistRow(props: BlocklistRowProps) {
 
         if (name === 'indexer') {
           return (
-            <TableRowCell key={name} className={styles.indexer}>
+            <TableRowCell key={name} sx={{ width: 80 }}>
               {indexer}
             </TableRowCell>
           );
@@ -132,7 +131,7 @@ function BlocklistRow(props: BlocklistRowProps) {
 
         if (name === 'actions') {
           return (
-            <TableRowCell key={name} className={styles.actions}>
+            <TableRowCell key={name} sx={{ width: 70 }}>
               <IconButton name={icons.INFO} onPress={handleDetailsPress} />
 
               <IconButton

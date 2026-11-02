@@ -1,8 +1,8 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
+import calendarStatusSx from 'Calendar/calendarStatusSx';
 import titleCase from 'Utilities/String/titleCase';
-import styles from './LegendItem.css';
 
 function LegendItem(props) {
   const {
@@ -15,17 +15,25 @@ function LegendItem(props) {
   } = props;
 
   return (
-    <div
-      className={classNames(
-        styles.legendItem,
-        styles[status],
-        colorImpairedMode && 'colorImpaired',
-        fullColorEvents && !isAgendaView && 'fullColor'
-      )}
+    <Box
       title={tooltip}
+      sx={{
+        my: '3px',
+        mr: '6px',
+        pl: '5px',
+        width: 150,
+        borderLeftWidth: 4,
+        borderLeftStyle: 'solid',
+        cursor: 'default',
+        ...calendarStatusSx(
+          status,
+          fullColorEvents && !isAgendaView,
+          colorImpairedMode
+        )
+      }}
     >
       {name ? name : titleCase(status)}
-    </div>
+    </Box>
   );
 }
 

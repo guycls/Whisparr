@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React, { useCallback, useState } from 'react';
 import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
 import Icon from 'Components/Icon';
@@ -26,7 +27,19 @@ import OverrideMatchModal from './OverrideMatch/OverrideMatchModal';
 import Peers from './Peers';
 import ReleaseEpisode from './ReleaseEpisode';
 import ReleaseSceneIndicator from './ReleaseSceneIndicator';
-import styles from './InteractiveSearchRow.css';
+
+const actionContentSx = {
+  position: 'relative',
+  display: 'inline-block',
+  mx: '2px',
+  width: 22,
+  height: 20.39,
+  verticalAlign: 'middle',
+  lineHeight: '20.39px',
+  '&:hover': {
+    color: 'var(--iconButtonHoverColor)',
+  },
+};
 
 function getDownloadIcon(
   isGrabbing: boolean,
@@ -284,14 +297,17 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
   ]);
 
   const titleContent = (
-    <div
-      className={
-        stackedTitleLayout ? styles.stackedTitleContent : styles.titleContent
-      }
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        wordBreak: stackedTitleLayout ? 'normal' : 'break-all',
+        overflowWrap: stackedTitleLayout ? 'anywhere' : undefined,
+      }}
     >
       <Link to={infoUrl}>{title}</Link>
       <ReleaseSceneIndicator
-        className={styles.sceneMapping}
         seasonNumber={mappedSeasonNumber}
         episodeNumbers={mappedEpisodeNumbers}
         absoluteEpisodeNumbers={mappedAbsoluteEpisodeNumbers}
@@ -302,17 +318,17 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         episodeRequested={episodeRequested}
         isDaily={isDaily}
       />
-    </div>
+    </Box>
   );
 
   const leadingCells = (
     <>
-      <TableRowCell className={styles.protocol}>
+      <TableRowCell sx={{ width: 80 }}>
         <ProtocolLabel protocol={protocol} />
       </TableRowCell>
 
       <TableRowCell
-        className={styles.age}
+        sx={{ whiteSpace: 'nowrap' }}
         title={formatDateTime(publishDate, longDateFormat, timeFormat, {
           includeSeconds: true,
         })}
@@ -324,25 +340,25 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
 
   const trailingCells = (
     <>
-      <TableRowCell className={styles.indexer}>{indexer}</TableRowCell>
+      <TableRowCell sx={{ width: 85 }}>{indexer}</TableRowCell>
 
-      <TableRowCell className={styles.size}>{formatBytes(size)}</TableRowCell>
+      <TableRowCell sx={{ whiteSpace: 'nowrap' }}>{formatBytes(size)}</TableRowCell>
 
-      <TableRowCell className={styles.peers}>
+      <TableRowCell sx={{ width: 75 }}>
         {protocol === 'torrent' ? (
           <Peers seeders={seeders} leechers={leechers} />
         ) : null}
       </TableRowCell>
 
-      <TableRowCell className={styles.languages}>
+      <TableRowCell sx={{ width: 100, textAlign: 'center' }}>
         <EpisodeLanguages languages={languages} />
       </TableRowCell>
 
-      <TableRowCell className={styles.quality}>
+      <TableRowCell sx={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
         <EpisodeQuality quality={quality} showRevision={true} />
       </TableRowCell>
 
-      <TableRowCell className={styles.customFormatScore}>
+      <TableRowCell sx={{ width: 55, fontWeight: 'bold', cursor: 'default' }}>
         <Tooltip
           anchor={formatCustomFormatScore(
             customFormatScore,
@@ -353,7 +369,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         />
       </TableRowCell>
 
-      <TableRowCell className={styles.indexerFlags}>
+      <TableRowCell sx={{ width: 50 }}>
         {indexerFlags ? (
           <Popover
             anchor={<Icon name={icons.FLAG} kind={kinds.PRIMARY} />}
@@ -364,7 +380,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         ) : null}
       </TableRowCell>
 
-      <TableRowCell className={styles.rejected}>
+      <TableRowCell sx={{ width: 50 }}>
         {rejections.length ? (
           <Popover
             anchor={<Icon name={icons.DANGER} kind={kinds.DANGER} />}
@@ -381,7 +397,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         ) : null}
       </TableRowCell>
 
-      <TableRowCell className={styles.download}>
+      <TableRowCell sx={{ width: 110 }}>
         <SpinnerIconButton
           name={getDownloadIcon(isGrabbing, isGrabbed, grabError)}
           kind={getDownloadKind(isGrabbed, grabError)}
@@ -392,44 +408,44 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
 
         {onForceDownloadPress && (
           <Link
-            className={styles.forceDownloadContent}
+            sx={actionContentSx}
             title={translate('ForceDownload')}
             onPress={onForceDownloadPressWrapper}
           >
-            <div className={styles.forceDownloadContent}>
+            <Box component="span" sx={{ position: 'absolute', top: 4, left: 0, textAlign: 'center' }}>
               <Icon
-                className={styles.forceIcon}
                 name={icons.ACTIONS}
                 size={12}
               />
+            </Box>
 
+            <Box component="span" sx={{ position: 'absolute', top: 7, left: 8, textAlign: 'center' }}>
               <Icon
-                className={styles.downloadIcon}
                 name={icons.CIRCLE_DOWN}
                 size={10}
               />
-            </div>
+            </Box>
           </Link>
         )}
 
         <Link
-          className={styles.manualDownloadContent}
+          sx={actionContentSx}
           title={translate('OverrideAndAddToDownloadQueue')}
           onPress={onOverridePress}
         >
-          <div className={styles.manualDownloadContent}>
+          <Box component="span" sx={{ position: 'absolute', top: 4, left: 0, textAlign: 'center' }}>
             <Icon
-              className={styles.interactiveIcon}
               name={icons.INTERACTIVE}
               size={12}
             />
+          </Box>
 
+          <Box component="span" sx={{ position: 'absolute', top: 7, left: 8, textAlign: 'center' }}>
             <Icon
-              className={styles.downloadIcon}
               name={icons.CIRCLE_DOWN}
               size={10}
             />
-          </div>
+          </Box>
         </Link>
       </TableRowCell>
     </>
@@ -468,16 +484,29 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
   if (stackedTitleLayout) {
     return (
       <>
-        <TableRow className={styles.stackedTitleRow}>
+        <TableRow
+          sx={{
+            '&:hover, &:hover + .MuiTableRow-root, &:has(+ .MuiTableRow-root:hover)':
+              {
+                backgroundColor: 'var(--tableRowHoverBackgroundColor)',
+              },
+          }}
+        >
           <TableRowCell
             colSpan={stackedColumnCount}
-            className={styles.stackedTitleCell}
+            sx={{ pb: '4px', whiteSpace: 'normal' }}
           >
             {titleContent}
           </TableRowCell>
         </TableRow>
 
-        <TableRow className={styles.stackedDetailsRow}>
+        <TableRow
+          sx={{
+            '&:hover': {
+              backgroundColor: 'var(--tableRowHoverBackgroundColor)',
+            },
+          }}
+        >
           {leadingCells}
           {trailingCells}
         </TableRow>

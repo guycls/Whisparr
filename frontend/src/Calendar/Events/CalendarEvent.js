@@ -1,7 +1,8 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import calendarStatusSx from 'Calendar/calendarStatusSx';
 import getStatusStyle from 'Calendar/getStatusStyle';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
@@ -10,7 +11,6 @@ import episodeEntities from 'Episode/episodeEntities';
 import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import CalendarEventQueueDetails from './CalendarEventQueueDetails';
-import styles from './CalendarEvent.css';
 
 class CalendarEvent extends Component {
 
@@ -71,31 +71,71 @@ class CalendarEvent extends Component {
     const isMonitored = series.monitored && monitored;
     const statusStyle = getStatusStyle(hasFile, isDownloading, startTime, endTime, isMonitored);
 
+    const statusIconStyle = {
+      marginLeft: 3,
+      cursor: 'default',
+      pointerEvents: 'all'
+    };
+
     return (
-      <div
-        className={classNames(
-          styles.event,
-          styles[statusStyle],
-          colorImpairedMode && 'colorImpaired',
-          fullColorEvents && 'fullColor'
-        )}
+      <Box
+        sx={{
+          position: 'relative',
+          m: '4px 2px',
+          p: '5px',
+          borderBottom: '1px solid var(--calendarBorderColor)',
+          borderLeft: '4px solid var(--calendarBorderColor)',
+          ...calendarStatusSx(statusStyle, fullColorEvents, colorImpairedMode)
+        }}
       >
-        <Link
-          className={styles.underlay}
+        <Box
+          component={Link}
           onPress={this.onPress}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            p: 0,
+            minWidth: 0
+          }}
         />
 
-        <div className={styles.overlay} >
-          <div className={styles.info}>
-            <div className={styles.seriesTitle}>
+        <Box
+          sx={{
+            position: 'relative',
+            overflowX: 'hidden',
+            fontSize: 12,
+            pointerEvents: 'none',
+            userSelect: 'none',
+            '& a, & button': {
+              pointerEvents: 'all'
+            }
+          }}
+        >
+          <Box sx={{ display: 'flex' }}>
+            <Box
+              sx={{
+                overflow: 'hidden',
+                maxWidth: '100%',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flex: '1 0 1px',
+                mr: '10px',
+                color: 'var(--calendarTextDimAlternate)',
+                fontSize: 14
+              }}
+            >
               {series.title}
-            </div>
+            </Box>
 
-            <div className={styles.statusContainer}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {
                 unverifiedSceneNumbering ?
                   <Icon
-                    className={styles.statusIcon}
+                    style={statusIconStyle}
                     name={icons.WARNING}
                     title={translate('SceneNumberNotVerified')}
                   /> :
@@ -104,18 +144,18 @@ class CalendarEvent extends Component {
 
               {
                 queueItem ?
-                  <span className={styles.statusIcon}>
+                  <Box component="span" sx={statusIconStyle}>
                     <CalendarEventQueueDetails
                       {...queueItem}
                     />
-                  </span> :
+                  </Box> :
                   null
               }
 
               {
                 !queueItem && grabbed ?
                   <Icon
-                    className={styles.statusIcon}
+                    style={statusIconStyle}
                     name={icons.DOWNLOADING}
                     title={translate('EpisodeIsDownloading')}
                   /> :
@@ -127,30 +167,39 @@ class CalendarEvent extends Component {
                 !!episodeFile &&
                 episodeFile.qualityCutoffNotMet ?
                   <Icon
-                    className={styles.statusIcon}
+                    style={statusIconStyle}
                     name={icons.EPISODE_FILE}
                     kind={fullColorEvents ? kinds.DEFAULT : kinds.WARNING}
                     title={translate('QualityCutoffNotMet')}
                   /> :
                   null
               }
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {
             showEpisodeInformation ?
-              <div className={styles.episodeInfo}>
-                <div className={styles.episodeTitle}>
+              <Box sx={{ display: 'flex', color: 'var(--calendarTextDim)' }}>
+                <Box
+                  sx={{
+                    overflow: 'hidden',
+                    maxWidth: '100%',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    flex: '1 0 1px',
+                    mr: '10px'
+                  }}
+                >
                   {title}
-                </div>
+                </Box>
 
                 <div>
                   {releaseDate}
                 </div>
-              </div> :
+              </Box> :
               null
           }
-        </div>
+        </Box>
 
         <EpisodeDetailsModal
           isOpen={this.state.isDetailsModalOpen}
@@ -161,7 +210,7 @@ class CalendarEvent extends Component {
           showOpenSeriesButton={true}
           onModalClose={this.onDetailsModalClose}
         />
-      </div>
+      </Box>
     );
   }
 }

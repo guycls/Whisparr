@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
 import Alert from 'Components/Alert';
@@ -14,7 +16,6 @@ import formatDate from 'Utilities/Date/formatDate';
 import formatDateTime from 'Utilities/Date/formatDateTime';
 import translate from 'Utilities/String/translate';
 import UpdateChanges from './UpdateChanges';
-import styles from './Updates.css';
 
 class Updates extends Component {
 
@@ -68,11 +69,10 @@ class Updates extends Component {
 
           {
             hasUpdateToInstall &&
-              <div className={styles.messageContainer}>
+              <Box sx={{ display: 'flex', mb: '20px' }}>
                 {
                   updateMechanism === 'builtIn' || updateMechanism === 'script' ?
                     <SpinnerButton
-                      className={styles.updateAvailable}
                       kind={kinds.PRIMARY}
                       isSpinning={isInstallingUpdate}
                       onPress={onInstallLatestPress}
@@ -87,42 +87,45 @@ class Updates extends Component {
                         size={30}
                       />
 
-                      <div className={styles.message}>
+                      <Typography sx={{ pl: '5px', fontSize: 18, lineHeight: '30px' }}>
                         {externalUpdaterPrefix} <InlineMarkdown data={updateMechanismMessage || externalUpdaterMessages[updateMechanism] || externalUpdaterMessages.external} />
-                      </div>
+                      </Typography>
                     </Fragment>
                 }
 
                 {
                   isFetching &&
-                    <LoadingIndicator
-                      className={styles.loading}
-                      size={20}
-                    />
+                    <Box sx={{ mt: '5px', ml: 'auto' }}>
+                      <LoadingIndicator
+                        size={20}
+                      />
+                    </Box>
                 }
-              </div>
+              </Box>
           }
 
           {
             noUpdateToInstall &&
-              <div className={styles.messageContainer}>
-                <Icon
-                  className={styles.upToDateIcon}
-                  name={icons.CHECK_CIRCLE}
-                  size={30}
-                />
-                <div className={styles.message}>
+              <Box sx={{ display: 'flex', mb: '20px' }}>
+                <Box component="span" sx={{ color: '#37bc9b', display: 'inline-flex' }}>
+                  <Icon
+                    name={icons.CHECK_CIRCLE}
+                    size={30}
+                  />
+                </Box>
+                <Typography sx={{ pl: '5px', fontSize: 18, lineHeight: '30px' }}>
                   {translate('OnLatestVersion')}
-                </div>
+                </Typography>
 
                 {
                   isFetching &&
-                    <LoadingIndicator
-                      className={styles.loading}
-                      size={20}
-                    />
+                    <Box sx={{ mt: '5px', ml: 'auto' }}>
+                      <LoadingIndicator
+                        size={20}
+                      />
+                    </Box>
                 }
-              </div>
+              </Box>
           }
 
           {
@@ -133,54 +136,64 @@ class Updates extends Component {
                     const hasChanges = !!update.changes;
 
                     return (
-                      <div
+                      <Box
                         key={update.version}
-                        className={styles.update}
+                        sx={{ mt: '20px' }}
                       >
-                        <div className={styles.info}>
-                          <div className={styles.version}>{update.version}</div>
-                          <div className={styles.space}>&mdash;</div>
-                          <div
-                            className={styles.date}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            mb: '10px',
+                            pb: '5px',
+                            borderBottom: '1px solid #e5e5e5'
+                          }}
+                        >
+                          <Typography sx={{ fontSize: 21 }}>{update.version}</Typography>
+                          <Box sx={{ px: '5px' }}>&mdash;</Box>
+                          <Typography
                             title={formatDateTime(update.releaseDate, longDateFormat, timeFormat)}
+                            sx={{ fontSize: 16 }}
                           >
                             {formatDate(update.releaseDate, shortDateFormat)}
-                          </div>
+                          </Typography>
 
                           {
                             update.branch === 'main' ?
                               null :
-                              <Label
-                                className={styles.label}
-                              >
+                              <Box component="span" sx={{ ml: '10px', '& .MuiChip-root': { fontSize: 14 } }}>
+                              <Label>
                                 {update.branch}
                               </Label>
+                              </Box>
                           }
 
                           {
                             update.version === currentVersion ?
+                              <Box component="span" sx={{ ml: '10px', '& .MuiChip-root': { fontSize: 14 } }}>
                               <Label
-                                className={styles.label}
                                 kind={kinds.SUCCESS}
                                 title={formatDateTime(update.installedOn, longDateFormat, timeFormat)}
                               >
                                 {translate('CurrentlyInstalled')}
-                              </Label> :
+                              </Label>
+                              </Box> :
                               null
                           }
 
                           {
                             update.version !== currentVersion && update.installedOn ?
+                              <Box component="span" sx={{ ml: '10px', '& .MuiChip-root': { fontSize: 14 } }}>
                               <Label
-                                className={styles.label}
                                 kind={kinds.INVERSE}
                                 title={formatDateTime(update.installedOn, longDateFormat, timeFormat)}
                               >
                                 {translate('PreviouslyInstalled')}
-                              </Label> :
+                              </Label>
+                              </Box> :
                               null
                           }
-                        </div>
+                        </Box>
 
                         {
                           !hasChanges &&
@@ -191,7 +204,7 @@ class Updates extends Component {
 
                         {
                           hasChanges &&
-                            <div className={styles.changes}>
+                            <div>
                               <UpdateChanges
                                 title={translate('New')}
                                 changes={update.changes.new}
@@ -203,7 +216,7 @@ class Updates extends Component {
                               />
                             </div>
                         }
-                      </div>
+                      </Box>
                     );
                   })
                 }

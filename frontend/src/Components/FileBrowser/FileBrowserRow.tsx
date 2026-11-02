@@ -4,7 +4,6 @@ import Icon from 'Components/Icon';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRowButton from 'Components/Table/TableRowButton';
 import { icons } from 'Helpers/Props';
-import styles from './FileBrowserRow.css';
 
 function getIconName(type: PathType) {
   switch (type) {
@@ -37,7 +36,7 @@ function FileBrowserRow(props: FileBrowserRowProps) {
 
   return (
     <TableRowButton onPress={handlePress}>
-      <TableRowCell className={styles.type}>
+      <TableRowCell sx={{ width: 32 }}>
         <Icon name={getIconName(type)} />
       </TableRowCell>
 

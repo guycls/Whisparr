@@ -1,34 +1,38 @@
-import classNames from 'classnames';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { sizes } from 'Helpers/Props';
-import styles from './FormLabel.css';
 
 function FormLabel(props) {
   const {
     children,
     className,
-    errorClassName,
     size,
     name,
     hasError,
-    isAdvanced,
-    ...otherProps
+    isAdvanced
   } = props;
 
+  const minWidth = size === sizes.SMALL ? 150 : 250;
+
   return (
-    <label
-      {...otherProps}
-      className={classNames(
-        className,
-        styles[size],
-        hasError && errorClassName,
-        isAdvanced && styles.isAdvanced
-      )}
+    <Typography
+      className={className}
+      component="label"
       htmlFor={name}
+      variant="body2"
+        color={hasError ? 'error' : 'text.primary'}
+        sx={{
+          display: 'block',
+          minWidth: { lg: minWidth },
+          mr: 2,
+          pt: '9px',
+          fontWeight: 500,
+          fontStyle: isAdvanced ? 'italic' : 'normal'
+        }}
     >
       {children}
-    </label>
+    </Typography>
   );
 }
 
@@ -43,8 +47,6 @@ FormLabel.propTypes = {
 };
 
 FormLabel.defaultProps = {
-  className: styles.label,
-  errorClassName: styles.hasError,
   isAdvanced: false,
   size: sizes.LARGE
 };

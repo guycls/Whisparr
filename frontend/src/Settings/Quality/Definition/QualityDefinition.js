@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import ReactSlider from 'react-slider';
@@ -10,7 +11,95 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import roundNumber from 'Utilities/Number/roundNumber';
 import translate from 'Utilities/String/translate';
 import QualityDefinitionLimits from './QualityDefinitionLimits';
-import styles from './QualityDefinition.css';
+
+const sxQualityDefinition = (theme) => ({
+  display: 'flex',
+  alignContent: 'stretch',
+  my: theme.spacing(0.625),
+  mx: 0,
+  pt: theme.spacing(0.625),
+  height: 45,
+  borderTop: `1px solid ${theme.palette.divider}`,
+  '&:first-child': {
+    borderTop: 'none'
+  },
+  [theme.breakpoints.down('md')]: {
+    flexWrap: 'wrap',
+    height: 'auto',
+    borderTop: 'none'
+  }
+});
+
+const sxQuality = (theme) => ({
+  flex: '0 1 250px',
+  pr: theme.spacing(2.5),
+  lineHeight: 40,
+  [theme.breakpoints.down('md')]: {
+    fontWeight: 'bold',
+    lineHeight: 'inherit'
+  }
+});
+
+const sxTitle = (theme) => ({
+  flex: '0 1 250px',
+  pr: theme.spacing(2.5),
+  lineHeight: 40
+});
+
+const sxSizeLimit = (theme) => ({
+  flex: '0 1 500px',
+  pr: theme.spacing(3.75),
+  [theme.breakpoints.down('md')]: {
+    mt: theme.spacing(1.25)
+  }
+});
+
+const sxSlider = {
+  width: '100%',
+  height: 20
+};
+
+const sxTrack = (theme) => ({
+  top: 9,
+  my: 0,
+  mx: theme.spacing(0.625),
+  height: 3,
+  bgcolor: theme.palette.primary.main,
+  boxShadow: '0 0 0 #000',
+  '&:nth-child(3n+1)': {
+    bgcolor: theme.palette.divider
+  }
+});
+
+const sxThumb = (theme) => ({
+  top: 1,
+  zIndex: 0,
+  width: 18,
+  height: 18,
+  border: `3px solid ${theme.palette.primary.main}`,
+  borderRadius: '50%',
+  bgcolor: theme.palette.common.white,
+  textAlign: 'center',
+  cursor: 'pointer'
+});
+
+const sxSizes = {
+  display: 'flex',
+  justifyContent: 'space-between'
+};
+
+const sxMegabytesPerMinute = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  flex: '0 0 400px'
+};
+
+const sxSizeInput = (theme) => ({
+  display: 'inline-block',
+  ml: theme.spacing(0.625),
+  p: theme.spacing(0.75),
+  width: 75
+});
 
 const MIN = 0;
 const MAX = 1000;
@@ -76,19 +165,17 @@ class QualityDefinition extends Component {
 
   trackRenderer(props, state) {
     return (
-      <div
+      <Box
         {...props}
-        className={styles.track}
-      />
+       sx={sxTrack} />
     );
   }
 
   thumbRenderer(props, state) {
     return (
-      <div
+      <Box
         {...props}
-        className={styles.thumb}
-      />
+       sx={sxThumb} />
     );
   }
 
@@ -196,22 +283,22 @@ class QualityDefinition extends Component {
     const maxSixty = maxBytes ? `${formatBytes(maxBytes * 60)}/${translate('HourShorthand')}` : translate('Unlimited');
 
     return (
-      <div className={styles.qualityDefinition}>
-        <div className={styles.quality}>
+      <Box sx={sxQualityDefinition}>
+        <Box sx={sxQuality}>
           {quality.name}
-        </div>
+        </Box>
 
-        <div className={styles.title}>
+        <Box sx={sxTitle}>
           <TextInput
             name={`${id}.${title}`}
             value={title}
             onChange={onTitleChange}
           />
-        </div>
+        </Box>
 
-        <div className={styles.sizeLimit}>
-          <ReactSlider
-            className={styles.slider}
+        <Box sx={sxSizeLimit}>
+          <Box sx={sxSlider}>
+<ReactSlider
             min={slider.min}
             max={slider.max}
             step={slider.step}
@@ -225,8 +312,9 @@ class QualityDefinition extends Component {
             onChange={this.onSliderChange}
             onAfterChange={this.onAfterSliderChange}
           />
+</Box>
 
-          <div className={styles.sizes}>
+          <Box sx={sxSizes}>
             <div>
               <Popover
                 anchor={
@@ -274,17 +362,17 @@ class QualityDefinition extends Component {
                 position={tooltipPositions.BOTTOM}
               />
             </div>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {
           advancedSettings &&
-            <div className={styles.megabytesPerMinute}>
+            <Box sx={sxMegabytesPerMinute}>
               <div>
                 {translate('Min')}
 
-                <NumberInput
-                  className={styles.sizeInput}
+                <Box sx={sxSizeInput}>
+<NumberInput
                   name={`${id}.min`}
                   value={minSize || MIN}
                   min={MIN}
@@ -293,13 +381,14 @@ class QualityDefinition extends Component {
                   isFloat={true}
                   onChange={this.onMinSizeChange}
                 />
+</Box>
               </div>
 
               <div>
                 {translate('Preferred')}
 
-                <NumberInput
-                  className={styles.sizeInput}
+                <Box sx={sxSizeInput}>
+<NumberInput
                   name={`${id}.min`}
                   value={preferredSize || MAX - 5}
                   min={MIN}
@@ -308,13 +397,14 @@ class QualityDefinition extends Component {
                   isFloat={true}
                   onChange={this.onPreferredSizeChange}
                 />
+</Box>
               </div>
 
               <div>
                 {translate('Max')}
 
-                <NumberInput
-                  className={styles.sizeInput}
+                <Box sx={sxSizeInput}>
+<NumberInput
                   name={`${id}.max`}
                   value={maxSize || MAX}
                   min={minSize + MIN_DISTANCE}
@@ -323,10 +413,11 @@ class QualityDefinition extends Component {
                   isFloat={true}
                   onChange={this.onMaxSizeChange}
                 />
+</Box>
               </div>
-            </div>
+            </Box>
         }
-      </div>
+      </Box>
     );
   }
 }

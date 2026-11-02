@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Card from 'Components/Card';
@@ -8,7 +9,41 @@ import { icons, kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EditCustomFormatModalConnector from './EditCustomFormatModalConnector';
 import ExportCustomFormatModal from './ExportCustomFormatModal';
-import styles from './CustomFormat.css';
+
+const sxCustomFormat = (theme) => ({
+  width: 300,
+  m: theme.spacing(1.25)
+});
+
+const sxNameContainer = {
+  display: 'flex',
+  justifyContent: 'space-between'
+};
+
+const sxName = (theme) => ({
+  mb: theme.spacing(2.5),
+  fontWeight: 300,
+  fontSize: 24,
+  overflow: 'hidden',
+  maxWidth: '100%',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+});
+
+const sxButtons = {
+  flex: '0 0 auto'
+};
+
+const sxCloneButton = {
+  height: 36
+};
+
+const sxLabel = {
+  maxWidth: '100%',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap'
+};
 
 class CustomFormat extends Component {
 
@@ -80,32 +115,30 @@ class CustomFormat extends Component {
     } = this.props;
 
     return (
-      <Card
-        className={styles.customFormat}
+      <Box sx={sxCustomFormat}>
+<Card
         overlayContent={true}
         onPress={this.onEditCustomFormatPress}
       >
-        <div className={styles.nameContainer}>
-          <div className={styles.name}>
+        <Box sx={sxNameContainer}>
+          <Box sx={sxName}>
             {name}
-          </div>
+          </Box>
 
-          <div className={styles.buttons}>
+          <Box sx={sxButtons}>
             <IconButton
-              className={styles.cloneButton}
               title={translate('CloneCustomFormat')}
               name={icons.CLONE}
               onPress={this.onCloneCustomFormatPress}
-            />
+             sx={sxCloneButton} />
 
             <IconButton
-              className={styles.cloneButton}
               title={translate('ExportCustomFormat')}
               name={icons.EXPORT}
               onPress={this.onExportCustomFormatPress}
-            />
-          </div>
-        </div>
+             sx={sxCloneButton} />
+          </Box>
+        </Box>
 
         <div>
           {
@@ -123,13 +156,14 @@ class CustomFormat extends Component {
               }
 
               return (
-                <Label
-                  className={styles.label}
+                <Box sx={sxLabel}>
+<Label
                   key={index}
                   kind={kind}
                 >
                   {item.name}
                 </Label>
+</Box>
               );
             })
           }
@@ -159,6 +193,7 @@ class CustomFormat extends Component {
           onCancel={this.onDeleteCustomFormatModalClose}
         />
       </Card>
+</Box>
     );
   }
 }

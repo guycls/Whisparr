@@ -17,7 +17,12 @@ import EpisodeQuality from 'Episode/EpisodeQuality';
 import { icons, kinds, tooltipPositions } from 'Helpers/Props';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
-import styles from './SeriesHistoryRow.css';
+
+const historyCellSx = {
+  p: 1,
+  lineHeight: 1.52857143,
+  whiteSpace: { xs: 'nowrap', md: 'normal' }
+};
 
 function getTitle(eventType) {
   switch (eventType) {
@@ -105,7 +110,7 @@ class SeriesHistoryRow extends Component {
           />
         </TableRowCell>
 
-        <TableRowCell className={styles.sourceTitle}>
+        <TableRowCell sx={{ ...historyCellSx, wordBreak: 'break-word' }}>
           {sourceTitle}
         </TableRowCell>
 
@@ -134,7 +139,7 @@ class SeriesHistoryRow extends Component {
           includeTime={true}
         />
 
-        <TableRowCell className={styles.details}>
+        <TableRowCell sx={{ ...historyCellSx, width: 65 }}>
           <Popover
             anchor={
               <Icon
@@ -154,7 +159,7 @@ class SeriesHistoryRow extends Component {
           />
         </TableRowCell>
 
-        <TableRowCell className={styles.customFormatScore}>
+        <TableRowCell>
           <Tooltip
             anchor={
               formatCustomFormatScore(customFormatScore, customFormats.length)
@@ -164,7 +169,7 @@ class SeriesHistoryRow extends Component {
           />
         </TableRowCell>
 
-        <TableRowCell className={styles.actions}>
+        <TableRowCell sx={{ ...historyCellSx, width: 65 }}>
           {
             eventType === 'grabbed' &&
               <IconButton

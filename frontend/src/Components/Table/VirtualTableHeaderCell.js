@@ -1,9 +1,19 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import { icons, sortDirections } from 'Helpers/Props';
-import styles from './VirtualTableHeaderCell.css';
+
+const headerCellSx = {
+  padding: '8px',
+  border: 'none !important',
+  textAlign: 'left',
+  fontWeight: 'bold',
+  '@media (max-width: 768px)': {
+    whiteSpace: 'nowrap'
+  }
+};
 
 export function headerRenderer(headerProps) {
   const {
@@ -55,6 +65,7 @@ class VirtualTableHeaderCell extends Component {
       fixedSortDirection,
       children,
       onSortPress,
+      sx,
       ...otherProps
     } = this.props;
 
@@ -63,6 +74,11 @@ class VirtualTableHeaderCell extends Component {
       icons.SORT_ASCENDING :
       icons.SORT_DESCENDING;
 
+    const cellSx = [
+      headerCellSx,
+      ...(Array.isArray(sx) ? sx : [sx])
+    ];
+
     return (
       isSortable ?
         <Link
@@ -70,21 +86,30 @@ class VirtualTableHeaderCell extends Component {
           className={className}
           onPress={this.onPress}
           {...otherProps}
+          sx={cellSx}
         >
           {children}
 
           {
             isSorting &&
-              <Icon
-                name={sortIcon}
-                className={styles.sortIcon}
-              />
+              <Box
+                component="span"
+                sx={{ ml: '10px' }}
+              >
+                <Icon
+                  name={sortIcon}
+                />
+              </Box>
           }
         </Link> :
 
-        <div className={className}>
+        <Box
+          className={className}
+          {...otherProps}
+          sx={cellSx}
+        >
           {children}
-        </div>
+        </Box>
     );
   }
 }
@@ -98,11 +123,11 @@ VirtualTableHeaderCell.propTypes = {
   fixedSortDirection: PropTypes.string,
   sortDirection: PropTypes.string,
   children: PropTypes.node,
-  onSortPress: PropTypes.func
+  onSortPress: PropTypes.func,
+  sx: PropTypes.oneOfType([PropTypes.object, PropTypes.array, PropTypes.func])
 };
 
 VirtualTableHeaderCell.defaultProps = {
-  className: styles.headerCell,
   isSortable: false
 };
 

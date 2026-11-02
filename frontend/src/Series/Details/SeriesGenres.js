@@ -1,9 +1,9 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Label from 'Components/Label';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { kinds, sizes, tooltipPositions } from 'Helpers/Props';
-import styles from './SeriesGenres.css';
 
 function SeriesGenres({ genres }) {
   const [firstGenre, ...otherGenres] = genres;
@@ -12,9 +12,9 @@ function SeriesGenres({ genres }) {
     return (
       <Tooltip
         anchor={
-          <span className={styles.genres}>
+          <Box component="span" sx={{ mr: '15px' }}>
             {firstGenre}
-          </span>
+          </Box>
         }
         tooltip={
           <div>
@@ -40,9 +40,9 @@ function SeriesGenres({ genres }) {
   }
 
   return (
-    <span className={styles.genres}>
+    <Box component="span" sx={{ mr: '15px' }}>
       {firstGenre}
-    </span>
+    </Box>
   );
 }
 

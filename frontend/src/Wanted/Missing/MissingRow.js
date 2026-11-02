@@ -10,7 +10,6 @@ import EpisodeSearchCell from 'Episode/EpisodeSearchCell';
 import EpisodeStatus from 'Episode/EpisodeStatus';
 import EpisodeTitleLink from 'Episode/EpisodeTitleLink';
 import SeriesTitleLink from 'Series/SeriesTitleLink';
-import styles from './MissingRow.css';
 
 function MissingRow(props) {
   const {
@@ -67,7 +66,7 @@ function MissingRow(props) {
             return (
               <TableRowCell
                 key={name}
-                className={styles.episode}
+                sx={{ width: 100 }}
               >
                 <EpisodeNumber
                   seasonNumber={seasonNumber}
@@ -99,7 +98,7 @@ function MissingRow(props) {
             return (
               <TableRowCell
                 key={name}
-                className={styles.actors}
+                sx={{ width: 400 }}
               >
                 <span title={joinedPerformers}>
                   {joinedPerformers}
@@ -131,7 +130,7 @@ function MissingRow(props) {
             return (
               <TableRowCell
                 key={name}
-                className={styles.status}
+                sx={{ width: 100 }}
               >
                 <EpisodeStatus
                   episodeId={id}

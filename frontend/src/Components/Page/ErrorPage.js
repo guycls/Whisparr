@@ -1,8 +1,8 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React from 'react';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
-import styles from './ErrorPage.css';
 
 function ErrorPage(props) {
   const {
@@ -38,15 +38,28 @@ function ErrorPage(props) {
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.errorMessage}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        mt: '20px',
+        textAlign: 'center',
+        fontSize: 20,
+        '@media (max-width: 768px)': {
+          flexGrow: 1,
+          height: 'initial'
+        }
+      }}
+    >
+      <div>
         {errorMessage}
       </div>
 
-      <div className={styles.version}>
+      <Box sx={{ mt: '20px', fontSize: 16 }}>
         {translate('VersionNumber', { version })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

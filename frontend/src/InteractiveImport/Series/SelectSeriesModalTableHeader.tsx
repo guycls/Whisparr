@@ -2,7 +2,12 @@ import React from 'react';
 import Column from 'Components/Table/Column';
 import VirtualTableHeader from 'Components/Table/VirtualTableHeader';
 import VirtualTableHeaderCell from 'Components/Table/VirtualTableHeaderCell';
-import styles from './SelectSeriesModalTableHeader.css';
+
+const columnSx: Record<string, { flex: string }> = {
+  title: { flex: '4 0 140px' },
+  year: { flex: '0 0 70px' },
+  tvdbId: { flex: '0 0 110px' },
+};
 
 interface SelectSeriesModalTableHeaderProps {
   columns: Column[];
@@ -23,15 +28,7 @@ function SelectSeriesModalTableHeader(
         }
 
         return (
-          <VirtualTableHeaderCell
-            key={name}
-            className={
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              styles[name]
-            }
-            name={name}
-          >
+          <VirtualTableHeaderCell key={name} sx={columnSx[name]} name={name}>
             {typeof label === 'function' ? label() : label}
           </VirtualTableHeaderCell>
         );

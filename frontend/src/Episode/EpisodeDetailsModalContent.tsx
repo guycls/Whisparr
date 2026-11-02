@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import React, {
   useCallback,
   useEffect,
@@ -34,7 +34,6 @@ import translate from 'Utilities/String/translate';
 import EpisodeHistoryConnector from './History/EpisodeHistoryConnector';
 import EpisodeSearchConnector from './Search/EpisodeSearchConnector';
 import SeasonEpisodeNumber from './SeasonEpisodeNumber';
-import styles from './EpisodeDetailsModalContent.css';
 
 const TABS: EpisodeDetailsTab[] = ['details', 'search', 'history'];
 export interface EpisodeDetailsModalContentProps {
@@ -214,6 +213,13 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
   }, [dispatch]);
 
   const seriesLink = `/site/${titleSlug}`;
+  let bodyOverflow: 'hidden' | 'visible' | undefined = undefined;
+
+  if (isBodyAnimating) {
+    bodyOverflow = 'hidden';
+  } else if (stackedFullTabs) {
+    bodyOverflow = 'visible';
+  }
 
   return (
     <ModalContent onModalClose={onModalClose}>
@@ -226,9 +232,13 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
           onPress={handleMonitorEpisodePress}
         />
 
-        <span className={styles.seriesTitle}>{seriesTitle}</span>
+        <Box component="span" sx={{ ml: '5px' }}>
+          {seriesTitle}
+        </Box>
 
-        <span className={styles.separator}>-</span>
+        <Box component="span" sx={{ mx: '5px' }}>
+          -
+        </Box>
 
         <SeasonEpisodeNumber
           seasonNumber={seasonNumber}
@@ -238,28 +248,65 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
           seriesType={seriesType}
         />
 
-        <span className={styles.separator}>-</span>
+        <Box component="span" sx={{ mx: '5px' }}>
+          -
+        </Box>
 
         {episodeTitle}
       </ModalHeader>
 
-      <div
+      <Box
         ref={setBodyLayoutRef}
-        className={classNames(
-          styles.bodyLayout,
-          showLeftPane && styles.hasLeftPane,
-          stackedFullTabs && styles.bodyLayoutStackedFullTabs,
-          isBodyAnimating && styles.bodyLayoutAnimating
-        )}
         style={bodyHeight == null ? undefined : { height: bodyHeight }}
         onTransitionEnd={handleBodyTransitionEnd}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: stackedFullTabs ? '0 1 auto' : '1 1 auto',
+          minHeight: stackedFullTabs ? 'auto' : 0,
+          overflow: bodyOverflow,
+          transition: isBodyAnimating ? 'height 0.15s ease-in' : undefined,
+          ...(showLeftPane
+            ? {
+                '@media (min-width: 992px)': {
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                },
+              }
+            : null),
+        }}
       >
         {showLeftPane ? (
-          <div
-            className={classNames(
-              styles.episodeDetailsPane,
-              isLeftPaneDetailsLayout && styles.episodeDetailsPaneScreenshotOnly
-            )}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexShrink: stackedFullTabs ? 0 : undefined,
+              flex: stackedFullTabs ? '0 0 auto' : undefined,
+              minHeight: 0,
+              width: '100%',
+              maxHeight: stackedFullTabs ? 'none' : undefined,
+              overflow: bodyOverflow,
+              borderBottom: '1px solid var(--borderColor)',
+              backgroundColor: 'var(--modalBackgroundColor)',
+              '@media (min-width: 992px)': {
+                flex: '0 0 50%',
+                width: '50%',
+                minWidth: '50%',
+                maxWidth: '50%',
+                alignSelf: 'stretch',
+                borderBottom: 'none',
+                borderRight: '1px solid var(--borderColor)',
+                overflow: 'hidden',
+                transition: 'max-height 0.15s ease-in',
+                ...(isLeftPaneDetailsLayout
+                  ? {
+                      maxHeight: 'min(calc(50vh + 4em), 544px)',
+                      minHeight: 0,
+                    }
+                  : null),
+              },
+            }}
           >
             <EpisodeSceneDetails
               seriesId={seriesId}
@@ -273,46 +320,77 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
               fillHeight={isLeftPaneDetailsLayout}
               onMetadataMountChange={handleMetadataMountChange}
             />
-          </div>
+          </Box>
         ) : null}
 
-        <ModalBody
-          className={styles.tabsColumn}
-          innerClassName={styles.tabsColumnInner}
-          scrollDirection={
-            stackedFullTabs ? scrollDirections.NONE : scrollDirections.VERTICAL
-          }
+        <Box
+          sx={{
+            flex: stackedFullTabs ? '0 0 auto' : '1 1 auto',
+            flexGrow: stackedFullTabs ? 0 : undefined,
+            minWidth: 0,
+            width: showLeftPane ? undefined : '100%',
+            overflow: stackedFullTabs ? 'visible' : undefined,
+            maxHeight: stackedFullTabs ? 'none' : undefined,
+            ...(showLeftPane
+              ? {
+                  '@media (min-width: 992px)': {
+                    flex: '1 1 50%',
+                    width: '50%',
+                    minWidth: 0,
+                    maxWidth: '50%',
+                  },
+                }
+              : null),
+            '& .MuiDialogContent-root': {
+              pt: 0,
+            },
+            '& .react-tabs__tab': {
+              position: 'relative',
+              bottom: -1,
+              display: 'inline-block',
+              padding: '6px 12px',
+              border: '1px solid transparent',
+              borderTop: 'none',
+              listStyle: 'none',
+              cursor: 'pointer',
+            },
+            '& .react-tabs__tab--selected': {
+              borderColor: 'var(--borderColor)',
+              borderRadius: '0 0 5px 5px',
+              backgroundColor: 'rgba(239, 239, 239, 0.4)',
+              color: 'var(--black)',
+            },
+          }}
         >
-          <Tabs
-            className={styles.tabs}
-            selectedIndex={TABS.indexOf(currentlySelectedTab)}
-            onSelect={handleTabSelect}
+          <ModalBody
+            scrollDirection={
+              stackedFullTabs
+                ? scrollDirections.NONE
+                : scrollDirections.VERTICAL
+            }
           >
-            <TabList className={styles.tabList}>
-              <Tab
-                className={styles.tab}
-                selectedClassName={styles.selectedTab}
+            <Tabs
+              selectedIndex={TABS.indexOf(currentlySelectedTab)}
+              onSelect={handleTabSelect}
+              style={{ marginTop: 0 }}
+            >
+              <TabList
+                style={{
+                  margin: 0,
+                  padding: 0,
+                }}
               >
-                {translate('Details')}
-              </Tab>
+                <Tab>
+                  {translate('Details')}
+                </Tab>
 
-              <Tab
-                className={styles.tab}
-                selectedClassName={styles.selectedTab}
-              >
-                {translate('Search')}
-              </Tab>
+                <Tab>{translate('Search')}</Tab>
 
-              <Tab
-                className={styles.tab}
-                selectedClassName={styles.selectedTab}
-              >
-                {translate('History')}
-              </Tab>
-            </TabList>
+                <Tab>{translate('History')}</Tab>
+              </TabList>
 
-            <TabPanel>
-              <div className={styles.tabContent}>
+              <TabPanel>
+                <Box sx={{ mt: '20px' }}>
                 <EpisodeSceneDetails
                   seriesId={seriesId}
                   episodeId={episodeId}
@@ -321,7 +399,7 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
                   showScreenshot={false}
                   showMetadata={true}
                 />
-              </div>
+              </Box>
             </TabPanel>
 
             <TabPanel>
@@ -334,21 +412,18 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
             </TabPanel>
 
             <TabPanel>
-              <div className={styles.tabContent}>
+              <Box sx={{ mt: '20px' }}>
                 <EpisodeHistoryConnector episodeId={episodeId} />
-              </div>
+              </Box>
             </TabPanel>
-          </Tabs>
-        </ModalBody>
-      </div>
+            </Tabs>
+          </ModalBody>
+        </Box>
+      </Box>
 
       <ModalFooter>
         {showOpenSeriesButton && (
-          <Button
-            className={styles.openSeriesButton}
-            to={seriesLink}
-            onPress={onModalClose}
-          >
+          <Button to={seriesLink} onPress={onModalClose} sx={{ mr: 'auto' }}>
             {translate('OpenSite')}
           </Button>
         )}

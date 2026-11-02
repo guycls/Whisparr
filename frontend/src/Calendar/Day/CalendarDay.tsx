@@ -1,4 +1,4 @@
-import classNames from 'classnames';
+import Box from '@mui/material/Box';
 import moment from 'moment';
 import React from 'react';
 import * as calendarViews from 'Calendar/calendarViews';
@@ -6,7 +6,6 @@ import CalendarEventConnector from 'Calendar/Events/CalendarEventConnector';
 import CalendarEventGroupConnector from 'Calendar/Events/CalendarEventGroupConnector';
 import Series from 'Series/Series';
 import CalendarEventGroup, { CalendarEvent } from 'typings/CalendarEventGroup';
-import styles from './CalendarDay.css';
 
 interface CalendarDayProps {
   date: string;
@@ -22,6 +21,7 @@ function CalendarDay(props: CalendarDayProps) {
     props;
 
   const ref = React.useRef<HTMLDivElement>(null);
+  const isDifferentMonth = !moment(date).isSame(moment(time), 'month');
 
   React.useEffect(() => {
     if (isTodaysDate && view === calendarViews.MONTH && ref.current) {
@@ -30,24 +30,31 @@ function CalendarDay(props: CalendarDayProps) {
   }, [time, isTodaysDate, view]);
 
   return (
-    <div
+    <Box
       ref={ref}
-      className={classNames(
-        styles.day,
-        view === calendarViews.DAY && styles.isSingleDay
-      )}
+      sx={{
+        flex: '1 0 14.28%',
+        width: view === calendarViews.DAY ? '100%' : undefined,
+        overflow: 'hidden',
+        minHeight: 70,
+        borderBottom: '1px solid var(--calendarBorderColor)',
+        borderLeft: '1px solid var(--calendarBorderColor)',
+      }}
     >
       {view === calendarViews.MONTH && (
-        <div
-          className={classNames(
-            styles.dayOfMonth,
-            isTodaysDate && styles.isToday,
-            !moment(date).isSame(moment(time), 'month') &&
-              styles.isDifferentMonth
-          )}
+        <Box
+          sx={{
+            pr: '5px',
+            borderBottom: '1px solid var(--calendarBorderColor)',
+            textAlign: 'right',
+            backgroundColor: isTodaysDate
+              ? 'var(--calendarTodayBackgroundColor)'
+              : undefined,
+            color: isDifferentMonth ? 'var(--disabledColor)' : undefined,
+          }}
         >
           {moment(date).date()}
-        </div>
+        </Box>
       )}
       <div>
         {events.map((event) => {
@@ -73,7 +80,7 @@ function CalendarDay(props: CalendarDayProps) {
           );
         })}
       </div>
-    </div>
+    </Box>
   );
 }
 

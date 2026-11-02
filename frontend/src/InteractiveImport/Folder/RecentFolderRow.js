@@ -6,7 +6,6 @@ import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableRowButton from 'Components/Table/TableRowButton';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
-import styles from './RecentFolderRow.css';
 
 class RecentFolderRow extends Component {
 
@@ -43,7 +42,7 @@ class RecentFolderRow extends Component {
 
         <RelativeDateCell date={lastUsed} />
 
-        <TableRowCell className={styles.actions}>
+        <TableRowCell sx={{ width: 40 }}>
           <IconButton
             title={translate('Remove')}
             name={icons.REMOVE}

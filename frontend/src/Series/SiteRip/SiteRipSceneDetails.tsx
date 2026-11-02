@@ -1,7 +1,6 @@
 import React from 'react';
 import EpisodeSceneDetails from 'Episode/EpisodeSceneDetails';
 import { useSiteRipEpisode } from './useSiteRipSeriesEpisodes';
-import styles from './SiteRipMatchingView.css';
 
 interface SiteRipSceneDetailsProps {
   seriesId: number;
@@ -17,8 +16,8 @@ function SiteRipSceneDetails(props: SiteRipSceneDetailsProps) {
       seriesId={seriesId}
       episodeId={episodeId}
       episode={episode}
-      className={styles.sceneDetails}
-      scrollerClassName={styles.sceneDetailsScroller}
+      className="site-rip-scene-details-root"
+      scrollerClassName="site-rip-scene-details-scroller"
     />
   );
 }

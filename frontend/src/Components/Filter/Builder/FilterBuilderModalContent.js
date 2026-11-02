@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import { maxBy } from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -11,7 +12,6 @@ import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import FilterBuilderRow from './FilterBuilderRow';
-import styles from './FilterBuilderModalContent.css';
 
 class FilterBuilderModalContent extends Component {
 
@@ -151,12 +151,12 @@ class FilterBuilderModalContent extends Component {
         </ModalHeader>
 
         <ModalBody>
-          <div className={styles.labelContainer}>
-            <div className={styles.label}>
+          <Box sx={{ mb: '20px' }}>
+            <Box sx={{ mb: '5px', fontWeight: 'bold' }}>
               {translate('Label')}
-            </div>
+            </Box>
 
-            <div className={styles.labelInputContainer}>
+            <Box sx={{ width: 300 }}>
               <FormInputGroup
                 name="label"
                 value={label}
@@ -164,14 +164,14 @@ class FilterBuilderModalContent extends Component {
                 errors={labelErrors}
                 onChange={this.onLabelChange}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className={styles.label}>
+          <Box sx={{ mb: '5px', fontWeight: 'bold' }}>
             {translate('Filters')}
-          </div>
+          </Box>
 
-          <div className={styles.rows}>
+          <Box sx={{ mb: '100px' }}>
             {
               filters.map((filter, index) => {
                 return (
@@ -191,7 +191,7 @@ class FilterBuilderModalContent extends Component {
                 );
               })
             }
-          </div>
+          </Box>
         </ModalBody>
 
         <ModalFooter>
