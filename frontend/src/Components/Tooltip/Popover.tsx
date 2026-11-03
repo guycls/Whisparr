@@ -15,22 +15,22 @@ function Popover({ title, body, ...otherProps }: PopoverProps) {
       tooltip={
         <Box>
           <Box
-            sx={{
+            sx={(theme) => ({
               padding: '10px 20px',
-              borderBottom: '1px solid var(--popoverTitleBorderColor)',
-              backgroundColor: 'var(--popoverTitleBackgroundColor)',
+              borderBottom: `1px solid ${theme.palette.divider}`,
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200],
               fontSize: 16,
-            }}
+            })}
           >
             {title}
           </Box>
 
           <Box
-            sx={{
+            sx={(theme) => ({
               overflow: 'auto',
               p: '10px',
-              backgroundColor: 'var(--popoverBodyBackgroundColor)',
-            }}
+              backgroundColor: theme.palette.background.paper,
+            })}
           >
             {body}
           </Box>

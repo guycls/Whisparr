@@ -1,4 +1,7 @@
 import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -87,17 +90,21 @@ class ImportSeriesSelectFolder extends Component {
 
                 <Box sx={{ fontSize: 20 }}>
                   {translate('LibraryImportTips')}
-                  <ul>
-                    <Box component="li" sx={{ fontSize: 14 }}>
-                      <InlineMarkdown data={translate('LibraryImportTipsQualityInFilename')} />
-                    </Box>
-                    <Box component="li" sx={{ fontSize: 14 }}>
-                      <InlineMarkdown data={translate('LibraryImportTipsUseRootFolder', { goodFolderExample, badFolderExample })} />
-                    </Box>
-                    <Box component="li" sx={{ fontSize: 14 }}>
-                      {translate('LibraryImportTipsDontUseDownloadsFolder')}
-                    </Box>
-                  </ul>
+                  <List>
+                    <ListItem>
+                      <ListItemText
+                        primary={<InlineMarkdown data={translate('LibraryImportTipsQualityInFilename')} />}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText
+                        primary={<InlineMarkdown data={translate('LibraryImportTipsUseRootFolder', { goodFolderExample, badFolderExample })} />}
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText primary={translate('LibraryImportTipsDontUseDownloadsFolder')} />
+                    </ListItem>
+                  </List>
                 </Box>
 
                 {
@@ -123,23 +130,21 @@ class ImportSeriesSelectFolder extends Component {
                     >
                       {translate('AddRootFolderError')}
 
-                      <ul>
+                      <List>
                         {
                           Array.isArray(saveError.responseJSON) ?
                             saveError.responseJSON.map((e, index) => {
                               return (
-                                <li key={index}>
-                                  {e.errorMessage}
-                                </li>
+                                <ListItem key={index}>
+                                  <ListItemText primary={e.errorMessage} />
+                                </ListItem>
                               );
                             }) :
-                            <li>
-                              {
-                                JSON.stringify(saveError.responseJSON)
-                              }
-                            </li>
+                            <ListItem>
+                              <ListItemText primary={JSON.stringify(saveError.responseJSON)} />
+                            </ListItem>
                         }
-                      </ul>
+                      </List>
                     </Alert>
                     </Box> :
                     null

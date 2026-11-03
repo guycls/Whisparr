@@ -6,6 +6,8 @@ import { createSelector } from 'reselect';
 import AppState from 'App/State/AppState';
 import InteractiveImportAppState from 'App/State/InteractiveImportAppState';
 import * as commandNames from 'Commands/commandNames';
+import Alert from 'Components/Alert';
+import CheckInput from 'Components/Form/CheckInput';
 import SelectInput from 'Components/Form/SelectInput';
 import Icon from 'Components/Icon';
 import Button from 'Components/Link/Button';
@@ -829,19 +831,17 @@ function InteractiveImportModalContent(
         )}
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: '10px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input
-              type="checkbox"
-              checked={showOnlyUnmatched}
-              onChange={onShowOnlyUnmatchedToggle}
-            />
-            {translate('ShowOnlyUnmatched')}
-          </label>
+          <CheckInput
+            name="showOnlyUnmatched"
+            value={showOnlyUnmatched}
+            helpText={translate('ShowOnlyUnmatched')}
+            onChange={onShowOnlyUnmatchedToggle}
+          />
         </Box>
 
         {isFetching ? <LoadingIndicator /> : null}
 
-        {error ? <div>{errorMessage}</div> : null}
+        {error ? <Alert kind={kinds.DANGER}>{errorMessage}</Alert> : null}
 
         {isPopulated && !!filteredItems.length && !isFetching ? (
           <Table

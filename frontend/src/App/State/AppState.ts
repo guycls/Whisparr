@@ -96,6 +96,7 @@ interface AppState {
     };
     maxEpisodeRuntime: number;
     activeSeriesId: number;
+    sceneModalPanePercent: number;
     unifiedGrid: {
       isFetching: boolean;
       isPopulated: boolean;

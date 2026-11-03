@@ -1,11 +1,10 @@
 import Box from '@mui/material/Box';
+import Pagination from '@mui/material/Pagination';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SelectInput from 'Components/Form/SelectInput';
-import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 class TablePager extends Component {
@@ -37,6 +36,44 @@ class TablePager extends Component {
     this.setState({ isShowingPageSelect: false });
   };
 
+  onPaginationChange = (event, newPage) => {
+    const {
+      page,
+      totalPages,
+      onFirstPagePress,
+      onPreviousPagePress,
+      onNextPagePress,
+      onLastPagePress,
+      onPageSelect
+    } = this.props;
+
+    if (newPage === page) {
+      return;
+    }
+
+    if (newPage === 1 && page > 2) {
+      onFirstPagePress();
+      return;
+    }
+
+    if (newPage === totalPages && page < totalPages - 1) {
+      onLastPagePress();
+      return;
+    }
+
+    if (newPage === page - 1) {
+      onPreviousPagePress();
+      return;
+    }
+
+    if (newPage === page + 1) {
+      onNextPagePress();
+      return;
+    }
+
+    onPageSelect(newPage);
+  };
+
   //
   // Render
 
@@ -45,11 +82,7 @@ class TablePager extends Component {
       page,
       totalPages,
       totalRecords,
-      isFetching,
-      onFirstPagePress,
-      onPreviousPagePress,
-      onNextPagePress,
-      onLastPagePress
+      isFetching
     } = this.props;
 
     const isShowingPageSelect = this.state.isShowingPageSelect;
@@ -65,9 +98,6 @@ class TablePager extends Component {
     if (!page) {
       return null;
     }
-
-    const isFirstPage = page === 1;
-    const isLastPage = page === totalPages;
 
     return (
       <Box
@@ -101,7 +131,9 @@ class TablePager extends Component {
         <Box
           sx={{
             display: 'flex',
+            alignItems: 'center',
             justifyContent: 'center',
+            gap: 1,
             flex: '0 1 33%',
             '@media (max-width: 768px)': {
               flex: '0 1 100%',
@@ -109,97 +141,47 @@ class TablePager extends Component {
             }
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              textAlign: 'center'
-            }}
-          >
-            <Link
-              isDisabled={isFirstPage}
-              sx={{
-                p: 0,
-                width: 30,
-                height: 30,
-                minWidth: 30,
-                lineHeight: '30px',
-                color: isFirstPage ? 'var(--disabledColor)' : undefined
-              }}
-              onPress={onFirstPagePress}
-            >
-              <Icon name={icons.PAGE_FIRST} />
-            </Link>
+          <Pagination
+            count={totalPages}
+            page={page}
+            size="small"
+            showFirstButton={true}
+            showLastButton={true}
+            onChange={this.onPaginationChange}
+          />
 
-            <Link
-              isDisabled={isFirstPage}
-              sx={{
-                p: 0,
-                width: 30,
-                height: 30,
-                minWidth: 30,
-                lineHeight: '30px',
-                color: isFirstPage ? 'var(--disabledColor)' : undefined
-              }}
-              onPress={onPreviousPagePress}
-            >
-              <Icon name={icons.PAGE_PREVIOUS} />
-            </Link>
+          {
+            totalPages > 1 && !isShowingPageSelect &&
+              <Typography
+                variant="body2"
+                component="button"
+                type="button"
+                onClick={this.onOpenPageSelectClick}
+                sx={{
+                  border: 0,
+                  background: 'none',
+                  cursor: 'pointer',
+                  color: 'primary.main',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {page} / {totalPages}
+              </Typography>
+          }
 
-            <Box sx={{ lineHeight: '30px' }}>
-              {
-                !isShowingPageSelect &&
-                  <Link
-                    isDisabled={totalPages === 1}
-                    onPress={this.onOpenPageSelectClick}
-                  >
-                    {page} / {totalPages}
-                  </Link>
-              }
-
-              {
-                isShowingPageSelect &&
-                  <SelectInput
-                    name="pageSelect"
-                    value={page}
-                    values={pages}
-                    autoFocus={true}
-                    onChange={this.onPageSelect}
-                    onBlur={this.onPageSelectBlur}
-                  />
-              }
-            </Box>
-
-            <Link
-              isDisabled={isLastPage}
-              sx={{
-                p: 0,
-                width: 30,
-                height: 30,
-                minWidth: 30,
-                lineHeight: '30px',
-                color: isLastPage ? 'var(--disabledColor)' : undefined
-              }}
-              onPress={onNextPagePress}
-            >
-              <Icon name={icons.PAGE_NEXT} />
-            </Link>
-
-            <Link
-              isDisabled={isLastPage}
-              sx={{
-                p: 0,
-                width: 30,
-                height: 30,
-                minWidth: 30,
-                lineHeight: '30px',
-                color: isLastPage ? 'var(--disabledColor)' : undefined
-              }}
-              onPress={onLastPagePress}
-            >
-              <Icon name={icons.PAGE_LAST} />
-            </Link>
-          </Box>
+          {
+            totalPages > 1 && isShowingPageSelect &&
+              <Box sx={{ minWidth: 72 }}>
+                <SelectInput
+                  name="pageSelect"
+                  value={page}
+                  values={pages}
+                  autoFocus={true}
+                  onChange={this.onPageSelect}
+                  onBlur={this.onPageSelectBlur}
+                />
+              </Box>
+          }
         </Box>
 
         <Box
@@ -212,9 +194,9 @@ class TablePager extends Component {
             }
           }}
         >
-          <Box sx={{ color: 'var(--disabledColor)' }}>
+          <Typography variant="body2" color="text.disabled">
             {translate('TotalRecords', { totalRecords })}
-          </Box>
+          </Typography>
         </Box>
       </Box>
     );

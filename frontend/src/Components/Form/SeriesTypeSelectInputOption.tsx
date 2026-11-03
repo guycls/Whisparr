@@ -3,17 +3,19 @@ import React from 'react';
 import EnhancedSelectInputOption from './EnhancedSelectInputOption';
 
 interface SeriesTypeSelectInputOptionProps {
-  key: string;
+  id?: string | number;
+  key?: string;
   value: string;
   format: string;
   isMobile: boolean;
 }
 
 function SeriesTypeSelectInputOption(props: SeriesTypeSelectInputOptionProps) {
-  const { key, value, format, isMobile, ...otherProps } = props;
+  const { key, value, format, isMobile, id, ...otherProps } = props;
+  const optionId = id || key;
 
   return (
-    <EnhancedSelectInputOption id={key} isMobile={isMobile} {...otherProps}>
+    <EnhancedSelectInputOption id={optionId} isMobile={isMobile} {...otherProps}>
       <Box
         sx={{
           display: isMobile ? 'block' : 'flex',

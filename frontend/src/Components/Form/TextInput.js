@@ -1,4 +1,5 @@
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
@@ -134,6 +135,7 @@ class TextInput extends Component {
       step,
       min,
       max,
+      unit,
       sx,
       onBlur,
       onCopy
@@ -149,7 +151,10 @@ class TextInput extends Component {
         type={type}
         slotProps={{
           input: {
-            readOnly
+            readOnly,
+            endAdornment: unit ?
+              <InputAdornment position="end">{unit}</InputAdornment> :
+              undefined
           },
           htmlInput: {
             step,

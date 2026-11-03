@@ -1,9 +1,8 @@
 import TableCell from '@mui/material/TableCell';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
-import { icons, sortDirections } from 'Helpers/Props';
+import { sortDirections } from 'Helpers/Props';
 
 class TableHeaderCell extends Component {
 
@@ -45,9 +44,7 @@ class TableHeaderCell extends Component {
     } = this.props;
 
     const isSorting = isSortable && sortKey === name;
-    const sortIcon = sortDirection === sortDirections.ASCENDING ?
-      icons.SORT_ASCENDING :
-      icons.SORT_DESCENDING;
+    const direction = sortDirection === sortDirections.DESCENDING ? 'desc' : 'asc';
 
     return (
       isSortable ?
@@ -55,35 +52,17 @@ class TableHeaderCell extends Component {
           component="th"
           className={className}
           sx={sx}
+          sortDirection={isSorting ? direction : false}
         >
-          <Link
+          <TableSortLabel
             {...otherProps}
+            active={isSorting}
+            direction={isSorting ? direction : 'asc'}
             title={typeof columnLabel === 'function' ? columnLabel() : columnLabel}
-            onPress={this.onPress}
-            sx={{
-              minWidth: 0,
-              justifyContent: 'flex-start',
-              p: 0,
-              color: 'text.secondary',
-              fontSize: 12,
-              fontWeight: 600,
-              lineHeight: 1.4,
-              whiteSpace: 'nowrap',
-              '&:hover': {
-                backgroundColor: 'transparent',
-                color: 'primary.main',
-              },
-            }}
+            onClick={this.onPress}
           >
             {children}
-
-            {
-              isSorting &&
-                <Icon
-                  name={sortIcon}
-                />
-            }
-          </Link>
+          </TableSortLabel>
         </TableCell> :
 
         <TableCell

@@ -1,309 +1,92 @@
-import Box from '@mui/material/Box';
-import _ from 'lodash';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Manager, Popper, Reference } from 'react-popper';
-import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import Measure from 'Components/Measure';
-import Modal from 'Components/Modal/Modal';
-import ModalBody from 'Components/Modal/ModalBody';
-import Portal from 'Components/Portal';
-import Scroller from 'Components/Scroller/Scroller';
-import { icons, scrollDirections, sizes } from 'Helpers/Props';
-import { isMobile as isMobileUtil } from 'Utilities/browser';
-import * as keyCodes from 'Utilities/Constants/keyCodes';
-import getUniqueElememtId from 'Utilities/getUniqueElementId';
 import HintedSelectInputOption from './HintedSelectInputOption';
 import HintedSelectInputSelectedValue from './HintedSelectInputSelectedValue';
-import TextInput from './TextInput';
 
-function isArrowKey(keyCode) {
-  return keyCode === keyCodes.UP_ARROW || keyCode === keyCodes.DOWN_ARROW;
-}
-
-function getSelectedOption(selectedIndex, values) {
-  return values[selectedIndex];
-}
-
-function findIndex(startingIndex, direction, values) {
-  let indexToTest = startingIndex + direction;
-
-  while (indexToTest !== startingIndex) {
-    if (indexToTest < 0) {
-      indexToTest = values.length - 1;
-    } else if (indexToTest >= values.length) {
-      indexToTest = 0;
-    }
-
-    if (getSelectedOption(indexToTest, values).isDisabled) {
-      indexToTest = indexToTest + direction;
-    } else {
-      return indexToTest;
-    }
-  }
-}
-
-function previousIndex(selectedIndex, values) {
-  return findIndex(selectedIndex, -1, values);
-}
-
-function nextIndex(selectedIndex, values) {
-  return findIndex(selectedIndex, 1, values);
-}
-
-function getSelectedIndex(props) {
-  const {
-    value,
-    values
-  } = props;
-
-  if (Array.isArray(value)) {
-    return values.findIndex((v) => {
-      return value.size && v.key === value[0];
-    });
+function optionLabel(option) {
+  if (option == null) {
+    return '';
   }
 
-  return values.findIndex((v) => {
-    return v.key === value;
-  });
-}
-
-function isSelectedItem(index, props) {
-  const {
-    value,
-    values
-  } = props;
-
-  if (Array.isArray(value)) {
-    return value.includes(values[index].key);
+  if (typeof option === 'string' || typeof option === 'number') {
+    return String(option);
   }
 
-  return values[index].key === value;
-}
+  const label = option.value;
 
-function getKey(selectedIndex, values) {
-  return values[selectedIndex].key;
+  if (typeof label === 'function') {
+    return label();
+  }
+
+  if (label == null) {
+    return String(option.key ?? '');
+  }
+
+  return String(label);
 }
 
 class EnhancedSelectInput extends Component {
 
-  //
-  // Lifecycle
-
-  constructor(props, context) {
-    super(props, context);
-
-    this._scheduleUpdate = null;
-    this._buttonId = getUniqueElememtId();
-    this._optionsId = getUniqueElememtId();
-
-    this.state = {
-      isOpen: false,
-      selectedIndex: getSelectedIndex(props),
-      width: 0,
-      isMobile: isMobileUtil()
-    };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this._scheduleUpdate) {
-      this._scheduleUpdate();
-    }
-
-    if (!Array.isArray(this.props.value)) {
-      if (prevProps.value !== this.props.value || prevProps.values !== this.props.values) {
-        this.setState({
-          selectedIndex: getSelectedIndex(this.props)
-        });
-      }
-    }
-  }
-
-  //
-  // Control
-
-  _addListener() {
-    window.addEventListener('click', this.onWindowClick);
-  }
-
-  _removeListener() {
-    window.removeEventListener('click', this.onWindowClick);
-  }
-
-  //
-  // Listeners
-
-  onComputeMaxHeight = (data) => {
-    const {
-      top,
-      bottom
-    } = data.offsets.reference;
-
-    const windowHeight = window.innerHeight;
-
-    if ((/^botton/).test(data.placement)) {
-      data.styles.maxHeight = windowHeight - bottom;
-    } else {
-      data.styles.maxHeight = top;
-    }
-
-    return data;
-  };
-
-  onWindowClick = (event) => {
-    const button = document.getElementById(this._buttonId);
-    const options = document.getElementById(this._optionsId);
-
-    if (!button || !event.target.isConnected || this.state.isMobile) {
-      return;
-    }
-
-    if (
-      !button.contains(event.target) &&
-      options &&
-      !options.contains(event.target) &&
-      this.state.isOpen
-    ) {
-      this.setState({ isOpen: false });
-      this._removeListener();
-    }
-  };
-
-  onFocus = () => {
-    if (this.state.isOpen) {
-      this._removeListener();
-      this.setState({ isOpen: false });
-    }
-  };
-
-  onBlur = () => {
-    if (!this.props.isEditable) {
-      // Calling setState without this check prevents the click event from being properly handled on Chrome (it is on firefox)
-      const origIndex = getSelectedIndex(this.props);
-
-      if (origIndex !== this.state.selectedIndex) {
-        this.setState({ selectedIndex: origIndex });
-      }
-    }
-  };
-
-  onKeyDown = (event) => {
-    const {
-      values
-    } = this.props;
-
-    const {
-      isOpen,
-      selectedIndex
-    } = this.state;
-
-    const keyCode = event.keyCode;
-    const newState = {};
-
-    if (!isOpen) {
-      if (isArrowKey(keyCode)) {
-        event.preventDefault();
-        newState.isOpen = true;
-      }
-
-      if (
-        selectedIndex == null || selectedIndex === -1 ||
-        getSelectedOption(selectedIndex, values).isDisabled
-      ) {
-        if (keyCode === keyCodes.UP_ARROW) {
-          newState.selectedIndex = previousIndex(0, values);
-        } else if (keyCode === keyCodes.DOWN_ARROW) {
-          newState.selectedIndex = nextIndex(values.length - 1, values);
-        }
-      }
-
-      this.setState(newState);
-      return;
-    }
-
-    if (keyCode === keyCodes.UP_ARROW) {
-      event.preventDefault();
-      newState.selectedIndex = previousIndex(selectedIndex, values);
-    }
-
-    if (keyCode === keyCodes.DOWN_ARROW) {
-      event.preventDefault();
-      newState.selectedIndex = nextIndex(selectedIndex, values);
-    }
-
-    if (keyCode === keyCodes.ENTER) {
-      event.preventDefault();
-      newState.isOpen = false;
-      this.onSelect(getKey(selectedIndex, values));
-    }
-
-    if (keyCode === keyCodes.TAB) {
-      newState.isOpen = false;
-      this.onSelect(getKey(selectedIndex, values));
-    }
-
-    if (keyCode === keyCodes.ESCAPE) {
-      event.preventDefault();
-      event.stopPropagation();
-      newState.isOpen = false;
-      newState.selectedIndex = getSelectedIndex(this.props);
-    }
-
-    if (!_.isEmpty(newState)) {
-      this.setState(newState);
-    }
-  };
-
-  onPress = () => {
-    if (this.state.isOpen) {
-      this._removeListener();
-    } else {
-      this._addListener();
-    }
-
-    if (!this.state.isOpen && this.props.onOpen) {
+  onOpen = () => {
+    if (this.props.onOpen) {
       this.props.onOpen();
     }
-
-    this.setState({ isOpen: !this.state.isOpen });
   };
 
-  onSelect = (value) => {
-    if (Array.isArray(this.props.value)) {
-      let newValue = null;
-      const index = this.props.value.indexOf(value);
-      if (index === -1) {
-        newValue = this.props.values.map((v) => v.key).filter((v) => (v === value) || this.props.value.includes(v));
-      } else {
-        newValue = [...this.props.value];
-        newValue.splice(index, 1);
-      }
-      this.props.onChange({
-        name: this.props.name,
-        value: newValue
-      });
-    } else {
-      this.setState({ isOpen: false });
+  onChange = (event, nextValue) => {
+    const {
+      name,
+      value,
+      onChange
+    } = this.props;
 
-      this.props.onChange({
-        name: this.props.name,
-        value
+    if (Array.isArray(value)) {
+      onChange({
+        name,
+        value: (nextValue || []).map((option) => {
+          return option && option.key !== undefined ? option.key : option;
+        })
+      });
+
+      return;
+    }
+
+    if (nextValue && typeof nextValue === 'object') {
+      onChange({
+        name,
+        value: nextValue.key
+      });
+
+      return;
+    }
+
+    onChange({
+      name,
+      value: nextValue
+    });
+  };
+
+  getSelected(options, value, isEditable) {
+    if (Array.isArray(value)) {
+      return value.map((key) => {
+        return options.find((option) => option.key === key) || { key, value: key };
       });
     }
-  };
 
-  onMeasure = ({ width }) => {
-    this.setState({ width });
-  };
+    const match = options.find((option) => option.key === value);
 
-  onOptionsModalClose = () => {
-    this.setState({ isOpen: false });
-  };
+    if (match) {
+      return match;
+    }
 
-  //
-  // Render
+    if (isEditable && value !== '' && value != null) {
+      return value;
+    }
+
+    return null;
+  }
 
   render() {
     const {
@@ -317,305 +100,86 @@ class EnhancedSelectInput extends Component {
       hasError,
       hasWarning,
       valueOptions,
-      selectedValueOptions,
-      selectedValueComponent: SelectedValueComponent,
-      optionComponent: OptionComponent,
-      onChange
+      optionComponent: OptionComponent
     } = this.props;
 
-    const {
-      selectedIndex,
-      width,
-      isOpen,
-      isMobile
-    } = this.state;
-
+    const options = values || [];
     const isMultiSelect = Array.isArray(value);
-    const selectedOption = getSelectedOption(selectedIndex, values);
-    let selectedValue = value;
-
-    if (!values.length) {
-      selectedValue = isMultiSelect ? [] : '';
-    }
+    const selected = this.getSelected(options, value, isEditable);
 
     return (
-      <div>
-        <Manager>
-          <Reference>
-            {({ ref }) => (
-              <div
-                ref={ref}
-                id={this._buttonId}
-              >
-                <Measure
-                  whitelist={['width']}
-                  onMeasure={this.onMeasure}
+      <Autocomplete
+        className={className}
+        multiple={isMultiSelect}
+        freeSolo={isEditable}
+        disableCloseOnSelect={isMultiSelect}
+        options={options}
+        value={selected}
+        disabled={isDisabled}
+        loading={isFetching}
+        size="small"
+        fullWidth={true}
+        getOptionLabel={optionLabel}
+        isOptionEqualToValue={(option, selectedOption) => {
+          if (!option || !selectedOption || typeof selectedOption !== 'object') {
+            return option === selectedOption;
+          }
+
+          return option.key === selectedOption.key;
+        }}
+        getOptionDisabled={(option) => {
+          const parentSelected = option.parentKey !== undefined &&
+            isMultiSelect &&
+            value.includes(option.parentKey);
+
+          return !!option.isDisabled || parentSelected;
+        }}
+        onOpen={this.onOpen}
+        onChange={this.onChange}
+        onInputChange={(event, newValue, reason) => {
+          if (isEditable && reason === 'input') {
+            this.props.onChange({
+              name,
+              value: newValue
+            });
+          }
+        }}
+        renderOption={(optionProps, option, state) => {
+          const parentSelected = option.parentKey !== undefined &&
+            isMultiSelect &&
+            value.includes(option.parentKey);
+
+          return (
+            <li {...optionProps} key={option.key}>
+              <div style={{ pointerEvents: 'none', width: '100%' }}>
+                <OptionComponent
+                  {...valueOptions}
+                  {...option}
+                  id={option.key}
+                  depth={option.parentKey !== undefined ? 1 : 0}
+                  isSelected={state.selected}
+                  isDisabled={!!option.isDisabled || parentSelected}
+                  isMultiSelect={isMultiSelect}
+                  isMobile={false}
+                  onSelect={() => {}}
                 >
-                  {
-                    isEditable ?
-                      <Box sx={{ width: '100%', position: 'relative' }}>
-                        <TextInput
-                          className={className}
-                          name={name}
-                          value={value}
-                          readOnly={isDisabled}
-                          hasError={hasError}
-                          hasWarning={hasWarning}
-                          onFocus={this.onFocus}
-                          onBlur={this.onBlur}
-                          onChange={onChange}
-                        />
-                        <Link
-                          sx={{
-                            position: 'absolute',
-                            top: 0,
-                            right: 0,
-                            pr: '17px',
-                            width: '30%',
-                            height: 35,
-                            textAlign: 'right',
-                            ml: '12px',
-                            color: isDisabled ? 'var(--disabledInputColor)' : undefined
-                          }}
-                          onPress={this.onPress}
-                        >
-                          {
-                            isFetching ?
-                              <LoadingIndicator
-                                size={20}
-                              /> :
-                              null
-                          }
-
-                          {
-                            isFetching ?
-                              null :
-                              <Icon
-                                name={icons.CARET_DOWN}
-                              />
-                          }
-                        </Link>
-                      </Box> :
-                      <Link
-                        className={className}
-                        isDisabled={isDisabled}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '6px 16px',
-                          width: '100%',
-                          minHeight: 35,
-                          border: '1px solid',
-                          borderColor: hasError ?
-                            'var(--inputErrorBorderColor)' :
-                            (hasWarning ? 'var(--inputWarningBorderColor)' : 'var(--inputBorderColor)'),
-                          borderRadius: '4px',
-                          backgroundColor: 'var(--inputBackgroundColor)',
-                          boxShadow: 'inset 0 1px 1px var(--inputBoxShadowColor)',
-                          color: 'var(--textColor)',
-                          textTransform: 'none',
-                          justifyContent: 'flex-start',
-                          opacity: isDisabled ? 0.7 : undefined,
-                          cursor: isDisabled ? 'not-allowed' : undefined
-                        }}
-                        onBlur={this.onBlur}
-                        onKeyDown={this.onKeyDown}
-                        onPress={this.onPress}
-                      >
-                        <SelectedValueComponent
-                          value={selectedValue}
-                          values={values}
-                          {...selectedValueOptions}
-                          {...selectedOption}
-                          isDisabled={isDisabled}
-                          isMultiSelect={isMultiSelect}
-                        >
-                          {selectedOption ? selectedOption.value : null}
-                        </SelectedValueComponent>
-
-                        <Box
-                          sx={{
-                            ml: '12px',
-                            color: isDisabled ? 'var(--disabledInputColor)' : undefined
-                          }}
-                        >
-
-                          {
-                            isFetching ?
-                              <LoadingIndicator
-                                size={20}
-                              /> :
-                              null
-                          }
-
-                          {
-                            isFetching ?
-                              null :
-                              <Icon
-                                name={icons.CARET_DOWN}
-                              />
-                          }
-                        </Box>
-                      </Link>
-                  }
-                </Measure>
+                  {typeof option.value === 'function' ? option.value() : option.value}
+                </OptionComponent>
               </div>
-            )}
-          </Reference>
-          <Portal>
-            <Popper
-              placement="bottom-start"
-              modifiers={{
-                computeMaxHeight: {
-                  order: 851,
-                  enabled: true,
-                  fn: this.onComputeMaxHeight
-                }
-              }}
-            >
-              {({ ref, style, scheduleUpdate }) => {
-                this._scheduleUpdate = scheduleUpdate;
-
-                return (
-                  <Box
-                    ref={ref}
-                    id={this._optionsId}
-                    sx={{
-                      zIndex: 2000,
-                      width: 'auto'
-                    }}
-                    style={{
-                      ...style,
-                      minWidth: width
-                    }}
-                  >
-                    {
-                      isOpen && !isMobile ?
-                        <Scroller
-                          sx={{
-                            border: '1px solid var(--inputBorderColor)',
-                            borderRadius: '4px',
-                            backgroundColor: 'var(--inputBackgroundColor)'
-                          }}
-                          style={{
-                            maxHeight: style.maxHeight
-                          }}
-                        >
-                          {
-                            values.map((v, index) => {
-                              const hasParent = v.parentKey !== undefined;
-                              const depth = hasParent ? 1 : 0;
-                              const parentSelected = hasParent && value.includes(v.parentKey);
-                              return (
-                                <OptionComponent
-                                  key={v.key}
-                                  id={v.key}
-                                  depth={depth}
-                                  isSelected={isSelectedItem(index, this.props)}
-                                  isDisabled={parentSelected}
-                                  isMultiSelect={isMultiSelect}
-                                  {...valueOptions}
-                                  {...v}
-                                  isMobile={false}
-                                  onSelect={this.onSelect}
-                                >
-                                  {v.value}
-                                </OptionComponent>
-                              );
-                            })
-                          }
-                        </Scroller> :
-                        null
-                    }
-                  </Box>
-                );
-              }
-              }
-            </Popper>
-          </Portal>
-        </Manager>
-
-        {
-          isMobile ?
-            <Modal
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                maxWidth: '90%',
-                maxHeight: '100%',
-                width: 350,
-                height: 'auto'
-              }}
-              size={sizes.EXTRA_SMALL}
-              isOpen={isOpen}
-              onModalClose={this.onOptionsModalClose}
-            >
-              <ModalBody
-                scrollDirection={scrollDirections.NONE}
-              >
-                <Scroller
-                  sx={{
-                    border: '1px solid var(--inputBorderColor)',
-                    borderRadius: '4px',
-                    backgroundColor: 'var(--inputBackgroundColor)'
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      height: 40,
-                      borderBottom: '1px solid var(--borderColor)'
-                    }}
-                  >
-                    <Link
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        textAlign: 'center',
-                        lineHeight: '40px',
-                        '&:hover': {
-                          color: 'var(--modalCloseButtonHoverColor)'
-                        }
-                      }}
-                      onPress={this.onOptionsModalClose}
-                    >
-                      <Icon
-                        name={icons.CLOSE}
-                        size={18}
-                      />
-                    </Link>
-                  </Box>
-
-                  {
-                    values.map((v, index) => {
-                      const hasParent = v.parentKey !== undefined;
-                      const depth = hasParent ? 1 : 0;
-                      const parentSelected = hasParent && value.includes(v.parentKey);
-                      return (
-                        <OptionComponent
-                          key={v.key}
-                          id={v.key}
-                          depth={depth}
-                          isSelected={isSelectedItem(index, this.props)}
-                          isMultiSelect={isMultiSelect}
-                          isDisabled={parentSelected}
-                          {...valueOptions}
-                          {...v}
-                          isMobile={true}
-                          onSelect={this.onSelect}
-                        >
-                          {v.value}
-                        </OptionComponent>
-                      );
-                    })
-                  }
-                </Scroller>
-              </ModalBody>
-            </Modal> :
-            null
-        }
-      </div>
+            </li>
+          );
+        }}
+        renderInput={(params) => {
+          return (
+            <TextField
+              {...params}
+              name={name}
+              error={!!hasError}
+              color={hasWarning ? 'warning' : 'primary'}
+            />
+          );
+        }}
+      />
     );
   }
 }
@@ -633,7 +197,7 @@ EnhancedSelectInput.propTypes = {
   hasWarning: PropTypes.bool,
   valueOptions: PropTypes.object.isRequired,
   selectedValueOptions: PropTypes.object.isRequired,
-  selectedValueComponent: PropTypes.oneOfType([PropTypes.string, PropTypes.func]).isRequired,
+  selectedValueComponent: PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.elementType]).isRequired,
   optionComponent: PropTypes.elementType,
   onOpen: PropTypes.func,
   onChange: PropTypes.func.isRequired

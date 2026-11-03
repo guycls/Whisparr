@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import ListItem from '@mui/material/ListItem';
 import PropTypes from 'prop-types';
 import React from 'react';
 import CheckInput from 'Components/Form/CheckInput';
@@ -16,65 +17,45 @@ function TableOptionsColumn(props) {
     onVisibleChange
   } = props;
 
-  return (
-    <Box sx={isModifiable ? undefined : { py: '4px' }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'stretch',
-          width: '100%',
-          border: '1px solid #aaa',
-          borderRadius: '4px',
-          background: 'var(--inputBackgroundColor)',
-          opacity: isDragging ? 0.25 : undefined
-        }}
-      >
-        <Box
-          component="label"
-          sx={{
-            display: 'flex',
-            flexGrow: 1,
-            mb: 0,
-            ml: '2px',
-            fontWeight: 'normal',
-            lineHeight: '36px',
-            cursor: 'pointer'
-          }}
-        >
-          <Box sx={{ position: 'relative', mr: '4px', mb: '7px', ml: '8px' }}>
-            <CheckInput
-              name={name}
-              value={isVisible}
-              isDisabled={isModifiable === false}
-              onChange={onVisibleChange}
-            />
-          </Box>
-          {typeof label === 'function' ? label() : label}
-        </Box>
+  const labelText = typeof label === 'function' ? label() : label;
 
-        {
-          !!connectDragSource &&
-            connectDragSource(
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  ml: 'auto',
-                  width: 40,
-                  textAlign: 'center',
-                  cursor: 'grab'
-                }}
-              >
-                <Icon
-                  name={icons.REORDER}
-                />
-              </Box>
-            )
-        }
-      </Box>
-    </Box>
+  return (
+    <ListItem
+      sx={{
+        mb: '4px',
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 1,
+        bgcolor: 'background.paper',
+        opacity: isDragging ? 0.25 : 1
+      }}
+      secondaryAction={
+        connectDragSource ?
+          connectDragSource(
+            <Box
+              component="span"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 40,
+                cursor: 'grab'
+              }}
+            >
+              <Icon name={icons.REORDER} />
+            </Box>
+          ) :
+          undefined
+      }
+    >
+      <CheckInput
+        name={name}
+        value={isVisible}
+        helpText={labelText}
+        isDisabled={isModifiable === false}
+        onChange={onVisibleChange}
+      />
+    </ListItem>
   );
 }
 

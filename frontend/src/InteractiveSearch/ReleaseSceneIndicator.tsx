@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { Theme } from '@mui/material/styles';
 import _ from 'lodash';
 import React from 'react';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
@@ -16,34 +17,22 @@ type SceneLevel =
   | 'normal'
   | 'notRequested';
 
-const levelSx: Record<SceneLevel, object> = {
-  none: {
-    borderColor: 'var(--textColor)',
-    color: 'var(--textColor)',
-    opacity: 0.2,
-    '&:hover': { opacity: 1 },
-  },
-  mixed: {
-    borderColor: 'var(--dangerColor)',
-    color: 'var(--dangerColor)',
-  },
-  unknown: {
-    borderColor: 'var(--warningColor)',
-    color: 'var(--warningColor)',
-  },
-  mapped: {
-    borderColor: 'var(--textColor)',
-    color: 'var(--textColor)',
-  },
-  normal: {
-    borderColor: 'var(--textColor)',
-    color: 'var(--textColor)',
-  },
-  notRequested: {
-    borderColor: 'var(--dangerColor)',
-    color: 'var(--dangerColor)',
-  },
-};
+function levelSx(level: SceneLevel, theme: Theme) {
+  const text = theme.palette.text.primary;
+  const danger = theme.palette.error.main;
+  const warning = theme.palette.warning.main;
+  const color = level === 'mixed' || level === 'notRequested' ?
+    danger :
+    level === 'unknown' ?
+      warning :
+      text;
+
+  return {
+    borderColor: color,
+    color,
+    ...(level === 'none' ? { opacity: 0.2, '&:hover': { opacity: 1 } } : null),
+  };
+}
 
 function formatReleaseNumber(
   seasonNumber: number | undefined,
@@ -250,7 +239,7 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
       anchor={
         <Box
           className={className}
-          sx={{
+          sx={(theme) => ({
             m: '2px',
             px: '2px',
             border: '1px solid',
@@ -259,8 +248,8 @@ function ReleaseSceneIndicator(props: ReleaseSceneIndicatorProps) {
             fontSize: 12,
             cursor: 'default',
             flexShrink: 0,
-            ...levelSx[level],
-          }}
+            ...levelSx(level, theme),
+          })}
         >
           <Icon name={icons.SCENE_MAPPING} />
         </Box>

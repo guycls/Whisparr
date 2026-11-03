@@ -1,21 +1,13 @@
+import MuiTableBody from '@mui/material/TableBody';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React from 'react';
 
-class TableBody extends Component {
-
-  //
-  // Render
-
-  render() {
-    const {
-      children
-    } = this.props;
-
-    return (
-      <tbody>{children}</tbody>
-    );
-  }
-
+function TableBody({ children, ...otherProps }) {
+  return (
+    <MuiTableBody {...otherProps}>
+      {children}
+    </MuiTableBody>
+  );
 }
 
 TableBody.propTypes = {

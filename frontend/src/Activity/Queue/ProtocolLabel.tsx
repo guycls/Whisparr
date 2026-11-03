@@ -7,28 +7,24 @@ interface ProtocolLabelProps {
   protocol: DownloadProtocol;
 }
 
-const protocolColor: Partial<Record<DownloadProtocol, string>> = {
-  torrent: 'var(--torrentColor)',
-  usenet: 'var(--usenetColor)',
-};
-
 function ProtocolLabel({ protocol }: ProtocolLabelProps) {
   const protocolName = protocol === 'usenet' ? 'nzb' : protocol;
-  const color = protocolColor[protocol];
+
+  const chipColor = protocol === 'torrent' || protocol === 'usenet';
 
   return (
     <Box
       component="span"
       sx={
-        color
-          ? {
-              '& .MuiChip-root': {
-                borderColor: color,
-                backgroundColor: color,
-                color: 'var(--white)',
-              },
-            }
-          : undefined
+        chipColor ?
+          (theme) => ({
+            '& .MuiChip-root': {
+              borderColor: protocol === 'torrent' ? theme.palette.success.main : theme.palette.info.main,
+              backgroundColor: protocol === 'torrent' ? theme.palette.success.main : theme.palette.info.main,
+              color: theme.palette.common.white,
+            },
+          }) :
+          undefined
       }
     >
       <Label>{protocolName}</Label>

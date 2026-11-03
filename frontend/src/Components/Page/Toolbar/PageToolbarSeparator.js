@@ -1,16 +1,15 @@
-import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
 import React from 'react';
 
 function PageToolbarSeparator() {
   return (
-    <Box
+    <Divider
+      orientation="vertical"
+      flexItem={true}
       sx={{
         alignSelf: 'center',
-        flexShrink: 0,
         height: 28,
-        mx: '2px',
-        borderRight: 1,
-        borderColor: 'divider'
+        mx: '2px'
       }}
     />
   );

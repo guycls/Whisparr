@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
-import React, { useCallback, useState } from 'react';
-import ReactSlider from 'react-slider';
+import React, { useCallback } from 'react';
 import Menu from 'Components/Menu/Menu';
 import MenuContent from 'Components/Menu/MenuContent';
 import ToolbarMenuButton from 'Components/Menu/ToolbarMenuButton';
@@ -43,8 +43,6 @@ function SeriesDetailsQualityFilterMenu(
   const { qualityFilter, onQualityFilterChange } = props;
   const { minIndex, maxIndex } = qualityFilter;
 
-  const [showEndpointLabels, setShowEndpointLabels] = useState(false);
-
   const isFilterActive = !isFullQualityRange(minIndex, maxIndex);
 
   const onSliderChange = useCallback(
@@ -57,83 +55,12 @@ function SeriesDetailsQualityFilterMenu(
     [onQualityFilterChange]
   );
 
-  const onPointerDown = useCallback(() => {
-    setShowEndpointLabels(true);
+  const formatThumbLabel = useCallback((value: number) => {
+    const tier = getQualityFilterTier(value);
+    return tier.isUnknown ?
+      translate('SeriesDetailsQualityFilterUnknown') :
+      formatQualityTierLabel(tier);
   }, []);
-
-  const onPointerUp = useCallback(() => {
-    setShowEndpointLabels(false);
-  }, []);
-
-  const trackRenderer = useCallback(
-    (
-      trackProps: React.HTMLAttributes<HTMLDivElement>,
-      state: { index: number }
-    ) => (
-      <Box
-        {...trackProps}
-        sx={{
-          top: 11,
-          mx: '9px',
-          height: 3,
-          bgcolor: state.index === 0 ? 'grey.300' : 'primary.main',
-          boxShadow: '0 0 0 #000',
-        }}
-      />
-    ),
-    []
-  );
-
-  const thumbRenderer = useCallback(
-    (
-      thumbProps: React.HTMLAttributes<HTMLDivElement>,
-      { index }: { index: number }
-    ) => {
-      const tierIndex = index === 0 ? minIndex : maxIndex;
-      const tier = getQualityFilterTier(tierIndex);
-      const label = tier.isUnknown
-        ? translate('SeriesDetailsQualityFilterUnknown')
-        : formatQualityTierLabel(tier);
-
-      return (
-        <Box
-          {...thumbProps}
-          sx={{
-            zIndex: 1,
-            width: 18,
-            height: 18,
-            border: 3,
-            borderColor: 'primary.main',
-            borderRadius: '50%',
-            bgcolor: 'common.white',
-            cursor: 'pointer',
-          }}
-        >
-          {showEndpointLabels ? (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: -24,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                px: '6px',
-                py: '2px',
-                borderRadius: '3px',
-                bgcolor: 'background.paper',
-                color: 'text.primary',
-                whiteSpace: 'nowrap',
-                fontSize: 12,
-                pointerEvents: 'none',
-              }}
-            >
-              {label}
-            </Box>
-          ) : null}
-        </Box>
-      );
-    },
-    [minIndex, maxIndex, showEndpointLabels]
-  );
 
   const minTier = getQualityFilterTier(minIndex);
   const maxTier = getQualityFilterTier(maxIndex);
@@ -182,31 +109,19 @@ function SeriesDetailsQualityFilterMenu(
             ))}
           </Box>
 
-          <Box
-            sx={{
-              position: 'relative',
-              py: 2,
-              pb: 1,
-              '& .quality-filter-slider': {
-                width: '100%',
-                height: 28,
-              },
-            }}
-            onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-          >
-            <ReactSlider
-              className="quality-filter-slider"
+          <Box sx={{ px: 1, py: 2 }}>
+            <Slider
               min={0}
               max={QUALITY_FILTER_MAX_INDEX}
               step={1}
-              minDistance={0}
-              pearling={true}
+              disableSwap={true}
               value={[minIndex, maxIndex]}
-              renderTrack={trackRenderer}
-              renderThumb={thumbRenderer}
-              onChange={onSliderChange}
+              valueLabelDisplay="auto"
+              valueLabelFormat={formatThumbLabel}
+              onChange={(event, value) => {
+                void event;
+                onSliderChange(value as number[]);
+              }}
             />
           </Box>
 

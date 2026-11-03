@@ -1,20 +1,23 @@
-import ReactDOM from 'react-dom';
+import MuiPortal from '@mui/material/Portal';
+import React from 'react';
 
 interface PortalProps {
-  children: Parameters<typeof ReactDOM.createPortal>[0];
-  target?: Parameters<typeof ReactDOM.createPortal>[1];
+  children: React.ReactNode;
+  target?: Element | null;
 }
 
-const defaultTarget = document.getElementById('portal-root');
+function Portal({ children, target }: PortalProps) {
+  const container = target === undefined ? document.getElementById('portal-root') : target;
 
-function Portal(props: PortalProps) {
-  const { children, target = defaultTarget } = props;
-
-  if (!target) {
+  if (!container) {
     return null;
   }
 
-  return ReactDOM.createPortal(children, target);
+  return (
+    <MuiPortal container={container}>
+      {children}
+    </MuiPortal>
+  );
 }
 
 export default Portal;

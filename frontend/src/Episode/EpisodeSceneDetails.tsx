@@ -23,6 +23,18 @@ import translate from 'Utilities/String/translate';
 
 const METADATA_FADE_MS = 150;
 
+const tpdbLinkSx = {
+  borderRadius: '2px',
+  textDecoration: 'none',
+  transition: 'opacity 200ms ease-in',
+  '&:hover': { opacity: 0.85 },
+  '&:focus-visible': {
+    outline: '2px solid var(--linkColor)',
+    outlineOffset: '2px',
+    opacity: 0.92,
+  },
+};
+
 interface EpisodeSceneDetailsProps {
   seriesId: number;
   episodeId?: number;
@@ -33,6 +45,7 @@ interface EpisodeSceneDetailsProps {
   showHeader?: boolean;
   showScreenshot?: boolean;
   showMetadata?: boolean;
+  showDownloadedFiles?: boolean;
   centerScreenshot?: boolean;
   collapseMetadata?: boolean;
   fillHeight?: boolean;
@@ -52,6 +65,7 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
     showHeader = true,
     showScreenshot: showScreenshotProp = true,
     showMetadata = true,
+    showDownloadedFiles = true,
     centerScreenshot = false,
     collapseMetadata = false,
     fillHeight = false,
@@ -161,7 +175,6 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
   const performers = formatPerformers(actors);
   const hasPerformers = !!performers;
   const hasOverview = !!overview;
-  const showTpdbLinks = !!seriesTvdbId || !!episodeTvdbId;
   const hasScreenshot = hasEpisodeScreenshot(images);
   const shouldShowScreenshot = showScreenshotProp && hasScreenshot;
 
@@ -210,8 +223,9 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
               display: 'flex',
               flexDirection: 'column',
               minWidth: 0,
-              m: '2em',
-              mt: 0,
+              px: 2,
+              pt: 1.5,
+              pb: 2,
               ...(fillHeight ? { flex: 1, minHeight: 0, height: '100%' } : null),
             }}
           >
@@ -225,8 +239,6 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                   width: '100%',
                   minHeight: 0,
                   overflow: 'hidden',
-                  transition:
-                    'flex-grow 0.15s ease-in, flex-basis 0.15s ease-in, align-items 0.15s ease-in',
                 }}
               >
                 <Box
@@ -235,7 +247,6 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                     justifyContent: 'center',
                     width: '100%',
                     mb: isScreenshotCentered ? 0 : '12px',
-                    transition: 'margin 0.15s ease-in',
                   }}
                 >
                   <EpisodeScreenshot
@@ -250,7 +261,6 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                           : 240,
                       borderRadius: 4,
                       objectFit: 'contain',
-                      transition: 'max-height 0.15s ease-in',
                     }}
                   />
                 </Box>
@@ -271,25 +281,37 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                     'opacity 0.15s ease-in, max-height 0.15s ease-in, margin-top 0.15s ease-in, visibility 0.15s ease-in',
                 }}
               >
-                <Box sx={{ fontSize: 16, fontWeight: 600, mb: '6px' }}>
-                  {title}
-                </Box>
+                <Box sx={{ fontSize: 16, fontWeight: 600 }}>{title}</Box>
 
-                <Box sx={{ color: 'var(--helpTextColor)', mb: '6px' }}>
+                <Box sx={{ color: 'text.secondary', mt: 0.25 }}>
                   {seriesTitle}
                 </Box>
 
-                <Box sx={{ mb: '8px' }}>
-                  <SeasonEpisodeNumber
-                    seasonNumber={seasonNumber}
-                    episodeNumber={episodeNumber}
-                    absoluteEpisodeNumber={absoluteEpisodeNumber}
-                    releaseDate={releaseDate}
-                    seriesType={seriesType}
-                  />
-                </Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    columnGap: 1,
+                    rowGap: 0.5,
+                    mt: 1,
+                  }}
+                >
+                  {releaseDate || network ? (
+                    <EpisodeAiring
+                      releaseDate={releaseDate}
+                      network={network}
+                    />
+                  ) : (
+                    <SeasonEpisodeNumber
+                      seasonNumber={seasonNumber}
+                      episodeNumber={episodeNumber}
+                      absoluteEpisodeNumber={absoluteEpisodeNumber}
+                      releaseDate={releaseDate}
+                      seriesType={seriesType}
+                    />
+                  )}
 
-                <Box sx={{ mb: '8px' }}>
                   <Label
                     kind={monitored ? kinds.SUCCESS : kinds.DISABLED}
                     size={sizes.MEDIUM}
@@ -300,31 +322,16 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                   </Label>
                 </Box>
 
-                {releaseDate || network ? (
-                  <Box sx={{ mb: '8px' }}>
-                    <Box
-                      component="span"
-                      sx={{
-                        display: 'block',
-                        color: 'var(--helpTextColor)',
-                        fontWeight: 600,
-                        mb: '4px',
-                      }}
-                    >
-                      {translate('Airs')}
-                    </Box>
-                    <EpisodeAiring
-                      releaseDate={releaseDate}
-                      network={network}
-                    />
-                  </Box>
-                ) : null}
-
-                <Box sx={{ mb: '8px' }}>
-                  <Box
-                    component="span"
-                    sx={{ display: 'inline-block', width: 100, fontWeight: 'bold' }}
-                  >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    gap: 1,
+                    mt: 1,
+                  }}
+                >
+                  <Box component="span" sx={{ fontWeight: 600 }}>
                     {translate('QualityProfile')}
                   </Box>
 
@@ -333,105 +340,59 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                       qualityProfileId={qualityProfileId}
                     />
                   </Label>
-                </Box>
 
-                {runtime ? (
-                  <Box sx={{ mb: '8px' }}>
-                    <Box
-                      component="span"
-                      sx={{
-                        display: 'block',
-                        color: 'var(--helpTextColor)',
-                        fontWeight: 600,
-                        mb: '4px',
-                      }}
-                    >
-                      {translate('Runtime')}
-                    </Box>
-                    <span>{formatRuntime(runtime)}</span>
-                  </Box>
-                ) : null}
-
-                {showTpdbLinks ? (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '10px',
-                      mt: '10px',
-                    }}
-                  >
-                    {seriesTvdbId ? (
-                      <Link
-                        to={`https://theporndb.net/sites/${seriesTvdbId}`}
-                        sx={{
-                          borderRadius: '2px',
-                          textDecoration: 'none',
-                          transition: 'opacity 200ms ease-in',
-                          '&:hover': { opacity: 0.85 },
-                          '&:focus-visible': {
-                            outline: '2px solid var(--linkColor)',
-                            outlineOffset: '2px',
-                            opacity: 0.92,
-                          },
-                        }}
-                      >
-                        <Label kind={kinds.PRIMARY} size={sizes.MEDIUM}>
-                          {translate('TpdbStudio')}
-                        </Label>
-                      </Link>
-                    ) : null}
-
-                    {episodeTvdbId ? (
-                      <Link
-                        to={`https://theporndb.net/scenes/${episodeTvdbId}`}
-                        sx={{
-                          borderRadius: '2px',
-                          textDecoration: 'none',
-                          transition: 'opacity 200ms ease-in',
-                          '&:hover': { opacity: 0.85 },
-                          '&:focus-visible': {
-                            outline: '2px solid var(--linkColor)',
-                            outlineOffset: '2px',
-                            opacity: 0.92,
-                          },
-                        }}
-                      >
-                        <Label kind={kinds.PINK} size={sizes.MEDIUM}>
-                          {translate('TpdbScene')}
-                        </Label>
-                      </Link>
-                    ) : null}
-                  </Box>
-                ) : null}
-
-                <Box sx={{ mt: '12px' }}>
-                  {hasPerformers ? (
-                    <Box sx={{ whiteSpace: 'pre-wrap' }}>{performers}</Box>
-                  ) : null}
-
-                  {hasOverview ? (
-                    <Box
-                      sx={{
-                        whiteSpace: 'pre-wrap',
-                        mt: hasPerformers ? '12px' : 0,
-                      }}
-                    >
-                      {overview}
+                  {runtime ? (
+                    <Box component="span">
+                      <Box component="span" sx={{ fontWeight: 600, mr: 0.5 }}>
+                        {translate('Runtime')}
+                      </Box>
+                      {formatRuntime(runtime)}
                     </Box>
                   ) : null}
 
-                  {!hasOverview && !hasPerformers ? (
-                    <Box sx={{ whiteSpace: 'pre-wrap' }}>
-                      {translate('NoEpisodeOverview')}
-                    </Box>
+                  {seriesTvdbId ? (
+                    <Link
+                      to={`https://theporndb.net/sites/${seriesTvdbId}`}
+                      sx={tpdbLinkSx}
+                    >
+                      <Label kind={kinds.PRIMARY} size={sizes.MEDIUM}>
+                        {translate('TpdbStudio')}
+                      </Label>
+                    </Link>
+                  ) : null}
+
+                  {episodeTvdbId ? (
+                    <Link
+                      to={`https://theporndb.net/scenes/${episodeTvdbId}`}
+                      sx={tpdbLinkSx}
+                    >
+                      <Label kind={kinds.PINK} size={sizes.MEDIUM}>
+                        {translate('TpdbScene')}
+                      </Label>
+                    </Link>
                   ) : null}
                 </Box>
 
-                <EpisodeDownloadedFiles
-                  episodeEntity={episodeEntity}
-                  episodeFileId={episodeFileId}
-                />
+                {hasPerformers ? (
+                  <Box sx={{ whiteSpace: 'pre-wrap', mt: 1 }}>{performers}</Box>
+                ) : null}
+
+                {hasOverview ? (
+                  <Box sx={{ whiteSpace: 'pre-wrap', mt: 1.5 }}>{overview}</Box>
+                ) : null}
+
+                {!hasOverview && !hasPerformers ? (
+                  <Box sx={{ whiteSpace: 'pre-wrap', mt: 1.5 }}>
+                    {translate('NoEpisodeOverview')}
+                  </Box>
+                ) : null}
+
+                {showDownloadedFiles ? (
+                  <EpisodeDownloadedFiles
+                    episodeEntity={episodeEntity}
+                    episodeFileId={episodeFileId}
+                  />
+                ) : null}
               </Box>
             ) : null}
           </Box>

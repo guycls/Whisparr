@@ -38,6 +38,7 @@ export const defaultState = {
   },
   maxEpisodeRuntime: 0,
   activeSeriesId: 0,
+  sceneModalPanePercent: 50,
   isFilterBoundsFetching: false,
   isFilterBoundsPopulated: false,
   filterBoundsError: null,
@@ -61,7 +62,8 @@ export const defaultRuntimeFilter = defaultState.runtimeFilter;
 export const persistState = [
   'seriesDetails.view',
   'seriesDetails.monitorStatusFilter',
-  'seriesDetails.qualityFilter'
+  'seriesDetails.qualityFilter',
+  'seriesDetails.sceneModalPanePercent'
 ];
 
 //
@@ -77,6 +79,8 @@ export const FETCH_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/fetchSeriesDetai
 export const FETCH_MORE_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/fetchMoreSeriesDetailsUnifiedGrid';
 export const GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE = 'seriesDetails/gotoFirstSeriesDetailsUnifiedGridPage';
 export const CLEAR_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/clearSeriesDetailsUnifiedGrid';
+export const SET_SERIES_DETAILS_SORT = 'seriesDetails/setSeriesDetailsSort';
+export const SYNC_SERIES_DETAILS_UNIFIED_GRID_SORT = 'seriesDetails/syncSeriesDetailsUnifiedGridSort';
 
 //
 // Action Creators
@@ -91,6 +95,39 @@ export const fetchSeriesDetailsUnifiedGrid = createThunk(FETCH_SERIES_DETAILS_UN
 export const fetchMoreSeriesDetailsUnifiedGrid = createThunk(FETCH_MORE_SERIES_DETAILS_UNIFIED_GRID);
 export const gotoSeriesDetailsUnifiedGridFirstPage = createThunk(GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE);
 export const clearSeriesDetailsUnifiedGrid = createAction(CLEAR_SERIES_DETAILS_UNIFIED_GRID);
+export const setSeriesDetailsSort = createThunk(SET_SERIES_DETAILS_SORT);
+export const syncSeriesDetailsUnifiedGridSort = createThunk(SYNC_SERIES_DETAILS_UNIFIED_GRID_SORT);
+
+export function toSeriesDetailsSortKey(sortKey) {
+  if (sortKey === 'title' || sortKey === 'episodes.title') {
+    return 'title';
+  }
+
+  if (
+    sortKey === 'releaseDate' ||
+    sortKey === 'episodes.releaseDate' ||
+    sortKey === 'episodes.airDateUtc'
+  ) {
+    return 'releaseDate';
+  }
+
+  return sortKey;
+}
+
+function toUnifiedGridSortKey(sortKey) {
+  return sortKey === 'title' ? 'episodes.title' : 'episodes.releaseDate';
+}
+
+function applyEpisodeSortToUnifiedGrid(getState, dispatch) {
+  const { sortKey, sortDirection } = getState().episodes;
+  const usesEpisodeSort = sortKey === 'title' || sortKey === 'releaseDate';
+
+  dispatch(set({
+    section: 'seriesDetails.unifiedGrid',
+    sortKey: toUnifiedGridSortKey(usesEpisodeSort ? sortKey : 'releaseDate'),
+    sortDirection: usesEpisodeSort ? sortDirection : sortDirections.DESCENDING
+  }));
+}
 
 function unifiedGridFetchDataAugmenter(getState, payload, data) {
   const {
@@ -241,6 +278,48 @@ export const actionHandlers = handleThunks({
       append: true,
       seriesId
     }, dispatch);
+  },
+
+  [SET_SERIES_DETAILS_SORT]: function(getState, payload, dispatch) {
+    const {
+      sortKey: currentSortKey,
+      sortDirection: currentSortDirection
+    } = getState().episodes;
+
+    const sortKey = payload.sortKey;
+    let sortDirection = payload.sortDirection;
+
+    if (!sortDirection) {
+      if (sortKey === currentSortKey) {
+        sortDirection = currentSortDirection === sortDirections.ASCENDING ?
+          sortDirections.DESCENDING :
+          sortDirections.ASCENDING;
+      } else {
+        sortDirection = currentSortDirection;
+      }
+    }
+
+    dispatch({
+      type: 'episodes/setEpisodesSort',
+      payload: {
+        sortKey,
+        sortDirection
+      }
+    });
+
+    applyEpisodeSortToUnifiedGrid(getState, dispatch);
+
+    const { view, activeSeriesId } = getState().seriesDetails;
+    const seriesId = payload.seriesId || activeSeriesId;
+
+    if (view === 'unifiedGrid' && seriesId) {
+      dispatch(clearSeriesDetailsUnifiedGrid());
+      dispatch(gotoSeriesDetailsUnifiedGridFirstPage({ seriesId }));
+    }
+  },
+
+  [SYNC_SERIES_DETAILS_UNIFIED_GRID_SORT]: function(getState, payload, dispatch) {
+    applyEpisodeSortToUnifiedGrid(getState, dispatch);
   }
 });
 

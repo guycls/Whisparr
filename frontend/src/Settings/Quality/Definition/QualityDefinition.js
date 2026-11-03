@@ -1,9 +1,9 @@
 import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import ReactSlider from 'react-slider';
-import NumberInput from 'Components/Form/NumberInput';
 import TextInput from 'Components/Form/TextInput';
+import NumberInput from 'Components/Form/NumberInput';
 import Label from 'Components/Label';
 import Popover from 'Components/Tooltip/Popover';
 import { kinds, tooltipPositions } from 'Helpers/Props';
@@ -56,32 +56,8 @@ const sxSizeLimit = (theme) => ({
 
 const sxSlider = {
   width: '100%',
-  height: 20
+  px: 1
 };
-
-const sxTrack = (theme) => ({
-  top: 9,
-  my: 0,
-  mx: theme.spacing(0.625),
-  height: 3,
-  bgcolor: theme.palette.primary.main,
-  boxShadow: '0 0 0 #000',
-  '&:nth-child(3n+1)': {
-    bgcolor: theme.palette.divider
-  }
-});
-
-const sxThumb = (theme) => ({
-  top: 1,
-  zIndex: 0,
-  width: 18,
-  height: 18,
-  border: `3px solid ${theme.palette.primary.main}`,
-  borderRadius: '50%',
-  bgcolor: theme.palette.common.white,
-  textAlign: 'center',
-  cursor: 'pointer'
-});
 
 const sxSizes = {
   display: 'flex',
@@ -137,8 +113,6 @@ class QualityDefinition extends Component {
   constructor(props, context) {
     super(props, context);
 
-    this._forceUpdateTimeout = null;
-
     this.state = {
       sliderMinSize: getSliderValue(props.minSize, slider.min),
       sliderMaxSize: getSliderValue(props.maxSize, slider.max),
@@ -146,43 +120,16 @@ class QualityDefinition extends Component {
     };
   }
 
-  componentDidMount() {
-    // A hack to deal with a bug in the slider component until a fix for it
-    // lands and an updated version is available.
-    // See: https://github.com/mpowaga/react-slider/issues/115
-
-    this._forceUpdateTimeout = setTimeout(() => this.forceUpdate(), 1);
-  }
-
-  componentWillUnmount() {
-    if (this._forceUpdateTimeout) {
-      clearTimeout(this._forceUpdateTimeout);
-    }
-  }
-
-  //
-  // Control
-
-  trackRenderer(props, state) {
-    return (
-      <Box
-        {...props}
-       sx={sxTrack} />
-    );
-  }
-
-  thumbRenderer(props, state) {
-    return (
-      <Box
-        {...props}
-       sx={sxThumb} />
-    );
-  }
-
   //
   // Listeners
 
   onSliderChange = ([sliderMinSize, sliderPreferredSize, sliderMaxSize]) => {
+    if (
+      sliderPreferredSize - sliderMinSize < 3 ||
+      sliderMaxSize - sliderPreferredSize < 3
+    ) {
+      return;
+    }
     this.setState({
       sliderMinSize,
       sliderMaxSize,
@@ -204,7 +151,7 @@ class QualityDefinition extends Component {
     } = this.props;
 
     this.setState({
-      sliderMiSize: getSliderValue(minSize, slider.min),
+      sliderMinSize: getSliderValue(minSize, slider.min),
       sliderMaxSize: getSliderValue(maxSize, slider.max),
       sliderPreferredSize: getSliderValue(preferredSize, (slider.max - 3)) // fix
     });
@@ -298,21 +245,18 @@ class QualityDefinition extends Component {
 
         <Box sx={sxSizeLimit}>
           <Box sx={sxSlider}>
-<ReactSlider
-            min={slider.min}
-            max={slider.max}
-            step={slider.step}
-            minDistance={3}
-            value={[sliderMinSize, sliderPreferredSize, sliderMaxSize]}
-            withTracks={true}
-            allowCross={false}
-            snapDragDisabled={true}
-            renderThumb={this.thumbRenderer}
-            renderTrack={this.trackRenderer}
-            onChange={this.onSliderChange}
-            onAfterChange={this.onAfterSliderChange}
-          />
-</Box>
+            <Slider
+              min={slider.min}
+              max={slider.max}
+              step={slider.step}
+              disableSwap={true}
+              value={[sliderMinSize, sliderPreferredSize, sliderMaxSize]}
+              onChange={(event, value) => {
+                this.onSliderChange(value);
+              }}
+              onChangeCommitted={this.onAfterSliderChange}
+            />
+          </Box>
 
           <Box sx={sxSizes}>
             <div>

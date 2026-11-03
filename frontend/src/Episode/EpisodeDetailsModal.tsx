@@ -37,6 +37,11 @@ function EpisodeDetailsModal(props: EpisodeDetailsModalProps) {
       isOpen={isOpen}
       size={sizes.EXTRA_EXTRA_LARGE}
       closeOnBackgroundClick={closeOnBackgroundClick}
+      style={{
+        height: 'min(90vh, 900px)',
+        overflow: 'hidden',
+        padding: 0,
+      }}
       onModalClose={onModalClose}
     >
       <EpisodeDetailsModalContent

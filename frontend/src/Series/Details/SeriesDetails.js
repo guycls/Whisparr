@@ -38,6 +38,7 @@ import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
 import SeriesDetailsQualityFilterMenu from './Menus/SeriesDetailsQualityFilterMenu';
 import SeriesDetailsRuntimeFilterMenu from './Menus/SeriesDetailsRuntimeFilterMenu';
+import SeriesDetailsSortMenu from './Menus/SeriesDetailsSortMenu';
 import SeriesDetailsStatusMenu from './Menus/SeriesDetailsStatusMenu';
 import SeriesDetailsViewMenu from './Menus/SeriesDetailsViewMenu';
 import SeriesAlternateTitles from './SeriesAlternateTitles';
@@ -232,10 +233,13 @@ class SeriesDetails extends Component {
       qualityFilter,
       runtimeFilter,
       maxEpisodeRuntime,
+      sortKey,
+      sortDirection,
       onViewSelect,
       onStatusSelect,
       onQualityFilterChange,
-      onRuntimeFilterChange
+      onRuntimeFilterChange,
+      onSortSelect
     } = this.props;
 
     const {
@@ -389,6 +393,12 @@ class SeriesDetails extends Component {
             <SeriesDetailsViewMenu
               view={view}
               onViewSelect={onViewSelect}
+            />
+
+            <SeriesDetailsSortMenu
+              sortKey={sortKey}
+              sortDirection={sortDirection}
+              onSortSelect={onSortSelect}
             />
 
             <PageToolbarSeparator />
@@ -948,7 +958,10 @@ SeriesDetails.propTypes = {
   qualityFilter: PropTypes.object.isRequired,
   runtimeFilter: PropTypes.object.isRequired,
   maxEpisodeRuntime: PropTypes.number.isRequired,
-  safeForWorkMode: PropTypes.bool
+  sortKey: PropTypes.string,
+  sortDirection: PropTypes.string,
+  safeForWorkMode: PropTypes.bool,
+  onSortSelect: PropTypes.func.isRequired
 };
 
 SeriesDetails.defaultProps = {

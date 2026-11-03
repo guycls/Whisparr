@@ -1,4 +1,5 @@
-import Box from '@mui/material/Box';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import IconButton from 'Components/Link/IconButton';
@@ -78,34 +79,32 @@ class CustomFilter extends Component {
     } = this.props;
 
     return (
-      <Box
+      <ListItem
         sx={{
-          display: 'flex',
           mb: '5px',
-          p: '5px',
+          px: '5px',
           '&:hover': {
-            backgroundColor: 'var(--tableRowHoverBackgroundColor)'
+            backgroundColor: 'action.hover'
           }
         }}
+        secondaryAction={
+          <>
+            <IconButton
+              name={icons.EDIT}
+              onPress={this.onEditPress}
+            />
+
+            <SpinnerIconButton
+              title={translate('RemoveFilter')}
+              name={icons.REMOVE}
+              isSpinning={this.state.isDeleting}
+              onPress={this.onRemovePress}
+            />
+          </>
+        }
       >
-        <Box sx={{ flex: '0 1 300px' }}>
-          {label}
-        </Box>
-
-        <Box sx={{ flex: '0 0 60px' }}>
-          <IconButton
-            name={icons.EDIT}
-            onPress={this.onEditPress}
-          />
-
-          <SpinnerIconButton
-            title={translate('RemoveFilter')}
-            name={icons.REMOVE}
-            isSpinning={this.state.isDeleting}
-            onPress={this.onRemovePress}
-          />
-        </Box>
-      </Box>
+        <ListItemText primary={label} />
+      </ListItem>
     );
   }
 }

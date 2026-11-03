@@ -1,10 +1,10 @@
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
-import GlobalStyles from '@mui/material/GlobalStyles';
+import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import Autosuggest from 'react-autosuggest';
 import Icon from 'Components/Icon';
 import keyboardShortcuts, { shortcuts } from 'Components/keyboardShortcuts';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
@@ -23,7 +23,7 @@ class SeriesSearchInput extends Component {
   constructor(props, context) {
     super(props, context);
 
-    this._autosuggest = null;
+    this._input = null;
     this._worker = null;
 
     this.state = {
@@ -56,37 +56,17 @@ class SeriesSearchInput extends Component {
   //
   // Control
 
-  setAutosuggestRef = (ref) => {
-    this._autosuggest = ref;
+  setInputRef = (node) => {
+    this._input = node;
   };
 
   focusInput = (event) => {
     event.preventDefault();
-    this._autosuggest.input.focus();
+
+    if (this._input) {
+      this._input.focus();
+    }
   };
-
-  getSectionSuggestions(section) {
-    return section.suggestions;
-  }
-
-  renderSectionTitle(section) {
-    return (
-      <div className="seriesSearchSectionTitle">
-        {section.title}
-
-        {
-          section.loading &&
-            <LoadingIndicator
-              size={20}
-            />
-        }
-      </div>
-    );
-  }
-
-  getSuggestionValue({ title }) {
-    return title;
-  }
 
   renderSuggestion(item, { query }) {
     if (item.type === ADD_NEW_TYPE) {
@@ -121,57 +101,42 @@ class SeriesSearchInput extends Component {
   //
   // Listeners
 
-  onChange = (event, { newValue, method }) => {
-    if (method === 'up' || method === 'down') {
+  onInputChange = (event, newValue, reason) => {
+    if (reason === 'reset') {
       return;
     }
 
     this.setState({ value: newValue });
+
+    if (reason !== 'input') {
+      return;
+    }
+
+    if (newValue) {
+      this.onSuggestionsFetchRequested({ value: newValue });
+    } else {
+      this.onSuggestionsClearRequested();
+    }
+  };
+
+  onOptionChange = (event, option) => {
+    if (!option || typeof option === 'string') {
+      if (option) {
+        this.props.onGoToAddNewSeries(option);
+        this.reset();
+      }
+
+      return;
+    }
+
+    this.onSuggestionSelected(event, { suggestion: option });
+    this.reset();
   };
 
   onKeyDown = (event) => {
-    if (event.shiftKey || event.altKey || event.ctrlKey) {
-      return;
-    }
-
     if (event.key === 'Escape') {
       this.reset();
-      return;
     }
-
-    if (event.key !== 'Tab' && event.key !== 'Enter') {
-      return;
-    }
-
-    const {
-      suggestions,
-      value
-    } = this.state;
-
-    const {
-      highlightedSectionIndex,
-      highlightedSuggestionIndex
-    } = this._autosuggest.state;
-
-    if (!suggestions.length || highlightedSectionIndex) {
-      this.props.onGoToAddNewSeries(value);
-      this._autosuggest.input.blur();
-      this.reset();
-
-      return;
-    }
-
-    // If an suggestion is not selected go to the first series,
-    // otherwise go to the selected series.
-
-    if (highlightedSuggestionIndex == null) {
-      this.goToSeries(suggestions[0]);
-    } else {
-      this.goToSeries(suggestions[highlightedSuggestionIndex]);
-    }
-
-    this._autosuggest.input.blur();
-    this.reset();
   };
 
   onBlur = () => {
@@ -268,105 +233,65 @@ class SeriesSearchInput extends Component {
       suggestions
     } = this.state;
 
-    const suggestionGroups = [];
-
-    if (suggestions.length || loading) {
-      suggestionGroups.push({
-        title: translate('ExistingSite'),
-        loading,
-        suggestions
-      });
-    }
-
-    suggestionGroups.push({
-      title: translate('AddNewSite'),
-      suggestions: [
-        {
-          type: ADD_NEW_TYPE,
-          title: value
-        }
-      ]
-    });
-
-    const inputProps = {
-      ref: this.setInputRef,
-      name: 'seriesSearch',
-      value,
-      placeholder: translate('Search'),
-      autoComplete: 'off',
-      spellCheck: false,
-      onChange: this.onChange,
-      onKeyDown: this.onKeyDown,
-      onBlur: this.onBlur,
-      onFocus: this.onFocus
-    };
-
-    const theme = {
-      container: 'seriesSearchContainer',
-      containerOpen: 'seriesSearchContainerOpen',
-      suggestionsContainer: 'seriesSearchSuggestions',
-      suggestionsList: 'seriesSearchList',
-      suggestion: 'seriesSearchItem',
-      suggestionHighlighted: 'seriesSearchItemHighlighted'
-    };
+    const options = [
+      ...suggestions,
+      {
+        type: ADD_NEW_TYPE,
+        title: value
+      }
+    ];
 
     return (
-      <div className="seriesSearchWrapper">
-        <GlobalStyles
-          styles={(muiTheme) => ({
-            '.seriesSearchWrapper': {
-              display: 'flex',
-              alignItems: 'center',
-              minWidth: 180
-            },
-            '.seriesSearchContainer': {
-              position: 'relative',
-              flexGrow: 1
-            },
-            '.seriesSearchContainerOpen .seriesSearchSuggestions': {
-              position: 'absolute',
-              top: 42,
-              zIndex: 2,
-              overflowY: 'auto',
-              minWidth: '100%',
-              maxHeight: 230,
-              backgroundColor: muiTheme.palette.background.paper,
-              color: muiTheme.palette.text.primary,
-              borderRadius: muiTheme.shape.borderRadius,
-              boxShadow: muiTheme.shadows[4]
-            },
-            '.seriesSearchList': {
-              margin: 0,
-              padding: 0,
-              listStyle: 'none'
-            },
-            '.seriesSearchItem': {
-              padding: '4px 16px'
-            },
-            '.seriesSearchItemHighlighted': {
-              backgroundColor: muiTheme.palette.action.hover
-            },
-            '.seriesSearchSectionTitle': {
-              padding: '5px 8px',
-              color: muiTheme.palette.text.secondary
+      <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 180, flexGrow: 1 }}>
+        <Autocomplete
+          freeSolo={true}
+          fullWidth={true}
+          size="small"
+          options={value ? options : []}
+          inputValue={value}
+          filterOptions={(items) => items}
+          getOptionLabel={(option) => {
+            if (typeof option === 'string') {
+              return option;
             }
-          })}
-        />
-        <Icon name={icons.SEARCH} />
 
-        <Autosuggest
-          ref={this.setAutosuggestRef}
-          inputProps={inputProps}
-          renderInputComponent={(autosuggestProps) => {
-            const { ref, ...rest } = autosuggestProps;
+            return option.title || '';
+          }}
+          onInputChange={this.onInputChange}
+          onChange={this.onOptionChange}
+          onBlur={this.onBlur}
+          renderOption={(optionProps, option, state) => {
+            const showExistingHeader = state.index === 0 && option.type !== ADD_NEW_TYPE;
+            const showAddHeader = option.type === ADD_NEW_TYPE;
 
             return (
+              <li {...optionProps} key={option.item ? option.item.titleSlug : ADD_NEW_TYPE}>
+                {
+                  showExistingHeader ?
+                    <Box sx={{ color: 'text.secondary', fontSize: 12, mb: 0.5 }}>
+                      {translate('ExistingSite')}
+                      {loading ? <LoadingIndicator size={20} /> : null}
+                    </Box> :
+                    null
+                }
+                {
+                  showAddHeader ?
+                    <Box sx={{ color: 'text.secondary', fontSize: 12, mb: 0.5 }}>
+                      {translate('AddNewSite')}
+                    </Box> :
+                    null
+                }
+                {this.renderSuggestion(option, { query: value })}
+              </li>
+            );
+          }}
+          renderInput={(params) => {
+            return (
               <TextField
-                inputRef={ref}
-                variant="outlined"
-                size="small"
-                fullWidth={true}
-                {...rest}
+                {...params}
+                inputRef={this.setInputRef}
+                placeholder={translate('Search')}
+                onKeyDown={this.onKeyDown}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 5,
@@ -386,22 +311,23 @@ class SeriesSearchInput extends Component {
                     py: '6px'
                   }
                 }}
+                slotProps={{
+                  ...params.slotProps,
+                  input: {
+                    ...params.slotProps?.input,
+                    ...params.InputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Icon name={icons.SEARCH} />
+                      </InputAdornment>
+                    )
+                  }
+                }}
               />
             );
           }}
-          theme={theme}
-          focusInputOnSuggestionClick={false}
-          multiSection={true}
-          suggestions={suggestionGroups}
-          getSectionSuggestions={this.getSectionSuggestions}
-          renderSectionTitle={this.renderSectionTitle}
-          getSuggestionValue={this.getSuggestionValue}
-          renderSuggestion={this.renderSuggestion}
-          onSuggestionSelected={this.onSuggestionSelected}
-          onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-          onSuggestionsClearRequested={this.onSuggestionsClearRequested}
         />
-      </div>
+      </Box>
     );
   }
 }

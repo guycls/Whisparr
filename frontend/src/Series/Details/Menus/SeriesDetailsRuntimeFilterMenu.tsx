@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 import React, {
   useCallback,
@@ -7,7 +8,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import ReactSlider from 'react-slider';
 import Menu from 'Components/Menu/Menu';
 import MenuContent from 'Components/Menu/MenuContent';
 import ToolbarMenuButton from 'Components/Menu/ToolbarMenuButton';
@@ -31,7 +31,6 @@ function SeriesDetailsRuntimeFilterMenu(
 ) {
   const { runtimeFilter, seriesMaxRuntime, onRuntimeFilterChange } = props;
 
-  const [showEndpointLabels, setShowEndpointLabels] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [draftFilter, setDraftFilter] = useState(runtimeFilter);
   const draftFilterRef = useRef(runtimeFilter);
@@ -72,83 +71,10 @@ function SeriesDetailsRuntimeFilterMenu(
     [resolvedMaxRuntime]
   );
 
-  const onPointerDown = useCallback(() => {
-    setIsDragging(true);
-    setShowEndpointLabels(true);
-  }, []);
-
-  const onPointerUp = useCallback(() => {
+  const onSliderCommit = useCallback(() => {
     setIsDragging(false);
-    setShowEndpointLabels(false);
     onRuntimeFilterChange(draftFilterRef.current);
   }, [onRuntimeFilterChange]);
-
-  const trackRenderer = useCallback(
-    (
-      trackProps: React.HTMLAttributes<HTMLDivElement>,
-      state: { index: number }
-    ) => (
-      <Box
-        {...trackProps}
-        sx={{
-          top: 11,
-          mx: '9px',
-          height: 3,
-          bgcolor: state.index === 0 ? 'grey.300' : 'primary.main',
-          boxShadow: '0 0 0 #000',
-        }}
-      />
-    ),
-    []
-  );
-
-  const thumbRenderer = useCallback(
-    (
-      thumbProps: React.HTMLAttributes<HTMLDivElement>,
-      { index }: { index: number }
-    ) => {
-      const minutes = index === 0 ? minMinutes : resolvedMaxMinutes;
-      const label = formatRuntimeFilterLabel(minutes);
-
-      return (
-        <Box
-          {...thumbProps}
-          sx={{
-            zIndex: 1,
-            width: 18,
-            height: 18,
-            border: 3,
-            borderColor: 'primary.main',
-            borderRadius: '50%',
-            bgcolor: 'common.white',
-            cursor: 'pointer',
-          }}
-        >
-          {showEndpointLabels ? (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: -24,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                px: '6px',
-                py: '2px',
-                borderRadius: '3px',
-                bgcolor: 'background.paper',
-                color: 'text.primary',
-                whiteSpace: 'nowrap',
-                fontSize: 12,
-                pointerEvents: 'none',
-              }}
-            >
-              {label}
-            </Box>
-          ) : null}
-        </Box>
-      );
-    },
-    [minMinutes, resolvedMaxMinutes, showEndpointLabels]
-  );
 
   const minLabel = formatRuntimeFilterLabel(minMinutes);
   const maxLabel = formatRuntimeFilterLabel(resolvedMaxMinutes);
@@ -180,32 +106,22 @@ function SeriesDetailsRuntimeFilterMenu(
             </Box>
           </Box>
 
-          <Box
-            sx={{
-              position: 'relative',
-              py: 2,
-              pb: 1,
-              '& .runtime-filter-slider': {
-                width: '100%',
-                height: 28,
-              },
-            }}
-            onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-          >
-            <ReactSlider
-              className="runtime-filter-slider"
+          <Box sx={{ px: 1, py: 2 }}>
+            <Slider
               min={0}
               max={resolvedMaxRuntime}
               step={sliderStep}
-              minDistance={0}
-              pearling={true}
               disabled={resolvedMaxRuntime === 0}
+              disableSwap={true}
               value={[minMinutes, resolvedMaxMinutes]}
-              renderTrack={trackRenderer}
-              renderThumb={thumbRenderer}
-              onChange={onSliderChange}
+              valueLabelDisplay="auto"
+              valueLabelFormat={(value) => formatRuntimeFilterLabel(value)}
+              onChange={(event, value) => {
+                void event;
+                setIsDragging(true);
+                onSliderChange(value as number[]);
+              }}
+              onChangeCommitted={onSliderCommit}
             />
           </Box>
 

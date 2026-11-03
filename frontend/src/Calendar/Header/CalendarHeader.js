@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -231,42 +232,46 @@ class CalendarHeader extends Component {
                   </Menu>
                 </Box> :
 
-                <div>
+                <ToggleButtonGroup
+                  exclusive={true}
+                  size="small"
+                  value={view}
+                  onChange={(event, nextView) => {
+                    if (nextView) {
+                      this.onViewChange(nextView);
+                    }
+                  }}
+                >
                   <CalendarHeaderViewButton
                     view={calendarViews.MONTH}
                     selectedView={view}
-                    buttonGroupPosition={align.LEFT}
                     onPress={this.onViewChange}
                   />
 
                   <CalendarHeaderViewButton
                     view={calendarViews.WEEK}
                     selectedView={view}
-                    buttonGroupPosition={align.CENTER}
                     onPress={this.onViewChange}
                   />
 
                   <CalendarHeaderViewButton
                     view={calendarViews.FORECAST}
                     selectedView={view}
-                    buttonGroupPosition={align.CENTER}
                     onPress={this.onViewChange}
                   />
 
                   <CalendarHeaderViewButton
                     view={calendarViews.DAY}
                     selectedView={view}
-                    buttonGroupPosition={align.CENTER}
                     onPress={this.onViewChange}
                   />
 
                   <CalendarHeaderViewButton
                     view={calendarViews.AGENDA}
                     selectedView={view}
-                    buttonGroupPosition={align.RIGHT}
                     onPress={this.onViewChange}
                   />
-                </div>
+                </ToggleButtonGroup>
             }
           </Box>
         </Box>

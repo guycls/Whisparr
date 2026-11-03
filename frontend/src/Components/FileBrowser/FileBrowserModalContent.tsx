@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import List from '@mui/material/List';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Alert from 'Components/Alert';
@@ -11,9 +12,6 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import Scroller from 'Components/Scroller/Scroller';
-import Column from 'Components/Table/Column';
-import Table from 'Components/Table/Table';
-import TableBody from 'Components/Table/TableBody';
 import usePrevious from 'Helpers/Hooks/usePrevious';
 import { kinds, scrollDirections } from 'Helpers/Props';
 import { clearPaths, fetchPaths } from 'Store/Actions/pathActions';
@@ -22,19 +20,6 @@ import { InputChanged } from 'typings/inputs';
 import translate from 'Utilities/String/translate';
 import createPathsSelector from './createPathsSelector';
 import FileBrowserRow from './FileBrowserRow';
-
-const columns: Column[] = [
-  {
-    name: 'type',
-    label: () => translate('Type'),
-    isVisible: true,
-  },
-  {
-    name: 'name',
-    label: () => translate('Name'),
-    isVisible: true,
-  },
-];
 
 export interface FileBrowserModalContentProps {
   name: string;
@@ -168,11 +153,10 @@ function FileBrowserModalContent(props: FileBrowserModalContentProps) {
           sx={{ mt: '20px' }}
           scrollDirection="both"
         >
-          {error ? <div>{translate('ErrorLoadingContents')}</div> : null}
+          {error ? <Alert kind={kinds.DANGER}>{translate('ErrorLoadingContents')}</Alert> : null}
 
           {isPopulated && !error ? (
-            <Table horizontalScroll={false} columns={columns}>
-              <TableBody>
+            <List disablePadding={true}>
                 {emptyParent ? (
                   <FileBrowserRow
                     type="computer"
@@ -214,8 +198,7 @@ function FileBrowserModalContent(props: FileBrowserModalContentProps) {
                     />
                   );
                 })}
-              </TableBody>
-            </Table>
+            </List>
           ) : null}
         </Scroller>
         </Box>

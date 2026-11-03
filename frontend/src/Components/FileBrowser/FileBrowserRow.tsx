@@ -1,8 +1,9 @@
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import React, { useCallback } from 'react';
 import { PathType } from 'App/State/PathsAppState';
 import Icon from 'Components/Icon';
-import TableRowCell from 'Components/Table/Cells/TableRowCell';
-import TableRowButton from 'Components/Table/TableRowButton';
 import { icons } from 'Helpers/Props';
 
 function getIconName(type: PathType) {
@@ -35,13 +36,12 @@ function FileBrowserRow(props: FileBrowserRowProps) {
   }, [path, onPress]);
 
   return (
-    <TableRowButton onPress={handlePress}>
-      <TableRowCell sx={{ width: 32 }}>
+    <ListItemButton onClick={handlePress}>
+      <ListItemIcon sx={{ minWidth: 36 }}>
         <Icon name={getIconName(type)} />
-      </TableRowCell>
-
-      <TableRowCell>{name}</TableRowCell>
-    </TableRowButton>
+      </ListItemIcon>
+      <ListItemText primary={name} />
+    </ListItemButton>
   );
 }
 

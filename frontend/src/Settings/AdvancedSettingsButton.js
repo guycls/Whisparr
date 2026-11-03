@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box';
+import ToggleButton from '@mui/material/ToggleButton';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
-import Link from 'Components/Link/Link';
 import { icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
@@ -26,9 +26,11 @@ function AdvancedSettingsButton(props) {
         textAlign: 'center'
       })}
     >
-      <Link
+      <ToggleButton
+        value="advanced"
+        selected={advancedSettings}
         title={advancedSettings ? translate('ShownClickToHide') : translate('HiddenClickToShow')}
-        onPress={onAdvancedSettingsPress}
+        onChange={onAdvancedSettingsPress}
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -37,7 +39,9 @@ function AdvancedSettingsButton(props) {
           minWidth: 0,
           p: 0,
           lineHeight: 1,
-          color: 'inherit'
+          color: 'inherit',
+          border: 0,
+          borderRadius: 0
         }}
       >
         <Icon
@@ -104,7 +108,7 @@ function AdvancedSettingsButton(props) {
             </Box> :
             null
         }
-      </Link>
+      </ToggleButton>
     </Box>
   );
 }

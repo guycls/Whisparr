@@ -1,44 +1,36 @@
+import ToggleButton from '@mui/material/ToggleButton';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React from 'react';
 import * as calendarViews from 'Calendar/calendarViews';
-import Button from 'Components/Link/Button';
 import titleCase from 'Utilities/String/titleCase';
 
-class CalendarHeaderViewButton extends Component {
+function CalendarHeaderViewButton(props) {
+  const {
+    view,
+    onPress,
+    children,
+    selectedView,
+    buttonGroupPosition,
+    ...otherProps
+  } = props;
 
-  //
-  // Listeners
-
-  onPress = () => {
-    this.props.onPress(this.props.view);
-  };
-
-  //
-  // Render
-
-  render() {
-    const {
-      view,
-      selectedView,
-      ...otherProps
-    } = this.props;
-
-    return (
-      <Button
-        isDisabled={selectedView === view}
-        {...otherProps}
-        onPress={this.onPress}
-      >
-        {titleCase(view)}
-      </Button>
-    );
-  }
+  return (
+    <ToggleButton
+      value={view}
+      {...otherProps}
+      onClick={() => onPress(view)}
+    >
+      {children || titleCase(view)}
+    </ToggleButton>
+  );
 }
 
 CalendarHeaderViewButton.propTypes = {
   view: PropTypes.oneOf(calendarViews.all).isRequired,
-  selectedView: PropTypes.oneOf(calendarViews.all).isRequired,
-  onPress: PropTypes.func.isRequired
+  selectedView: PropTypes.oneOf(calendarViews.all),
+  buttonGroupPosition: PropTypes.string,
+  onPress: PropTypes.func.isRequired,
+  children: PropTypes.node
 };
 
 export default CalendarHeaderViewButton;

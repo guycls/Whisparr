@@ -22,7 +22,10 @@ import {
   setSeriesDetailsMonitorStatusFilter,
   setSeriesDetailsQualityFilter,
   setSeriesDetailsRuntimeFilter,
-  setSeriesDetailsView
+  setSeriesDetailsSort,
+  setSeriesDetailsView,
+  syncSeriesDetailsUnifiedGridSort,
+  toSeriesDetailsSortKey
 } from 'Store/Actions/seriesDetailsActions';
 import { fetchDownloadClients } from 'Store/Actions/settingsActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
@@ -93,8 +96,12 @@ function createMapStateToProps() {
     (state) => state.seriesDetails.qualityFilter,
     (state) => state.seriesDetails.runtimeFilter,
     (state) => state.seriesDetails.maxEpisodeRuntime,
+    (state) => state.seriesDetails.unifiedGrid.sortKey,
+    (state) => state.seriesDetails.unifiedGrid.sortDirection,
+    (state) => state.episodes.sortKey,
+    (state) => state.episodes.sortDirection,
     (state) => state.settings.downloadClients,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, maxEpisodeRuntime, downloadClients) => {
+    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients) => {
       const resolvedQualityFilter = qualityFilter ?? { minIndex: 0, maxIndex: 6 };
       const resolvedRuntimeFilter = resolveRuntimeFilter(
         runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
@@ -179,7 +186,9 @@ function createMapStateToProps() {
         runtimeFilter: resolvedRuntimeFilter,
         rawQualityFilter: qualityFilter ?? { minIndex: 0, maxIndex: 6 },
         rawRuntimeFilter: runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
-        maxEpisodeRuntime
+        maxEpisodeRuntime,
+        sortKey: view === 'unifiedGrid' ? toSeriesDetailsSortKey(unifiedGridSortKey) : episodeSortKey,
+        sortDirection: view === 'unifiedGrid' ? unifiedGridSortDirection : episodeSortDirection
       };
     }
   );
@@ -200,11 +209,13 @@ const mapDispatchToProps = (dispatch) => {
       setSeriesDetailsMonitorStatusFilter,
       setSeriesDetailsQualityFilter,
       setSeriesDetailsRuntimeFilter,
+      setSeriesDetailsSort,
       setSeriesDetailsActiveSeries,
       fetchSeriesDetailsFilterBounds,
       fetchSeriesDetailsUnifiedGrid,
       gotoSeriesDetailsUnifiedGridFirstPage,
       clearSeriesDetailsUnifiedGrid,
+      syncSeriesDetailsUnifiedGridSort,
       fetchDownloadClients
     }, dispatch),
 
@@ -314,6 +325,7 @@ class SeriesDetailsConnector extends Component {
     this.props.setSeriesDetailsActiveSeries({ seriesId });
 
     if (view === 'unifiedGrid') {
+      this.props.syncSeriesDetailsUnifiedGridSort();
       this.props.clearEpisodes();
       this.props.clearEpisodeFiles();
       this.props.clearSeriesDetailsUnifiedGrid();
@@ -373,6 +385,13 @@ class SeriesDetailsConnector extends Component {
     this.props.setSeriesDetailsRuntimeFilter({ runtimeFilter });
   };
 
+  onSortSelect = (sortKey) => {
+    this.props.setSeriesDetailsSort({
+      sortKey,
+      seriesId: this.props.id
+    });
+  };
+
   //
   // Render
 
@@ -387,6 +406,7 @@ class SeriesDetailsConnector extends Component {
         onStatusSelect={this.onStatusSelect}
         onQualityFilterChange={this.onQualityFilterChange}
         onRuntimeFilterChange={this.onRuntimeFilterChange}
+        onSortSelect={this.onSortSelect}
       />
     );
   }
@@ -402,6 +422,10 @@ SeriesDetailsConnector.propTypes = {
   qualityFilter: PropTypes.object.isRequired,
   runtimeFilter: PropTypes.object.isRequired,
   maxEpisodeRuntime: PropTypes.number.isRequired,
+  sortKey: PropTypes.string,
+  sortDirection: PropTypes.string,
+  setSeriesDetailsSort: PropTypes.func.isRequired,
+  syncSeriesDetailsUnifiedGridSort: PropTypes.func.isRequired,
   isSeriesRefreshing: PropTypes.bool.isRequired,
   allSeriesRefreshing: PropTypes.bool.isRequired,
   isRefreshing: PropTypes.bool.isRequired,

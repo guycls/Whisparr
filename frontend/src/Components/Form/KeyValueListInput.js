@@ -1,4 +1,4 @@
-import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import KeyValueListInputItem from './KeyValueListInputItem';
@@ -97,28 +97,13 @@ class KeyValueListInput extends Component {
       className,
       value,
       keyPlaceholder,
-      valuePlaceholder,
-      hasError,
-      hasWarning
+      valuePlaceholder
     } = this.props;
 
-    const { isFocused } = this.state;
-
     return (
-      <Box
+      <Stack
         className={className}
-        sx={{
-          position: 'relative',
-          minHeight: 35,
-          height: 'auto',
-          ...(isFocused ? {
-            outline: 0,
-            borderColor: 'var(--inputFocusBorderColor)',
-            boxShadow: 'inset 0 1px 1px var(--inputBoxShadowColor), 0 0 8px var(--inputFocusBoxShadowColor)'
-          } : null),
-          ...(hasError ? { borderColor: 'var(--inputErrorBorderColor)' } : null),
-          ...(hasWarning ? { borderColor: 'var(--inputWarningBorderColor)' } : null)
-        }}
+        spacing={0.5}
       >
         {
           [...value, { key: '', value: '' }].map((v, index) => {
@@ -139,7 +124,7 @@ class KeyValueListInput extends Component {
             );
           })
         }
-      </Box>
+      </Stack>
     );
   }
 }

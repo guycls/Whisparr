@@ -1,31 +1,31 @@
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Tooltip from '@mui/material/Tooltip';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import AppState from 'App/State/AppState';
 import Button from 'Components/Link/Button';
-import ModalBody from 'Components/Modal/ModalBody';
 import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
-import ModalHeader from 'Components/Modal/ModalHeader';
-import MonitorToggleButton from 'Components/MonitorToggleButton';
 import Episode from 'Episode/Episode';
 import EpisodeDetailsTab from 'Episode/EpisodeDetailsTab';
 import episodeEntities from 'Episode/episodeEntities';
 import EpisodeSceneDetails from 'Episode/EpisodeSceneDetails';
-import { hasEpisodeScreenshot } from 'Episode/EpisodeScreenshot';
+import EpisodeScreenshot, {
+  hasEpisodeScreenshot,
+} from 'Episode/EpisodeScreenshot';
 import useEpisode, { EpisodeEntities } from 'Episode/useEpisode';
-import useMeasure from 'Helpers/Hooks/useMeasure';
-import { scrollDirections } from 'Helpers/Props';
 import Series from 'Series/Series';
 import useSeries from 'Series/useSeries';
 import { toggleEpisodeMonitored } from 'Store/Actions/episodeActions';
+import { set } from 'Store/Actions/baseActions';
 import {
   cancelFetchReleases,
   clearReleases,
@@ -33,9 +33,21 @@ import {
 import translate from 'Utilities/String/translate';
 import EpisodeHistoryConnector from './History/EpisodeHistoryConnector';
 import EpisodeSearchConnector from './Search/EpisodeSearchConnector';
-import SeasonEpisodeNumber from './SeasonEpisodeNumber';
 
-const TABS: EpisodeDetailsTab[] = ['details', 'search', 'history'];
+type SceneModalTab = 'history' | 'search';
+
+const TABS: SceneModalTab[] = ['history', 'search'];
+const MIN_PANE_PERCENT = 25;
+const MAX_PANE_PERCENT = 75;
+
+function clampPanePercent(value: number) {
+  if (!Number.isFinite(value)) {
+    return 50;
+  }
+
+  return Math.min(MAX_PANE_PERCENT, Math.max(MIN_PANE_PERCENT, value));
+}
+
 export interface EpisodeDetailsModalContentProps {
   episodeId: number;
   episodeEntity: EpisodeEntities;
@@ -49,387 +61,307 @@ export interface EpisodeDetailsModalContentProps {
   onModalClose(): void;
 }
 
+function resolveInitialTab(
+  selectedTab: EpisodeDetailsTab | undefined,
+  startInteractiveSearch: boolean
+): SceneModalTab {
+  if (selectedTab === 'search' || startInteractiveSearch) {
+    return 'search';
+  }
+
+  return 'history';
+}
+
 function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
   const {
     episodeId,
     episodeEntity = episodeEntities.EPISODES,
     seriesId,
-    episodeTitle,
     isSaving = false,
     showOpenSeriesButton = false,
     startInteractiveSearch = false,
-    selectedTab = startInteractiveSearch ? 'search' : 'details',
+    selectedTab,
     onTabChange,
     onModalClose,
   } = props;
 
   const dispatch = useDispatch();
-
-  const isMediumScreen = useSelector(
-    (state: AppState) => state.app.dimensions.isMediumScreen
+  const splitRef = useRef<HTMLDivElement>(null);
+  const panePercentRef = useRef(50);
+  const persistedPanePercent = useSelector(
+    (state: AppState) => state.seriesDetails.sceneModalPanePercent
   );
-
-  const [currentlySelectedTab, setCurrentlySelectedTab] = useState(selectedTab);
-  const [isLeftPaneMetadataMounted, setIsLeftPaneMetadataMounted] = useState(
-    selectedTab !== 'details'
+  const [currentlySelectedTab, setCurrentlySelectedTab] = useState<SceneModalTab>(
+    resolveInitialTab(selectedTab, startInteractiveSearch)
   );
-  const [bodyMeasureRef, bodyBounds] = useMeasure();
-  const bodyElementRef = useRef<HTMLDivElement | null>(null);
-  const wasLeftPaneMetadataMountedRef = useRef(selectedTab !== 'details');
-  const [isBodyAnimating, setIsBodyAnimating] = useState(false);
-  const [bodyHeight, setBodyHeight] = useState<number | undefined>();
+  const [leftPanePercent, setLeftPanePercent] = useState(() => {
+    const initialPercent = clampPanePercent(persistedPanePercent);
+    panePercentRef.current = initialPercent;
+    return initialPercent;
+  });
 
-  const setBodyLayoutRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      bodyElementRef.current = node;
-      bodyMeasureRef(node);
-    },
-    [bodyMeasureRef]
+  const safeForWorkMode = useSelector(
+    (state: AppState) => state.settings.safeForWorkMode
   );
 
   const {
-    title: seriesTitle,
     titleSlug,
     monitored: seriesMonitored,
-    seriesType,
   } = useSeries(seriesId) as Series;
 
   const {
-    seasonNumber,
-    episodeNumber,
-    absoluteEpisodeNumber,
-    releaseDate,
     monitored,
     images,
   } = useEpisode(episodeId, episodeEntity) as Episode;
 
   const hasScreenshot = hasEpisodeScreenshot(images);
-  const isDetailsTab = currentlySelectedTab === 'details';
-  const isLeftPaneDetailsLayout = isDetailsTab && !isLeftPaneMetadataMounted;
-  const showLeftPane = !isDetailsTab || hasScreenshot;
-  const stackedFullTabs = showLeftPane && !isDetailsTab && isMediumScreen;
-
-  const handleMetadataMountChange = useCallback(
-    (mounted: boolean) => {
-      const wasMounted = wasLeftPaneMetadataMountedRef.current;
-      wasLeftPaneMetadataMountedRef.current = mounted;
-
-      setIsLeftPaneMetadataMounted(mounted);
-
-      if (
-        wasMounted &&
-        !mounted &&
-        !isMediumScreen &&
-        bodyElementRef.current &&
-        currentlySelectedTab === 'details'
-      ) {
-        const startHeight =
-          bodyElementRef.current.getBoundingClientRect().height;
-
-        setBodyHeight(startHeight);
-        setIsBodyAnimating(true);
-      }
-    },
-    [currentlySelectedTab, isMediumScreen]
-  );
-
-  useEffect(() => {
-    if (!isDetailsTab) {
-      wasLeftPaneMetadataMountedRef.current = true;
-      setIsLeftPaneMetadataMounted(true);
-    }
-  }, [isDetailsTab]);
+  const monitorDisabled = !seriesMonitored || isSaving;
 
   const handleTabSelect = useCallback(
-    (selectedIndex: number) => {
-      const tab = TABS[selectedIndex];
-
+    (event: React.SyntheticEvent, tab: SceneModalTab) => {
+      void event;
       onTabChange(tab === 'search');
       setCurrentlySelectedTab(tab);
     },
     [onTabChange]
   );
 
-  useLayoutEffect(() => {
-    if (!isBodyAnimating || isMediumScreen) {
+  const handleMonitorEpisodePress = useCallback(() => {
+    dispatch(
+      toggleEpisodeMonitored({
+        episodeEntity,
+        episodeId,
+        monitored: !monitored,
+      })
+    );
+  }, [episodeEntity, episodeId, monitored, dispatch]);
+
+  const updatePaneSize = useCallback((clientX: number) => {
+    const bounds = splitRef.current?.getBoundingClientRect();
+
+    if (!bounds || bounds.width <= 0) {
       return;
     }
 
-    const element = bodyElementRef.current;
+    const nextPercent = clampPanePercent(
+      ((clientX - bounds.left) / bounds.width) * 100
+    );
+    panePercentRef.current = nextPercent;
+    setLeftPanePercent(nextPercent);
+  }, []);
 
-    if (!element) {
-      return;
-    }
-
-    const frameId = window.requestAnimationFrame(() => {
-      const endHeight = element.scrollHeight;
-
-      if (endHeight === bodyHeight) {
-        setIsBodyAnimating(false);
-        setBodyHeight(undefined);
-        return;
-      }
-
-      setBodyHeight(endHeight);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frameId);
-    };
-  }, [isBodyAnimating, isMediumScreen, currentlySelectedTab, bodyBounds.height, bodyHeight]);
-
-  const handleBodyTransitionEnd = useCallback(
-    (event: React.TransitionEvent<HTMLDivElement>) => {
-      if (event.propertyName !== 'height') {
-        return;
-      }
-
-      setIsBodyAnimating(false);
-      setBodyHeight(undefined);
+  const handleDividerPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      updatePaneSize(event.clientX);
     },
-    []
+    [updatePaneSize]
   );
 
-  const handleMonitorEpisodePress = useCallback(
-    (monitored: boolean) => {
-      dispatch(
-        toggleEpisodeMonitored({
-          episodeEntity,
-          episodeId,
-          monitored,
-        })
-      );
+  const handleDividerPointerUp = useCallback(() => {
+    dispatch(set({
+      section: 'seriesDetails',
+      sceneModalPanePercent: panePercentRef.current
+    }));
+  }, [dispatch]);
+
+  const handleDividerPointerMove = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+        return;
+      }
+
+      updatePaneSize(event.clientX);
     },
-    [episodeEntity, episodeId, dispatch]
+    [updatePaneSize]
   );
 
   useEffect(() => {
     return () => {
-      // Clear pending releases here, so we can reshow the search
-      // results even after switching tabs.
       dispatch(cancelFetchReleases());
       dispatch(clearReleases());
     };
   }, [dispatch]);
 
   const seriesLink = `/site/${titleSlug}`;
-  let bodyOverflow: 'hidden' | 'visible' | undefined = undefined;
-
-  if (isBodyAnimating) {
-    bodyOverflow = 'hidden';
-  } else if (stackedFullTabs) {
-    bodyOverflow = 'visible';
-  }
+  const monitorTitle = !seriesMonitored
+    ? translate('ToggleMonitoredSeriesUnmonitored')
+    : monitored
+      ? translate('ToggleMonitoredToUnmonitored')
+      : translate('ToggleUnmonitoredToMonitored');
 
   return (
-    <ModalContent onModalClose={onModalClose}>
-      <ModalHeader>
-        <MonitorToggleButton
-          monitored={monitored}
-          size={18}
-          isDisabled={!seriesMonitored}
-          isSaving={isSaving}
-          onPress={handleMonitorEpisodePress}
-        />
-
-        <Box component="span" sx={{ ml: '5px' }}>
-          {seriesTitle}
-        </Box>
-
-        <Box component="span" sx={{ mx: '5px' }}>
-          -
-        </Box>
-
-        <SeasonEpisodeNumber
-          seasonNumber={seasonNumber}
-          episodeNumber={episodeNumber}
-          absoluteEpisodeNumber={absoluteEpisodeNumber}
-          releaseDate={releaseDate}
-          seriesType={seriesType}
-        />
-
-        <Box component="span" sx={{ mx: '5px' }}>
-          -
-        </Box>
-
-        {episodeTitle}
-      </ModalHeader>
-
+    <ModalContent showCloseButton={false} onModalClose={onModalClose}>
       <Box
-        ref={setBodyLayoutRef}
-        style={bodyHeight == null ? undefined : { height: bodyHeight }}
-        onTransitionEnd={handleBodyTransitionEnd}
+        ref={splitRef}
         sx={{
           display: 'flex',
-          flexDirection: 'column',
-          flex: stackedFullTabs ? '0 1 auto' : '1 1 auto',
-          minHeight: stackedFullTabs ? 'auto' : 0,
-          overflow: bodyOverflow,
-          transition: isBodyAnimating ? 'height 0.15s ease-in' : undefined,
-          ...(showLeftPane
-            ? {
-                '@media (min-width: 992px)': {
-                  flexDirection: 'row',
-                  alignItems: 'stretch',
-                },
-              }
-            : null),
+          flex: '1 1 auto',
+          flexDirection: { xs: 'column', md: 'row' },
+          minHeight: 0,
+          overflow: 'hidden',
         }}
       >
-        {showLeftPane ? (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              flexShrink: stackedFullTabs ? 0 : undefined,
-              flex: stackedFullTabs ? '0 0 auto' : undefined,
-              minHeight: 0,
-              width: '100%',
-              maxHeight: stackedFullTabs ? 'none' : undefined,
-              overflow: bodyOverflow,
-              borderBottom: '1px solid var(--borderColor)',
-              backgroundColor: 'var(--modalBackgroundColor)',
-              '@media (min-width: 992px)': {
-                flex: '0 0 50%',
-                width: '50%',
-                minWidth: '50%',
-                maxWidth: '50%',
-                alignSelf: 'stretch',
-                borderBottom: 'none',
-                borderRight: '1px solid var(--borderColor)',
-                overflow: 'hidden',
-                transition: 'max-height 0.15s ease-in',
-                ...(isLeftPaneDetailsLayout
-                  ? {
-                      maxHeight: 'min(calc(50vh + 4em), 544px)',
-                      minHeight: 0,
-                    }
-                  : null),
-              },
-            }}
-          >
-            <EpisodeSceneDetails
-              seriesId={seriesId}
-              episodeId={episodeId}
-              episodeEntity={episodeEntity}
-              showHeader={false}
-              showScreenshot={true}
-              showMetadata={true}
-              centerScreenshot={isDetailsTab}
-              collapseMetadata={isDetailsTab}
-              fillHeight={isLeftPaneDetailsLayout}
-              onMetadataMountChange={handleMetadataMountChange}
-            />
-          </Box>
-        ) : null}
-
         <Box
           sx={{
-            flex: stackedFullTabs ? '0 0 auto' : '1 1 auto',
-            flexGrow: stackedFullTabs ? 0 : undefined,
+            display: 'flex',
+            flexDirection: 'column',
+            flex: { xs: '0 0 auto', md: `0 0 ${leftPanePercent}%` },
             minWidth: 0,
-            width: showLeftPane ? undefined : '100%',
-            overflow: stackedFullTabs ? 'visible' : undefined,
-            maxHeight: stackedFullTabs ? 'none' : undefined,
-            ...(showLeftPane
-              ? {
-                  '@media (min-width: 992px)': {
-                    flex: '1 1 50%',
-                    width: '50%',
-                    minWidth: 0,
-                    maxWidth: '50%',
-                  },
-                }
-              : null),
-            '& .MuiDialogContent-root': {
-              pt: 0,
-            },
-            '& .react-tabs__tab': {
-              position: 'relative',
-              bottom: -1,
-              display: 'inline-block',
-              padding: '6px 12px',
-              border: '1px solid transparent',
-              borderTop: 'none',
-              listStyle: 'none',
-              cursor: 'pointer',
-            },
-            '& .react-tabs__tab--selected': {
-              borderColor: 'var(--borderColor)',
-              borderRadius: '0 0 5px 5px',
-              backgroundColor: 'rgba(239, 239, 239, 0.4)',
-              color: 'var(--black)',
+            minHeight: 0,
+            overflow: 'auto',
+          }}
+        >
+          {hasScreenshot ? (
+            <Box
+              sx={(theme) => ({
+                pt: `${theme.shape.borderRadius}px`,
+                px: `${theme.shape.borderRadius}px`,
+              })}
+            >
+              <Box sx={{ borderRadius: 1, overflow: 'hidden', lineHeight: 0 }}>
+                <EpisodeScreenshot
+                  images={images}
+                  blur={safeForWorkMode}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    height: 'auto',
+                  }}
+                />
+              </Box>
+            </Box>
+          ) : null}
+
+          <EpisodeSceneDetails
+            seriesId={seriesId}
+            episodeId={episodeId}
+            episodeEntity={episodeEntity}
+            showHeader={false}
+            showScreenshot={false}
+            showMetadata={true}
+            showDownloadedFiles={false}
+            centerScreenshot={false}
+            collapseMetadata={false}
+            fillHeight={false}
+          />
+        </Box>
+
+        <Box
+          role="separator"
+          aria-orientation="vertical"
+          aria-valuenow={Math.round(leftPanePercent)}
+          aria-valuemin={MIN_PANE_PERCENT}
+          aria-valuemax={MAX_PANE_PERCENT}
+          onPointerDown={handleDividerPointerDown}
+          onPointerMove={handleDividerPointerMove}
+          onPointerUp={handleDividerPointerUp}
+          onPointerCancel={handleDividerPointerUp}
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'stretch',
+            flex: '0 0 auto',
+            cursor: 'col-resize',
+            px: '5px',
+            touchAction: 'none',
+            '&:hover .MuiDivider-root, &:focus-visible .MuiDivider-root': {
+              borderColor: 'primary.main',
             },
           }}
         >
-          <ModalBody
-            scrollDirection={
-              stackedFullTabs
-                ? scrollDirections.NONE
-                : scrollDirections.VERTICAL
-            }
+          <Divider orientation="vertical" flexItem />
+        </Box>
+
+        <Box
+          sx={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            flex: '1 1 auto',
+            minWidth: 0,
+            minHeight: 0,
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              zIndex: 2,
+              display: 'flex',
+              alignItems: 'center',
+            }}
           >
-            <Tabs
-              selectedIndex={TABS.indexOf(currentlySelectedTab)}
-              onSelect={handleTabSelect}
-              style={{ marginTop: 0 }}
-            >
-              <TabList
-                style={{
-                  margin: 0,
-                  padding: 0,
-                }}
+            <Tooltip title={monitorTitle}>
+              <span>
+                <IconButton
+                  size="small"
+                  aria-label={monitorTitle}
+                  disabled={monitorDisabled}
+                  onClick={handleMonitorEpisodePress}
+                >
+                  {isSaving ? (
+                    <CircularProgress size={20} />
+                  ) : monitored ? (
+                    <BookmarkIcon fontSize="small" />
+                  ) : (
+                    <BookmarkBorderIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Tooltip title={translate('Close')}>
+              <IconButton
+                size="small"
+                aria-label={translate('Close')}
+                onClick={onModalClose}
               >
-                <Tab>
-                  {translate('Details')}
-                </Tab>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
 
-                <Tab>{translate('Search')}</Tab>
-
-                <Tab>{translate('History')}</Tab>
-              </TabList>
-
-              <TabPanel>
-                <Box sx={{ mt: '20px' }}>
-                <EpisodeSceneDetails
-                  seriesId={seriesId}
-                  episodeId={episodeId}
-                  episodeEntity={episodeEntity}
-                  showHeader={false}
-                  showScreenshot={false}
-                  showMetadata={true}
+          <Tabs
+            value={currentlySelectedTab}
+            variant="fullWidth"
+            onChange={handleTabSelect}
+          >
+            {TABS.map((tab) => {
+              return (
+                <Tab
+                  key={tab}
+                  value={tab}
+                  label={translate(tab === 'history' ? 'History' : 'Search')}
                 />
-              </Box>
-            </TabPanel>
+              );
+            })}
+          </Tabs>
 
-            <TabPanel>
+          <Box sx={{ flex: '1 1 auto', minHeight: 0, overflow: 'auto', px: 2, py: 2 }}>
+            {currentlySelectedTab === 'history' ? (
+              <EpisodeHistoryConnector episodeId={episodeId} />
+            ) : (
               <EpisodeSearchConnector
                 episodeId={episodeId}
                 seriesId={seriesId}
                 startInteractiveSearch={startInteractiveSearch}
                 onModalClose={onModalClose}
               />
-            </TabPanel>
-
-            <TabPanel>
-              <Box sx={{ mt: '20px' }}>
-                <EpisodeHistoryConnector episodeId={episodeId} />
-              </Box>
-            </TabPanel>
-            </Tabs>
-          </ModalBody>
+            )}
+          </Box>
         </Box>
       </Box>
 
-      <ModalFooter>
-        {showOpenSeriesButton && (
+      {showOpenSeriesButton ? (
+        <ModalFooter>
           <Button to={seriesLink} onPress={onModalClose} sx={{ mr: 'auto' }}>
             {translate('OpenSite')}
           </Button>
-        )}
-
-        <Button onPress={onModalClose}>{translate('Close')}</Button>
-      </ModalFooter>
+        </ModalFooter>
+      ) : null}
     </ModalContent>
   );
 }

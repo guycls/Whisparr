@@ -157,27 +157,9 @@ function FormInputGroup(props) {
             hasError={hasError}
             hasWarning={hasWarning}
             hasButton={hasButton}
+            unit={unit}
             {...otherProps}
           />
-
-          {
-            unit &&
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  right: type === inputTypes.NUMBER ? '40px' : '20px',
-                  mt: '7px',
-                  width: 75,
-                  color: '#c6c6c6',
-                  textAlign: 'right',
-                  pointerEvents: 'none',
-                  userSelect: 'none'
-                }}
-              >
-                {unit}
-              </Box>
-          }
         </Box>
 
         {
