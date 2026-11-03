@@ -7,6 +7,7 @@ import AppState from 'App/State/AppState';
 import useMeasure from 'Helpers/Hooks/useMeasure';
 import { SortDirection } from 'Helpers/Props/sortDirections';
 import SeriesIndexPoster from 'Series/Index/Posters/SeriesIndexPoster';
+import { resolveSitesCardSize } from 'Series/Index/cardSize';
 import Series from 'Series/Series';
 import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
 
@@ -20,12 +21,6 @@ const columnPaddingSmallScreen = parseInt(
 );
 const progressBarHeight = parseInt('5px');
 const detailedProgressBarHeight = parseInt('15px');
-
-const ADDITIONAL_COLUMN_COUNT: Record<string, number> = {
-  small: 2,
-  medium: 1,
-  large: 0,
-};
 
 interface CellItemData {
   layout: {
@@ -52,9 +47,11 @@ interface SeriesIndexPostersProps {
 
 const seriesIndexSelector = createSelector(
   (state: AppState) => state.seriesIndex.posterOptions,
-  (posterOptions) => {
+  (state: AppState) => state.seriesIndex.cardSize,
+  (posterOptions, cardSize) => {
     return {
       posterOptions,
+      cardSize: resolveSitesCardSize(cardSize, posterOptions.size),
     };
   }
 );
@@ -107,22 +104,22 @@ export default function SeriesIndexPosters(props: SeriesIndexPostersProps) {
     isSmallScreen,
   } = props;
 
-  const { posterOptions } = useSelector(seriesIndexSelector);
+  const { posterOptions, cardSize } = useSelector(seriesIndexSelector);
   const ref = useRef<Grid>(null);
   const [measureRef, bounds] = useMeasure();
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   const columnWidth = useMemo(() => {
     const { width } = size;
-    const maximumColumnWidth = isSmallScreen ? 172 : 182;
-    const columns = Math.floor(width / maximumColumnWidth);
-    const remainder = width % maximumColumnWidth;
-    return remainder === 0
-      ? maximumColumnWidth
-      : Math.floor(
-          width / (columns + ADDITIONAL_COLUMN_COUNT[posterOptions.size])
-        );
-  }, [isSmallScreen, posterOptions, size]);
+
+    if (width <= 0) {
+      return cardSize;
+    }
+
+    const columns = Math.max(Math.floor(width / cardSize), 1);
+
+    return Math.floor(width / columns);
+  }, [cardSize, size]);
 
   const columnCount = useMemo(
     () => Math.max(Math.floor(size.width / columnWidth), 1),

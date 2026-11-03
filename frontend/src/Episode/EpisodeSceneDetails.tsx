@@ -43,6 +43,7 @@ interface EpisodeSceneDetailsProps {
   episodeFileId?: number;
   placeholder?: string;
   showHeader?: boolean;
+  showSceneHeading?: boolean;
   showScreenshot?: boolean;
   showMetadata?: boolean;
   showDownloadedFiles?: boolean;
@@ -63,6 +64,7 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
     episodeFileId: episodeFileIdProp,
     placeholder = translate('SelectEpisode'),
     showHeader = true,
+    showSceneHeading = true,
     showScreenshot: showScreenshotProp = true,
     showMetadata = true,
     showDownloadedFiles = true,
@@ -281,11 +283,15 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                     'opacity 0.15s ease-in, max-height 0.15s ease-in, margin-top 0.15s ease-in, visibility 0.15s ease-in',
                 }}
               >
-                <Box sx={{ fontSize: 16, fontWeight: 600 }}>{title}</Box>
+                {showSceneHeading ? (
+                  <>
+                    <Box sx={{ fontSize: 16, fontWeight: 600 }}>{title}</Box>
 
-                <Box sx={{ color: 'text.secondary', mt: 0.25 }}>
-                  {seriesTitle}
-                </Box>
+                    <Box sx={{ color: 'text.secondary', mt: 0.25 }}>
+                      {seriesTitle}
+                    </Box>
+                  </>
+                ) : null}
 
                 <Box
                   sx={{

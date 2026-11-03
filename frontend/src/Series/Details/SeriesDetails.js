@@ -1,20 +1,20 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import _ from 'lodash';
+import { alpha } from '@mui/material/styles';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import TextTruncate from 'react-text-truncate';
 import HeartRating from 'Components/HeartRating';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import Measure from 'Components/Measure';
 import MetadataAttribution from 'Components/MetadataAttribution';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import PageContent from 'Components/Page/PageContent';
 import PageContentBody from 'Components/Page/PageContentBody';
+import CardSizeMenu from 'Components/Page/Toolbar/CardSizeMenu';
 import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
@@ -28,8 +28,12 @@ import DeleteSeriesModal from 'Series/Delete/DeleteSeriesModal';
 import EditSeriesModalConnector from 'Series/Edit/EditSeriesModalConnector';
 import SeriesHistoryModal from 'Series/History/SeriesHistoryModal';
 import MonitoringOptionsModal from 'Series/MonitoringOptions/MonitoringOptionsModal';
-import SeriesPoster from 'Series/SeriesPoster';
 import { getSeriesStatusDetails } from 'Series/SeriesStatus';
+import {
+  SERIES_DETAILS_CARD_SIZE_MAX,
+  SERIES_DETAILS_CARD_SIZE_MIN,
+  SERIES_DETAILS_CARD_SIZE_STEP
+} from 'Store/Actions/seriesDetailsActions';
 import SiteRipSearchModal from 'Series/SiteRip/SiteRipSearchModal';
 import QualityProfileNameConnector from 'Settings/Profiles/Quality/QualityProfileNameConnector';
 import formatBytes from 'Utilities/Number/formatBytes';
@@ -54,12 +58,88 @@ const detailValueSx = {
   fontSize: 17
 };
 
-const defaultFontSize = parseInt('14px');
-const lineHeight = parseFloat('1.528571429');
+function bannerLogoUrl(images) {
+  const logo = Array.isArray(images) ?
+    images.find((image) => image.coverType === 'logo') :
+    null;
 
-function getFanartUrl(images) {
-  return _.find(images, { coverType: 'fanart' })?.url;
+  if (!logo?.url) {
+    return null;
+  }
+
+  const pixelRatio = Math.max(Math.round(window.devicePixelRatio), 1);
+
+  return logo.url.replace('logo.jpg', `logo-${pixelRatio * 500}.jpg`);
 }
+
+function BannerSiteTitle(props) {
+  const {
+    images,
+    title,
+    blur
+  } = props;
+  const logoUrl = bannerLogoUrl(images);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [logoUrl]);
+
+  if (logoUrl && !failed) {
+    return (
+      <Box
+        component="img"
+        alt={title}
+        src={logoUrl}
+        onError={() => setFailed(true)}
+        sx={{
+          display: 'block',
+          maxHeight: { xs: 48, md: 72 },
+          maxWidth: '100%',
+          objectFit: 'contain',
+          objectPosition: 'left center',
+          filter: blur ? 'blur(13px)' : 'none'
+        }}
+      />
+    );
+  }
+
+  return (
+    <Typography
+      sx={{
+        fontWeight: 300,
+        fontSize: { xs: 30, md: 50 },
+        lineHeight: { xs: '36px', md: '50px' },
+        overflowWrap: 'anywhere'
+      }}
+    >
+      {title}
+    </Typography>
+  );
+}
+
+BannerSiteTitle.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.object).isRequired,
+  title: PropTypes.string.isRequired,
+  blur: PropTypes.bool
+};
+
+const bannerNavButtonSx = {
+  ml: '5px',
+  width: 30,
+  color: 'primary.main',
+  whiteSpace: 'nowrap',
+  '& .MuiSvgIcon-root': {
+    color: 'primary.main'
+  },
+  '&:hover': {
+    color: 'primary.dark',
+    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12)
+  },
+  '&:hover .MuiSvgIcon-root': {
+    color: 'primary.dark'
+  }
+};
 
 function getExpandedState(newState) {
   return {
@@ -93,8 +173,7 @@ class SeriesDetails extends Component {
       isSiteRipModalOpen: false,
       allExpanded: false,
       allCollapsed: false,
-      expandedState: {},
-      overviewHeight: 0
+      expandedState: {}
     };
   }
 
@@ -183,10 +262,6 @@ class SeriesDetails extends Component {
     });
   };
 
-  onMeasure = ({ height }) => {
-    this.setState({ overviewHeight: height });
-  };
-
   //
   // Render
 
@@ -233,12 +308,14 @@ class SeriesDetails extends Component {
       qualityFilter,
       runtimeFilter,
       maxEpisodeRuntime,
+      cardSize,
       sortKey,
       sortDirection,
       onViewSelect,
       onStatusSelect,
       onQualityFilterChange,
       onRuntimeFilterChange,
+      onCardSizeChange,
       onSortSelect
     } = this.props;
 
@@ -257,18 +334,11 @@ class SeriesDetails extends Component {
       isSiteRipModalOpen,
       allExpanded,
       allCollapsed,
-      expandedState,
-      overviewHeight
+      expandedState
     } = this.state;
 
     const statusDetails = getSeriesStatusDetails(status);
     const runningYears = statusDetails.title === translate('Ended') ? `${year}-${getDateYear(previousAiring)}` : `${year}-`;
-
-    const elementStyle = {
-      width: '100%',
-      height: 'auto',
-      objectFit: 'contain'
-    };
 
     let episodeFilesCountMessage = translate('SiteDetailsNoEpisodeFiles');
 
@@ -287,8 +357,6 @@ class SeriesDetails extends Component {
     }
 
     const isUnifiedGridView = view === 'unifiedGrid';
-
-    const fanartUrl = getFanartUrl(images);
 
     return (
       <PageContent title={title}>
@@ -316,7 +384,7 @@ class SeriesDetails extends Component {
               hasQBittorrent ?
                 <PageToolbarButton
                   label={translate('SiteRipSearch')}
-                  iconName={icons.INTERACTIVE}
+                  iconName={icons.SITE_RIP_SEARCH}
                   isDisabled={!hasEpisodes}
                   onPress={this.onSiteRipPress}
                 /> :
@@ -368,6 +436,16 @@ class SeriesDetails extends Component {
           </PageToolbarSection>
 
           <PageToolbarSection alignContent={align.RIGHT}>
+            <CardSizeMenu
+              cardSize={cardSize}
+              min={SERIES_DETAILS_CARD_SIZE_MIN}
+              max={SERIES_DETAILS_CARD_SIZE_MAX}
+              step={SERIES_DETAILS_CARD_SIZE_STEP}
+              onCardSizeChange={onCardSizeChange}
+            />
+
+            <PageToolbarSeparator />
+
             <SeriesDetailsRuntimeFilterMenu
               runtimeFilter={runtimeFilter}
               seriesMaxRuntime={maxEpisodeRuntime}
@@ -420,106 +498,60 @@ class SeriesDetails extends Component {
               sx={{
                 position: 'relative',
                 width: '100%',
-                height: 290,
-                bgcolor: 'background.paper',
-                backgroundImage: (theme) =>
-                  `linear-gradient(145deg, ${theme.palette.action.selected} 0%, ${theme.palette.background.default} 70%)`
+                minHeight: 210,
+                height: 'auto',
+                bgcolor: 'transparent'
               }}
             >
               <Box
                 sx={{
-                  position: 'absolute',
-                  zIndex: -1,
-                  width: '100%',
-                  height: '100%',
-                  backgroundSize: 'cover'
-                }}
-                style={
-                  fanartUrl ?
-                    { backgroundImage: `url(${fanartUrl})` } :
-                    null
-                }
-              >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    width: '100%',
-                    height: '100%',
-                    bgcolor: 'common.black',
-                    opacity: 0.7
-                  }}
-                />
-              </Box>
-
-              <Box
-                sx={{
                   display: 'flex',
+                  alignItems: 'flex-start',
                   p: { xs: '15px', md: '30px' },
                   width: '100%',
-                  height: '100%',
-                  color: 'common.white'
+                  color: 'text.primary'
                 }}
               >
-                <Box
-                  sx={{
-                    flexShrink: 0,
-                    mr: '35px',
-                    maxWidth: 250,
-                    display: { xs: 'none', xl: 'block' }
-                  }}
-                >
-                  <SeriesPoster
-                    style={elementStyle}
-                    images={images}
-                    blur={safeForWorkMode}
-                    size={500}
-                    lazy={false}
-                  />
-                </Box>
-
                 <Box
                   sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     flexGrow: 1,
-                    overflow: 'hidden'
+                    minWidth: 0
                   }}
                 >
                   <Box
                     sx={{
-                      position: 'relative',
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      flex: '0 0 auto'
+                      alignItems: 'center',
+                      flex: '0 0 auto',
+                      minWidth: 0,
+                      mb: '5px'
                     }}
                   >
-                    <Box sx={{ display: 'flex', mb: '5px' }}>
-                      <Box sx={{ alignSelf: 'center', mr: '10px' }}>
-                        <MonitorToggleButton
-                          sx={{
-                            width: 40,
-                            '&:hover': { color: 'text.secondary' }
-                          }}
-                          monitored={monitored}
-                          isSaving={isSaving}
-                          size={40}
-                          onPress={onMonitorTogglePress}
-                        />
-                      </Box>
-
-                      <Typography
+                    <Box sx={{ alignSelf: 'center', mr: '10px', flexShrink: 0 }}>
+                      <MonitorToggleButton
                         sx={{
-                          fontWeight: 300,
-                          fontSize: { xs: 30, md: 50 },
-                          lineHeight: { xs: '30px', md: '50px' }
+                          width: 40,
+                          '&:hover': { color: 'text.secondary' }
                         }}
-                      >
-                        {title}
-                      </Typography>
+                        monitored={monitored}
+                        isSaving={isSaving}
+                        size={40}
+                        onPress={onMonitorTogglePress}
+                      />
+                    </Box>
+
+                    <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center' }}>
+                      <BannerSiteTitle
+                        images={images}
+                        title={title}
+                        blur={safeForWorkMode}
+                      />
 
                       {
                         !!alternateTitles.length &&
-                          <Box sx={{ alignSelf: 'flex-end', ml: '20px' }}>
+                          <Box sx={{ alignSelf: 'flex-end', ml: '20px', flexShrink: 0 }}>
                             <Popover
                               anchor={
                                 <Icon
@@ -535,15 +567,9 @@ class SeriesDetails extends Component {
                       }
                     </Box>
 
-                    <Box sx={{ position: 'absolute', right: 0, whiteSpace: 'nowrap' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, ml: 2 }}>
                       <IconButton
-                        sx={{
-                          ml: '5px',
-                          width: 30,
-                          color: '#e1e2e3',
-                          whiteSpace: 'nowrap',
-                          '&:hover': { color: 'text.secondary' }
-                        }}
+                        sx={bannerNavButtonSx}
                         name={icons.ARROW_LEFT}
                         size={30}
                         title={translate('SiteDetailsGoTo', { title: previousSeries.title })}
@@ -551,13 +577,7 @@ class SeriesDetails extends Component {
                       />
 
                       <IconButton
-                        sx={{
-                          ml: '5px',
-                          width: 30,
-                          color: '#e1e2e3',
-                          whiteSpace: 'nowrap',
-                          '&:hover': { color: 'text.secondary' }
-                        }}
+                        sx={bannerNavButtonSx}
                         name={icons.ARROW_RIGHT}
                         size={30}
                         title={translate('SiteDetailsGoTo', { title: nextSeries.title })}
@@ -566,7 +586,7 @@ class SeriesDetails extends Component {
                     </Box>
                   </Box>
 
-                  <Box sx={{ mb: 1, fontWeight: 300, fontSize: 20 }}>
+                  <Box sx={{ mb: 1, color: 'text.primary', fontWeight: 300, fontSize: 20 }}>
                     <div>
                       {
                         !!runtime &&
@@ -592,7 +612,27 @@ class SeriesDetails extends Component {
                     </div>
                   </Box>
 
-                  <Box sx={{ '& .MuiChip-root': { m: '5px 10px 5px 0' } }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      '& .MuiChip-root': {
+                        m: '5px 10px 5px 0',
+                        maxWidth: '100%',
+                        height: 'auto',
+                        '& .MuiChip-label': {
+                          whiteSpace: 'normal',
+                          overflowWrap: 'anywhere'
+                        }
+                      },
+                      '& .MuiChip-root.MuiChip-outlined': {
+                        bgcolor: (theme) => alpha(theme.palette.text.primary, 0.08),
+                        color: 'text.primary',
+                        borderColor: (theme) => alpha(theme.palette.text.primary, 0.16),
+                      },
+                    }}
+                  >
                     <Label
                       size={sizes.LARGE}
                     >
@@ -775,21 +815,12 @@ class SeriesDetails extends Component {
                     }
                   </Box>
 
-                  <Measure onMeasure={this.onMeasure}>
-                    <Box
-                      sx={{
-                        flex: '1 0 0',
-                        mt: 1,
-                        minHeight: 0,
-                        fontSize: 15
-                      }}
-                    >
-                      <TextTruncate
-                        line={Math.floor(overviewHeight / (defaultFontSize * lineHeight)) - 1}
-                        text={overview}
-                      />
-                    </Box>
-                  </Measure>
+                  <Box sx={{ mt: 1, fontSize: 15 }}>
+                    <TextTruncate
+                      line={4}
+                      text={overview}
+                    />
+                  </Box>
 
                   <MetadataAttribution />
                 </Box>
@@ -953,6 +984,8 @@ SeriesDetails.propTypes = {
   onStatusSelect: PropTypes.func.isRequired,
   onQualityFilterChange: PropTypes.func.isRequired,
   onRuntimeFilterChange: PropTypes.func.isRequired,
+  onCardSizeChange: PropTypes.func.isRequired,
+  cardSize: PropTypes.number.isRequired,
   view: PropTypes.string.isRequired,
   monitorStatusFilter: PropTypes.string.isRequired,
   qualityFilter: PropTypes.object.isRequired,

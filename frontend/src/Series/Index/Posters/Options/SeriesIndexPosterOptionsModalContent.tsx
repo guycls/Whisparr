@@ -10,6 +10,11 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
+import AppState from 'App/State/AppState';
+import {
+  posterSizeFromCardSize,
+  resolveSitesCardSize,
+} from 'Series/Index/cardSize';
 import selectPosterOptions from 'Series/Index/Posters/selectPosterOptions';
 import { setSeriesPosterOption } from 'Store/Actions/seriesIndexActions';
 import translate from 'Utilities/String/translate';
@@ -45,16 +50,20 @@ function SeriesIndexPosterOptionsModalContent(
   const { onModalClose } = props;
 
   const posterOptions = useSelector(selectPosterOptions);
+  const cardSize = useSelector((state: AppState) => state.seriesIndex.cardSize);
 
   const {
     detailedProgressBar,
-    size,
     showTitle,
     showMonitored,
     showQualityProfile,
     showTags,
     showSearchAction,
   } = posterOptions;
+
+  const size = posterSizeFromCardSize(
+    resolveSitesCardSize(cardSize, posterOptions.size)
+  );
 
   const dispatch = useDispatch();
 

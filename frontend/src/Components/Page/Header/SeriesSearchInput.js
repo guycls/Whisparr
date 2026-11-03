@@ -242,7 +242,15 @@ class SeriesSearchInput extends Component {
     ];
 
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 180, flexGrow: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          flex: '0 1 50%',
+          minWidth: 160,
+          maxWidth: '50%'
+        }}
+      >
         <Autocomplete
           freeSolo={true}
           fullWidth={true}

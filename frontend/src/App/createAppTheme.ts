@@ -1,4 +1,4 @@
-import { createTheme, PaletteMode, Theme } from '@mui/material/styles';
+import { alpha, createTheme, PaletteMode, Theme } from '@mui/material/styles';
 
 export default function createAppTheme(
   mode: PaletteMode,
@@ -7,6 +7,14 @@ export default function createAppTheme(
   return createTheme({
     palette: {
       mode,
+      ...(mode === 'light'
+        ? {
+            background: {
+              default: '#f3f4f6',
+              paper: '#fff',
+            },
+          }
+        : {}),
       ...(colorImpaired
         ? {
             primary: { main: '#1565c0' },
@@ -16,7 +24,9 @@ export default function createAppTheme(
             success: { main: '#2e7d32' },
             info: { main: '#0277bd' },
           }
-        : {}),
+        : {
+            primary: { main: '#ff69b4' },
+          }),
     },
     breakpoints: {
       values: {
@@ -97,6 +107,38 @@ export default function createAppTheme(
           },
         },
       },
+      MuiMenu: {
+        styleOverrides: {
+          paper: ({ theme }) => ({
+            backgroundColor: theme.palette.background.paper,
+            backgroundImage: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.22)} 0%, ${theme.palette.background.paper} 72%)`,
+          }),
+        },
+      },
+      MuiMenuItem: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            '&:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.12),
+            },
+            '&.Mui-selected': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.18),
+              color: theme.palette.primary.main,
+            },
+            '&.Mui-selected:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.26),
+            },
+          }),
+        },
+      },
+      MuiAutocomplete: {
+        styleOverrides: {
+          paper: ({ theme }) => ({
+            backgroundColor: theme.palette.background.paper,
+            backgroundImage: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.22)} 0%, ${theme.palette.background.paper} 72%)`,
+          }),
+        },
+      },
       MuiFormHelperText: {
         styleOverrides: {
           root: {
@@ -108,6 +150,22 @@ export default function createAppTheme(
       },
     },
   });
+}
+
+function hexToRgba(color: string, alpha: number) {
+  const value = color.replace('#', '');
+  const normalized =
+    value.length === 3
+      ? value
+          .split('')
+          .map((channel) => channel + channel)
+          .join('')
+      : value;
+  const red = parseInt(normalized.slice(0, 2), 16);
+  const green = parseInt(normalized.slice(2, 4), 16);
+  const blue = parseInt(normalized.slice(4, 6), 16);
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
 export function applyMuiCssVariables(theme: Theme) {
@@ -149,7 +207,7 @@ export function applyMuiCssVariables(theme: Theme) {
     inputBorderColor: divider,
     inputBoxShadowColor: 'rgba(0, 0, 0, 0.075)',
     inputFocusBorderColor: primary,
-    inputFocusBoxShadowColor: 'rgba(25, 118, 210, 0.4)',
+    inputFocusBoxShadowColor: hexToRgba(primary, 0.4),
     inputErrorBorderColor: error,
     inputWarningBorderColor: warning,
     colorImpairedGradient: divider,

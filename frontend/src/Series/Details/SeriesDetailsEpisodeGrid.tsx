@@ -1,5 +1,7 @@
 import Box from '@mui/material/Box';
 import React from 'react';
+import { useSelector } from 'react-redux';
+import AppState from 'App/State/AppState';
 import { EpisodeEntities } from 'Episode/useEpisode';
 import EpisodeCardConnector from './EpisodeCardConnector';
 
@@ -18,12 +20,6 @@ interface SeriesDetailsEpisodeGridProps {
   ): void;
 }
 
-const gridColumns = {
-  xs: 'repeat(auto-fill, minmax(max(140px, calc((100% - 4 * 10px) / 5)), 1fr))',
-  md: 'repeat(auto-fill, minmax(max(200px, calc((100% - 4 * 15px) / 5)), 1fr))',
-  xl: 'repeat(auto-fill, minmax(max(180px, calc((100% - 4 * 15px) / 5)), 1fr))',
-};
-
 function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
   const {
     items,
@@ -32,12 +28,16 @@ function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
     onMonitorEpisodePress,
   } = props;
 
+  const cardSize = useSelector(
+    (state: AppState) => state.seriesDetails.cardSize || 200
+  );
+
   return (
     <Box
       sx={{
         display: 'grid',
         alignItems: 'stretch',
-        gridTemplateColumns: gridColumns,
+        gridTemplateColumns: `repeat(auto-fill, minmax(${cardSize}px, 1fr))`,
         gap: { xs: '10px', md: '15px' },
         padding: { xs: '0 10px 10px', md: '0 15px 15px' },
       }}

@@ -2,7 +2,9 @@ import { throttle } from 'lodash';
 import React, { RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
+import AppState from 'App/State/AppState';
 import useMeasure from 'Helpers/Hooks/useMeasure';
+import { resolveSitesCardSize } from 'Series/Index/cardSize';
 import Series from 'Series/Series';
 import getIndexOfFirstCharacter from 'Utilities/Array/getIndexOfFirstCharacter';
 import selectOverviewOptions from './selectOverviewOptions';
@@ -75,26 +77,22 @@ function SeriesIndexOverviews(props: SeriesIndexOverviewsProps) {
     isSmallScreen,
   } = props;
 
-  const { size: posterSize, detailedProgressBar } = useSelector(
-    selectOverviewOptions
+  const { detailedProgressBar } = useSelector(selectOverviewOptions);
+  const cardSize = useSelector((state: AppState) =>
+    resolveSitesCardSize(
+      state.seriesIndex.cardSize,
+      state.seriesIndex.posterOptions.size
+    )
   );
   const listRef = useRef<List>(null);
   const [measureRef, bounds] = useMeasure();
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   const posterWidth = useMemo(() => {
-    const maxiumPosterWidth = isSmallScreen ? 152 : 162;
+    const maximumPosterWidth = isSmallScreen ? 200 : 280;
 
-    if (posterSize === 'large') {
-      return maxiumPosterWidth;
-    }
-
-    if (posterSize === 'medium') {
-      return Math.floor(maxiumPosterWidth * 0.75);
-    }
-
-    return Math.floor(maxiumPosterWidth * 0.5);
-  }, [posterSize, isSmallScreen]);
+    return Math.min(cardSize, maximumPosterWidth);
+  }, [cardSize, isSmallScreen]);
 
   const posterHeight = useMemo(() => {
     return Math.ceil((250 / 170) * posterWidth);

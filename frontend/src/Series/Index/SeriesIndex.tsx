@@ -9,6 +9,7 @@ import React, {
 import { useDispatch, useSelector } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import { SelectProvider } from 'App/SelectContext';
+import AppState from 'App/State/AppState';
 import ClientSideCollectionAppState from 'App/State/ClientSideCollectionAppState';
 import SeriesAppState, { SeriesIndexAppState } from 'App/State/SeriesAppState';
 import { RSS_SYNC } from 'Commands/commandNames';
@@ -20,12 +21,19 @@ import PageJumpBar from 'Components/Page/PageJumpBar';
 import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
+import CardSizeMenu from 'Components/Page/Toolbar/CardSizeMenu';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
 import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
 import { align, icons, kinds } from 'Helpers/Props';
 import { DESCENDING } from 'Helpers/Props/sortDirections';
 import ParseToolbarButton from 'Parse/ParseToolbarButton';
 import NoSeries from 'Series/NoSeries';
+import {
+  resolveSitesCardSize,
+  SITES_CARD_SIZE_MAX,
+  SITES_CARD_SIZE_MIN,
+  SITES_CARD_SIZE_STEP,
+} from 'Series/Index/cardSize';
 import { executeCommand } from 'Store/Actions/commandActions';
 import {
   setJavSeriesFilter,
@@ -36,6 +44,7 @@ import {
 import { fetchQueueDetails } from 'Store/Actions/queueActions';
 import { fetchSeries } from 'Store/Actions/seriesActions';
 import {
+  setSeriesCardSize,
   setSeriesFilter,
   setSeriesSort,
   setSeriesTableOption,
@@ -130,6 +139,12 @@ function SeriesIndex(props: SeriesIndexProps) {
       createSeriesClientSideCollectionItemsSelector(uiSection, seriesType)
     );
 
+  const sitesCardSize = useSelector((state: AppState) =>
+    resolveSitesCardSize(
+      state.seriesIndex.cardSize,
+      state.seriesIndex.posterOptions.size
+    )
+  );
   const isRssSyncExecuting = useSelector(
     createCommandExecutingSelector(RSS_SYNC)
   );
@@ -189,6 +204,13 @@ function SeriesIndex(props: SeriesIndexProps) {
       dispatch(dispatchSetFilter({ selectedFilterKey: value }));
     },
     [dispatch, dispatchSetFilter]
+  );
+
+  const onCardSizeChange = useCallback(
+    (cardSize: number) => {
+      dispatch(setSeriesCardSize({ cardSize }));
+    },
+    [dispatch]
   );
 
   const onOptionsPress = useCallback(() => {
@@ -301,6 +323,19 @@ function SeriesIndex(props: SeriesIndexProps) {
             alignContent={align.RIGHT}
             collapseButtons={false}
           >
+            {seriesType !== 'jav' ? (
+              <>
+                <CardSizeMenu
+                  cardSize={sitesCardSize}
+                  min={SITES_CARD_SIZE_MIN}
+                  max={SITES_CARD_SIZE_MAX}
+                  step={SITES_CARD_SIZE_STEP}
+                  onCardSizeChange={onCardSizeChange}
+                />
+                <PageToolbarSeparator />
+              </>
+            ) : null}
+
             {view === 'table' ? (
               <TableOptionsModalWrapper
                 columns={columns}
@@ -347,6 +382,7 @@ function SeriesIndex(props: SeriesIndexProps) {
         </PageToolbar>
         <Box
           sx={(theme) => ({
+            position: 'relative',
             display: 'flex',
             flex: '1 0 1px',
             overflow: 'hidden',

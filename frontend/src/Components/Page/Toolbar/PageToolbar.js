@@ -19,9 +19,8 @@ function PageToolbar(props) {
         minHeight: 56,
         justifyContent: 'space-between',
         alignItems: 'stretch',
-        borderBottom: 1,
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
+        bgcolor: 'transparent',
+        backgroundImage: 'none',
         px: { xs: '10px', md: '12px' }
       }}
     >

@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { alpha } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import AppUpdatedModal from 'App/AppUpdatedModal';
@@ -85,9 +86,20 @@ class Page extends Component {
       <ColorImpairedContext.Provider value={enableColorImpairedMode}>
         <Box
           className={className}
-          sx={{ display: 'flex', height: '100%' }}
+          sx={{
+            display: 'flex',
+            height: '100%',
+            bgcolor: 'background.default',
+            backgroundImage: (theme) =>
+              `linear-gradient(to bottom right, ${alpha(theme.palette.primary.main, 0.55)} 0%, ${alpha(theme.palette.primary.main, 0)} 100%)`
+          }}
         >
           <SignalRConnector />
+
+          <PageHeader
+            isSmallScreen={isSmallScreen}
+            onSidebarToggle={onSidebarToggle}
+          />
 
           <PageSidebar
             location={location}
@@ -101,14 +113,10 @@ class Page extends Component {
               display: 'flex',
               flexDirection: 'column',
               flexGrow: 1,
-              minWidth: 0
+              minWidth: 0,
+              pt: '56px'
             }}
           >
-            <PageHeader
-              isSmallScreen={isSmallScreen}
-              onSidebarToggle={onSidebarToggle}
-            />
-
             <Box
               component="main"
               sx={{

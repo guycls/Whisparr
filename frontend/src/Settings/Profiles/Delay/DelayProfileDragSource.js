@@ -6,10 +6,6 @@ import { findDOMNode } from 'react-dom';
 import { DELAY_PROFILE } from 'Helpers/dragTypes';
 import DelayProfile from './DelayProfile';
 
-const sxDelayProfileDragSource = (theme) => ({
-  padding: theme.spacing(0.5, 0)
-});
-
 const sxDelayProfilePlaceholder = (theme) => ({
   width: '100%',
   height: 30,
@@ -101,8 +97,7 @@ class DelayProfileDragSource extends Component {
     // }
 
     return connectDropTarget(
-      <Box
-       sx={sxDelayProfileDragSource}>
+      <div style={{ padding: '4px 0' }}>
         {
           isBefore &&
             <Box
@@ -123,7 +118,7 @@ class DelayProfileDragSource extends Component {
             <Box
              sx={[sxDelayProfilePlaceholder, sxDelayProfilePlaceholderAfter]} />
         }
-      </Box>
+      </div>
     );
   }
 }

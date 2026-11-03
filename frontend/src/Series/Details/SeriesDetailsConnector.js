@@ -22,6 +22,7 @@ import {
   setSeriesDetailsMonitorStatusFilter,
   setSeriesDetailsQualityFilter,
   setSeriesDetailsRuntimeFilter,
+  setSeriesDetailsCardSize,
   setSeriesDetailsSort,
   setSeriesDetailsView,
   syncSeriesDetailsUnifiedGridSort,
@@ -95,13 +96,14 @@ function createMapStateToProps() {
     (state) => state.seriesDetails.monitorStatusFilter,
     (state) => state.seriesDetails.qualityFilter,
     (state) => state.seriesDetails.runtimeFilter,
+    (state) => state.seriesDetails.cardSize,
     (state) => state.seriesDetails.maxEpisodeRuntime,
     (state) => state.seriesDetails.unifiedGrid.sortKey,
     (state) => state.seriesDetails.unifiedGrid.sortDirection,
     (state) => state.episodes.sortKey,
     (state) => state.episodes.sortDirection,
     (state) => state.settings.downloadClients,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients) => {
+    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, cardSize, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients) => {
       const resolvedQualityFilter = qualityFilter ?? { minIndex: 0, maxIndex: 6 };
       const resolvedRuntimeFilter = resolveRuntimeFilter(
         runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
@@ -184,6 +186,7 @@ function createMapStateToProps() {
         monitorStatusFilter,
         qualityFilter: resolvedQualityFilter,
         runtimeFilter: resolvedRuntimeFilter,
+        cardSize: cardSize || 200,
         rawQualityFilter: qualityFilter ?? { minIndex: 0, maxIndex: 6 },
         rawRuntimeFilter: runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
         maxEpisodeRuntime,
@@ -209,6 +212,7 @@ const mapDispatchToProps = (dispatch) => {
       setSeriesDetailsMonitorStatusFilter,
       setSeriesDetailsQualityFilter,
       setSeriesDetailsRuntimeFilter,
+      setSeriesDetailsCardSize,
       setSeriesDetailsSort,
       setSeriesDetailsActiveSeries,
       fetchSeriesDetailsFilterBounds,
@@ -385,6 +389,10 @@ class SeriesDetailsConnector extends Component {
     this.props.setSeriesDetailsRuntimeFilter({ runtimeFilter });
   };
 
+  onCardSizeChange = (cardSize) => {
+    this.props.setSeriesDetailsCardSize({ cardSize });
+  };
+
   onSortSelect = (sortKey) => {
     this.props.setSeriesDetailsSort({
       sortKey,
@@ -406,6 +414,7 @@ class SeriesDetailsConnector extends Component {
         onStatusSelect={this.onStatusSelect}
         onQualityFilterChange={this.onQualityFilterChange}
         onRuntimeFilterChange={this.onRuntimeFilterChange}
+        onCardSizeChange={this.onCardSizeChange}
         onSortSelect={this.onSortSelect}
       />
     );
@@ -443,6 +452,7 @@ SeriesDetailsConnector.propTypes = {
   setSeriesDetailsMonitorStatusFilter: PropTypes.func.isRequired,
   setSeriesDetailsQualityFilter: PropTypes.func.isRequired,
   setSeriesDetailsRuntimeFilter: PropTypes.func.isRequired,
+  setSeriesDetailsCardSize: PropTypes.func.isRequired,
   setSeriesDetailsActiveSeries: PropTypes.func.isRequired,
   fetchSeriesDetailsFilterBounds: PropTypes.func.isRequired,
   fetchSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,

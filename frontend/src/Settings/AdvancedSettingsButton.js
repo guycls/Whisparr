@@ -3,123 +3,82 @@ import ToggleButton from '@mui/material/ToggleButton';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
-import { icons } from 'Helpers/Props';
+import { toolbarButtonSx, TOOLBAR_ICON_SIZE } from 'Components/Page/Toolbar/ToolbarIconSlot';
+import Tooltip from 'Components/Tooltip/Tooltip';
+import { icons, tooltipPositions } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 
 function AdvancedSettingsButton(props) {
   const {
     advancedSettings,
-    onAdvancedSettingsPress,
-    showLabel
+    onAdvancedSettingsPress
   } = props;
 
-  return (
-    <Box
-      sx={(theme) => ({
-        position: 'relative',
-        display: 'inline-flex',
-        justifyContent: 'center',
-        width: 84,
-        minWidth: 84,
-        pt: theme.spacing(0.5),
-        overflow: 'hidden',
-        textAlign: 'center'
-      })}
-    >
-      <ToggleButton
-        value="advanced"
-        selected={advancedSettings}
-        title={advancedSettings ? translate('ShownClickToHide') : translate('HiddenClickToShow')}
-        onChange={onAdvancedSettingsPress}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: '100%',
-          minWidth: 0,
-          p: 0,
-          lineHeight: 1,
-          color: 'inherit',
-          border: 0,
-          borderRadius: 0
-        }}
-      >
-        <Icon
-          name={icons.ADVANCED_SETTINGS}
-          size={21}
-        />
+  const label = advancedSettings ? translate('HideAdvanced') : translate('ShowAdvanced');
 
-        <Box
-          component="span"
+  return (
+    <Tooltip
+      position={tooltipPositions.BOTTOM}
+      tooltip={advancedSettings ? translate('ShownClickToHide') : translate('HiddenClickToShow')}
+      anchor={
+        <ToggleButton
+          aria-label={label}
+          value="advanced"
+          selected={advancedSettings}
+          onChange={onAdvancedSettingsPress}
           sx={{
-            position: 'absolute',
-            top: '10px',
-            right: '12px'
+            ...toolbarButtonSx,
+            position: 'relative',
+            overflow: 'visible'
           }}
         >
-          <Box
-            component="span"
-            sx={(theme) => ({ color: theme.palette.text.secondary })}
-          >
-            <Icon
-              name={icons.CIRCLE}
-              size={16}
-            />
-          </Box>
+          <Icon
+            name={icons.ADVANCED_SETTINGS}
+            size={TOOLBAR_ICON_SIZE}
+          />
 
           <Box
             component="span"
-            sx={(theme) => ({
-              color: advancedSettings ? theme.palette.success.main : theme.palette.error.main
-            })}
+            sx={{
+              position: 'absolute',
+              top: 2,
+              right: 2
+            }}
           >
-            <Icon
-              name={advancedSettings ? icons.CHECK : icons.CLOSE}
-              size={10}
-            />
-          </Box>
-        </Box>
-
-        {
-          showLabel ?
             <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: 24
-              }}
+              component="span"
+              sx={{ color: 'text.secondary' }}
             >
-              <Box
-                sx={(theme) => ({
-                  width: '100%',
-                  px: '3px',
-                  overflow: 'hidden',
-                  color: theme.palette.text.secondary,
-                  fontSize: 11,
-                  lineHeight: '12px',
-                  textAlign: 'center',
-                  whiteSpace: 'normal'
-                })}
-              >
-                {advancedSettings ? translate('HideAdvanced') : translate('ShowAdvanced')}
-              </Box>
-            </Box> :
-            null
-        }
-      </ToggleButton>
-    </Box>
+              <Icon
+                name={icons.CIRCLE}
+                size={16}
+              />
+            </Box>
+
+            <Box
+              component="span"
+              sx={{ color: advancedSettings ? 'success.main' : 'error.main' }}
+            >
+              <Icon
+                name={advancedSettings ? icons.CHECK : icons.CLOSE}
+                size={10}
+              />
+            </Box>
+          </Box>
+        </ToggleButton>
+      }
+    />
   );
 }
 
 AdvancedSettingsButton.propTypes = {
   advancedSettings: PropTypes.bool.isRequired,
   onAdvancedSettingsPress: PropTypes.func.isRequired,
-  showLabel: PropTypes.bool.isRequired
+  showLabel: PropTypes.bool
 };
 
 AdvancedSettingsButton.defaultProps = {
-  showLabel: true
+  showLabel: false
 };
 
 export default AdvancedSettingsButton;

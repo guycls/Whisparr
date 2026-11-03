@@ -54,6 +54,9 @@ class FilterMenu extends Component {
       <Box
         sx={{
           position: 'relative',
+          display: 'inline-flex',
+          alignItems: 'center',
+          height: '100%',
           '@media (max-width: 768px)': {
             mr: '10px'
           }

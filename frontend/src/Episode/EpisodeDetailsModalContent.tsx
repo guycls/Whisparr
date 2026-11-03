@@ -7,7 +7,9 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
@@ -77,6 +79,7 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
     episodeId,
     episodeEntity = episodeEntities.EPISODES,
     seriesId,
+    episodeTitle,
     isSaving = false,
     showOpenSeriesButton = false,
     startInteractiveSearch = false,
@@ -105,14 +108,20 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
   );
 
   const {
+    title: seriesTitle,
     titleSlug,
     monitored: seriesMonitored,
   } = useSeries(seriesId) as Series;
 
   const {
+    title: sceneTitle,
     monitored,
     images,
   } = useEpisode(episodeId, episodeEntity) as Episode;
+
+  const heading = [seriesTitle, sceneTitle || episodeTitle]
+    .filter(Boolean)
+    .join(' - ');
 
   const hasScreenshot = hasEpisodeScreenshot(images);
   const monitorDisabled = !seriesMonitored || isSaving;
@@ -194,6 +203,64 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
   return (
     <ModalContent showCloseButton={false} onModalClose={onModalClose}>
       <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          minHeight: 0,
+        }}
+      >
+      <Toolbar
+        variant="dense"
+        disableGutters
+        sx={{
+          flex: '0 0 auto',
+          minHeight: 48,
+          px: 0.5,
+          gap: 0.5,
+          borderBottom: 1,
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Tooltip title={monitorTitle}>
+          <span>
+            <IconButton
+              aria-label={monitorTitle}
+              disabled={monitorDisabled}
+              onClick={handleMonitorEpisodePress}
+            >
+              {isSaving ? (
+                <CircularProgress size={20} />
+              ) : monitored ? (
+                <BookmarkIcon />
+              ) : (
+                <BookmarkBorderIcon />
+              )}
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Typography
+          component="h2"
+          variant="subtitle1"
+          noWrap
+          sx={{ flex: 1, minWidth: 0, px: 1, fontWeight: 600 }}
+        >
+          {heading}
+        </Typography>
+
+        <Tooltip title={translate('Close')}>
+          <IconButton
+            aria-label={translate('Close')}
+            onClick={onModalClose}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Tooltip>
+      </Toolbar>
+
+      <Box
         ref={splitRef}
         sx={{
           display: 'flex',
@@ -239,6 +306,7 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
             episodeId={episodeId}
             episodeEntity={episodeEntity}
             showHeader={false}
+            showSceneHeading={false}
             showScreenshot={false}
             showMetadata={true}
             showDownloadedFiles={false}
@@ -284,46 +352,6 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
             overflow: 'hidden',
           }}
         >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              zIndex: 2,
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <Tooltip title={monitorTitle}>
-              <span>
-                <IconButton
-                  size="small"
-                  aria-label={monitorTitle}
-                  disabled={monitorDisabled}
-                  onClick={handleMonitorEpisodePress}
-                >
-                  {isSaving ? (
-                    <CircularProgress size={20} />
-                  ) : monitored ? (
-                    <BookmarkIcon fontSize="small" />
-                  ) : (
-                    <BookmarkBorderIcon fontSize="small" />
-                  )}
-                </IconButton>
-              </span>
-            </Tooltip>
-
-            <Tooltip title={translate('Close')}>
-              <IconButton
-                size="small"
-                aria-label={translate('Close')}
-                onClick={onModalClose}
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-
           <Tabs
             value={currentlySelectedTab}
             variant="fullWidth"
@@ -362,6 +390,7 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
           </Button>
         </ModalFooter>
       ) : null}
+      </Box>
     </ModalContent>
   );
 }

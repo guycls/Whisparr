@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AppState from 'App/State/AppState';
 import { REFRESH_SERIES, SERIES_SEARCH } from 'Commands/commandNames';
@@ -20,6 +20,7 @@ import formatDateTime from 'Utilities/Date/formatDateTime';
 import getRelativeDate from 'Utilities/Date/getRelativeDate';
 import translate from 'Utilities/String/translate';
 import createSeriesIndexItemSelector from '../createSeriesIndexItemSelector';
+import { loadLogoGradient, logoCoverUrl } from './logoGradient';
 import selectPosterOptions from './selectPosterOptions';
 import SeriesIndexPosterInfo from './SeriesIndexPosterInfo';
 
@@ -117,6 +118,19 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
 
   const dispatch = useDispatch();
   const [hasPosterError, setHasPosterError] = useState(false);
+  const [logoGradient, setLogoGradient] = useState<{
+    url: string;
+    value: string;
+  } | null>(null);
+  const logoUrlRef = useRef<string | null>(null);
+
+  const logoUrl = useMemo(() => {
+    const logo = images?.find((image) => image.coverType === 'logo');
+
+    return logo?.url ? logoCoverUrl(logo.url) : null;
+  }, [images]);
+
+  logoUrlRef.current = logoUrl;
   const [isEditSeriesModalOpen, setIsEditSeriesModalOpen] = useState(false);
   const [isDeleteSeriesModalOpen, setIsDeleteSeriesModalOpen] = useState(false);
 
@@ -140,11 +154,25 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
 
   const onPosterLoadError = useCallback(() => {
     setHasPosterError(true);
-  }, [setHasPosterError]);
+  }, []);
 
   const onPosterLoad = useCallback(() => {
     setHasPosterError(false);
-  }, [setHasPosterError]);
+
+    const requested = logoUrlRef.current;
+
+    if (!requested) {
+      return;
+    }
+
+    loadLogoGradient(requested).then((gradient) => {
+      if (!gradient || logoUrlRef.current !== requested) {
+        return;
+      }
+
+      setLogoGradient({ url: requested, value: gradient });
+    });
+  }, []);
 
   const onEditSeriesPress = useCallback(() => {
     setIsEditSeriesModalOpen(true);
@@ -180,15 +208,27 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
         p: { xs: '5px', md: 0 },
         '&:hover': {
           zIndex: 2,
-          boxShadow: (theme) => `0 0 12px ${theme.palette.common.black}`,
+          '& .poster-card': {
+            boxShadow: (theme) => `0 0 12px ${theme.palette.common.black}`,
+          },
           '& .poster-controls': {
-            opacity: 0.9,
+            opacity: 1,
             transition: 'opacity 200ms linear 150ms',
           },
         },
       }}
     >
-      <Box sx={{ position: 'relative', borderRadius: 1, overflow: 'hidden' }} title={title}>
+      <Box
+        className="poster-card"
+        sx={{
+          overflow: 'hidden',
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 1,
+          bgcolor: 'background.paper',
+        }}
+      >
+      <Box sx={{ position: 'relative', overflow: 'hidden' }} title={title}>
         {isSelectMode ? <SeriesIndexPosterSelect seriesId={seriesId} /> : null}
 
         <Box
@@ -199,11 +239,17 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
             left: 10,
             zIndex: 3,
             borderRadius: 1,
-            bgcolor: '#4f566f',
+            bgcolor: 'rgba(0, 0, 0, 0.82)',
             color: 'common.white',
             fontSize: 12,
             opacity: 0,
-            '& .MuiIconButton-root:hover': { color: '#ccc' },
+            '& .MuiIconButton-root': {
+              color: 'common.white',
+            },
+            '& .MuiIconButton-root:hover': {
+              color: 'common.white',
+              bgcolor: 'rgba(255, 255, 255, 0.16)',
+            },
           }}
         >
           <SpinnerIconButton
@@ -244,12 +290,33 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
             position: 'relative',
             display: 'block',
             height: 70,
-            bgcolor: 'action.hover',
+            overflow: 'hidden',
+            bgcolor: 'grey.800',
           }}
         >
+          {logoGradient && logoGradient.url === logoUrl && !hasPosterError ? (
+            <Box
+              sx={{
+                position: 'absolute',
+                zIndex: 0,
+                top: '-30%',
+                right: '-30%',
+                bottom: '-30%',
+                left: '-30%',
+                backgroundImage: logoGradient.value,
+                filter: 'blur(22px)',
+                pointerEvents: 'none',
+              }}
+            />
+          ) : null}
+
           <SeriesPoster
             blur={safeForWorkMode}
-            style={elementStyle}
+            style={{
+              ...elementStyle,
+              position: 'relative',
+              zIndex: 1,
+            }}
             images={images}
             size={250}
             lazy={false}
@@ -262,6 +329,7 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
             <Box
               sx={{
                 position: 'absolute',
+                zIndex: 2,
                 top: 0,
                 left: 0,
                 display: 'flex',
@@ -272,6 +340,7 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
                 height: '100%',
                 px: '8px',
                 overflow: 'hidden',
+                bgcolor: 'grey.800',
                 color: 'common.white',
                 textAlign: 'center',
                 fontSize: 16,
@@ -374,6 +443,7 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
         tags={tags}
         showTags={showTags}
       />
+      </Box>
 
       <EditSeriesModalConnector
         isOpen={isEditSeriesModalOpen}

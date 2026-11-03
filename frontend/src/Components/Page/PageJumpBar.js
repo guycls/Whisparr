@@ -1,180 +1,197 @@
 import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import Measure from 'Components/Measure';
-import PageJumpBarItem from './PageJumpBarItem';
+import React, { useCallback, useRef, useState } from 'react';
 
-const ITEM_HEIGHT = parseInt('25px');
+function letterFromPointer(order, rail, clientY) {
+  const bounds = rail.getBoundingClientRect();
 
-class PageJumpBar extends Component {
-
-  //
-  // Lifecycle
-
-  constructor(props, context) {
-    super(props, context);
-
-    this.state = {
-      height: 0,
-      visibleItems: props.items.order
-    };
+  if (bounds.height <= 0) {
+    return order[0];
   }
 
-  componentDidMount() {
-    this.computeVisibleItems();
-  }
+  const ratio = (clientY - bounds.top) / bounds.height;
+  const index = Math.min(
+    order.length - 1,
+    Math.max(0, Math.floor(ratio * order.length))
+  );
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return (
-      nextProps.items !== this.props.items ||
-      nextState.height !== this.state.height ||
-      nextState.visibleItems !== this.state.visibleItems
-    );
-  }
+  return order[index];
+}
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevProps.items !== this.props.items ||
-      prevState.height !== this.state.height
-    ) {
-      this.computeVisibleItems();
-    }
-  }
+function PageJumpBar(props) {
+  const { items, minimumItems, onItemPress } = props;
+  const order = items && items.order ? items.order : [];
+  const railRef = useRef(null);
+  const activeRef = useRef(null);
+  const [active, setActive] = useState(null);
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
-  //
-  // Control
+  const selectLetter = useCallback(
+    (letter) => {
+      setActive(letter);
 
-  computeVisibleItems() {
-    const {
-      items,
-      minimumItems
-    } = this.props;
-
-    if (!items) {
-      return;
-    }
-
-    const {
-      characters,
-      order
-    } = items;
-
-    const height = this.state.height;
-    const maximumItems = Math.floor(height / ITEM_HEIGHT);
-    const diff = order.length - maximumItems;
-
-    if (diff < 0) {
-      this.setState({ visibleItems: order });
-      return;
-    }
-
-    if (order.length < minimumItems) {
-      this.setState({ visibleItems: order });
-      return;
-    }
-
-    // get first, last, and most common in between to make up numbers
-    const visibleItems = [order[0]];
-
-    const sorted = order.slice(1, -1).map((x) => characters[x]).sort((a, b) => b - a);
-    const minCount = sorted[maximumItems - 3];
-    const greater = sorted.reduce((acc, value) => acc + (value > minCount ? 1 : 0), 0);
-    let minAllowed = maximumItems - 2 - greater;
-
-    for (let i = 1; i < order.length - 1; i++) {
-      if (characters[order[i]] > minCount) {
-        visibleItems.push(order[i]);
-      } else if (characters[order[i]] === minCount && minAllowed > 0) {
-        visibleItems.push(order[i]);
-        minAllowed--;
+      if (letter && letter !== activeRef.current) {
+        activeRef.current = letter;
+        onItemPress(letter);
       }
+    },
+    [onItemPress]
+  );
+
+  const handlePointerDown = useCallback(
+    (event) => {
+      if (!railRef.current) {
+        return;
+      }
+
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setIsScrubbing(true);
+      selectLetter(letterFromPointer(order, railRef.current, event.clientY));
+    },
+    [order, selectLetter]
+  );
+
+  const handlePointerMove = useCallback(
+    (event) => {
+      if (!railRef.current) {
+        return;
+      }
+
+      const letter = letterFromPointer(order, railRef.current, event.clientY);
+      const scrubbing = event.currentTarget.hasPointerCapture(event.pointerId);
+
+      if (scrubbing) {
+        selectLetter(letter);
+        return;
+      }
+
+      setActive(letter);
+    },
+    [order, selectLetter]
+  );
+
+  const handlePointerUp = useCallback((event) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
-    visibleItems.push(order[order.length - 1]);
+    setIsScrubbing(false);
+    activeRef.current = null;
+  }, []);
 
-    this.setState({ visibleItems });
+  const handlePointerLeave = useCallback(() => {
+    setIsHovering(false);
+
+    if (!isScrubbing) {
+      setActive(null);
+      activeRef.current = null;
+    }
+  }, [isScrubbing]);
+
+  if (!order.length || order.length < minimumItems) {
+    return null;
   }
 
-  //
-  // Listeners
+  const activeIndex = active ? order.indexOf(active) : -1;
+  const showBubble = activeIndex >= 0 && (isHovering || isScrubbing);
 
-  onMeasure = ({ height }) => {
-    if (height > 0) {
-      this.setState({ height });
-    }
-  };
+  return (
+    <Box
+      ref={railRef}
+      sx={{
+        position: 'absolute',
+        top: 10,
+        right: 2,
+        bottom: 18,
+        py: '4px',
+        zIndex: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        width: 22,
+        opacity: isHovering || isScrubbing ? 1 : 0.4,
+        transition: 'opacity 120ms linear',
+        touchAction: 'none',
+        userSelect: 'none',
+        '@media (max-width: 767.95px)': {
+          display: 'none',
+        },
+      }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onPointerEnter={(event) => {
+        setIsHovering(true);
 
-  //
-  // Render
+        if (railRef.current) {
+          setActive(letterFromPointer(order, railRef.current, event.clientY));
+        }
+      }}
+      onPointerLeave={handlePointerLeave}
+    >
+      {order.map((item) => {
+        const isActive = item === active;
 
-  render() {
-    const {
-      minimumItems,
-      onItemPress
-    } = this.props;
-
-    const {
-      visibleItems
-    } = this.state;
-
-    if (!visibleItems.length || visibleItems.length < minimumItems) {
-      return null;
-    }
-
-    return (
-      <Box
-        sx={{
-          zIndex: 10,
-          display: 'flex',
-          alignContent: 'stretch',
-          alignItems: 'stretch',
-          alignSelf: 'stretch',
-          justifyContent: 'center',
-          flex: '0 0 30px',
-          '@media (max-width: 768px)': {
-            display: 'none'
-          }
-        }}
-      >
-        <Measure
-          whitelist={['height']}
-          onMeasure={this.onMeasure}
-        >
+        return (
           <Box
+            key={item}
+            component="span"
             sx={{
               display: 'flex',
-              justifyContent: 'space-around',
-              flex: '0 0 100%',
-              flexDirection: 'column',
-              overflow: 'hidden'
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: '1 1 auto',
+              minHeight: 14,
+              color: isActive ? 'primary.main' : 'text.secondary',
+              fontSize: 11,
+              fontWeight: 700,
+              lineHeight: 1.3,
+              cursor: 'pointer',
             }}
           >
-            {
-              visibleItems.map((item) => {
-                return (
-                  <PageJumpBarItem
-                    key={item}
-                    label={item}
-                    onItemPress={onItemPress}
-                  />
-                );
-              })
-            }
+            {item.toUpperCase()}
           </Box>
-        </Measure>
-      </Box>
-    );
-  }
+        );
+      })}
+
+      {showBubble ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            right: '100%',
+            top: `clamp(18px, ${((activeIndex + 0.5) / order.length) * 100}%, calc(100% - 18px))`,
+            transform: 'translate(-8px, -50%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            fontSize: 16,
+            fontWeight: 700,
+            pointerEvents: 'none',
+          }}
+        >
+          {active.toUpperCase()}
+        </Box>
+      ) : null}
+    </Box>
+  );
 }
 
 PageJumpBar.propTypes = {
   items: PropTypes.object.isRequired,
   minimumItems: PropTypes.number.isRequired,
-  onItemPress: PropTypes.func.isRequired
+  onItemPress: PropTypes.func.isRequired,
 };
 
 PageJumpBar.defaultProps = {
-  minimumItems: 5
+  minimumItems: 5,
 };
 
 export default PageJumpBar;

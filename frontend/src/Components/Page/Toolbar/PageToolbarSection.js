@@ -9,8 +9,9 @@ import { forEach } from 'Helpers/elementChildren';
 import { align, icons } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import PageToolbarOverflowMenuItem from './PageToolbarOverflowMenuItem';
+import { TOOLBAR_BUTTON_WIDTH, ToolbarOverflowContext } from './ToolbarIconSlot';
 
-const BUTTON_WIDTH = 76;
+const BUTTON_WIDTH = TOOLBAR_BUTTON_WIDTH + 4;
 const SEPARATOR_WIDTH = 17;
 
 function calculateOverflowItems(children, isMeasured, width, collapseButtons) {
@@ -70,7 +71,7 @@ function calculateOverflowItems(children, isMeasured, width, collapseButtons) {
         actualButtons++;
       }
     } else if (!isSeparator) {
-      overflowItems.push(child.props);
+      overflowItems.push(child);
     }
   });
 
@@ -166,21 +167,31 @@ class PageToolbarSection extends Component {
                       />
 
                       <MenuContent>
-                        {
-                          overflowItems.map((item) => {
-                            const {
-                              label,
-                              overflowComponent: OverflowComponent = PageToolbarOverflowMenuItem
-                            } = item;
+                        <ToolbarOverflowContext.Provider value={true}>
+                          {
+                            overflowItems.map((child, index) => {
+                              const item = child.props || {};
 
-                            return (
-                              <OverflowComponent
-                                key={label}
-                                {...item}
-                              />
-                            );
-                          })
-                        }
+                              if (!item.iconName) {
+                                return React.cloneElement(child, {
+                                  key: child.key || index
+                                });
+                              }
+
+                              const {
+                                label,
+                                overflowComponent: OverflowComponent = PageToolbarOverflowMenuItem
+                              } = item;
+
+                              return (
+                                <OverflowComponent
+                                  key={label || child.key || index}
+                                  {...item}
+                                />
+                              );
+                            })
+                          }
+                        </ToolbarOverflowContext.Provider>
                       </MenuContent>
                     </Menu>
                 }

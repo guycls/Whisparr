@@ -38,6 +38,7 @@ export const defaultState = {
   },
   maxEpisodeRuntime: 0,
   activeSeriesId: 0,
+  cardSize: 200,
   sceneModalPanePercent: 50,
   isFilterBoundsFetching: false,
   isFilterBoundsPopulated: false,
@@ -59,10 +60,16 @@ export const defaultState = {
 
 export const defaultRuntimeFilter = defaultState.runtimeFilter;
 
+export const SERIES_DETAILS_CARD_SIZE_MIN = 140;
+export const SERIES_DETAILS_CARD_SIZE_MAX = 360;
+export const SERIES_DETAILS_CARD_SIZE_STEP = 10;
+
 export const persistState = [
   'seriesDetails.view',
   'seriesDetails.monitorStatusFilter',
   'seriesDetails.qualityFilter',
+  'seriesDetails.runtimeFilter',
+  'seriesDetails.cardSize',
   'seriesDetails.sceneModalPanePercent'
 ];
 
@@ -73,6 +80,7 @@ export const SET_SERIES_DETAILS_VIEW = 'seriesDetails/setSeriesDetailsView';
 export const SET_SERIES_DETAILS_MONITOR_STATUS_FILTER = 'seriesDetails/setSeriesDetailsMonitorStatusFilter';
 export const SET_SERIES_DETAILS_QUALITY_FILTER = 'seriesDetails/setSeriesDetailsQualityFilter';
 export const SET_SERIES_DETAILS_RUNTIME_FILTER = 'seriesDetails/setSeriesDetailsRuntimeFilter';
+export const SET_SERIES_DETAILS_CARD_SIZE = 'seriesDetails/setSeriesDetailsCardSize';
 export const SET_SERIES_DETAILS_ACTIVE_SERIES = 'seriesDetails/setSeriesDetailsActiveSeries';
 export const FETCH_SERIES_DETAILS_FILTER_BOUNDS = 'seriesDetails/fetchSeriesDetailsFilterBounds';
 export const FETCH_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/fetchSeriesDetailsUnifiedGrid';
@@ -89,6 +97,7 @@ export const setSeriesDetailsView = createAction(SET_SERIES_DETAILS_VIEW);
 export const setSeriesDetailsMonitorStatusFilter = createAction(SET_SERIES_DETAILS_MONITOR_STATUS_FILTER);
 export const setSeriesDetailsQualityFilter = createAction(SET_SERIES_DETAILS_QUALITY_FILTER);
 export const setSeriesDetailsRuntimeFilter = createAction(SET_SERIES_DETAILS_RUNTIME_FILTER);
+export const setSeriesDetailsCardSize = createAction(SET_SERIES_DETAILS_CARD_SIZE);
 export const setSeriesDetailsActiveSeries = createAction(SET_SERIES_DETAILS_ACTIVE_SERIES);
 export const fetchSeriesDetailsFilterBounds = createThunk(FETCH_SERIES_DETAILS_FILTER_BOUNDS);
 export const fetchSeriesDetailsUnifiedGrid = createThunk(FETCH_SERIES_DETAILS_UNIFIED_GRID);
@@ -342,6 +351,15 @@ export const reducers = createHandleActions({
 
   [SET_SERIES_DETAILS_RUNTIME_FILTER]: function(state, { payload }) {
     return Object.assign({}, state, { runtimeFilter: payload.runtimeFilter });
+  },
+
+  [SET_SERIES_DETAILS_CARD_SIZE]: function(state, { payload }) {
+    const cardSize = Math.min(
+      SERIES_DETAILS_CARD_SIZE_MAX,
+      Math.max(SERIES_DETAILS_CARD_SIZE_MIN, Math.round(payload.cardSize))
+    );
+
+    return Object.assign({}, state, { cardSize });
   },
 
   [SET_SERIES_DETAILS_ACTIVE_SERIES]: function(state, { payload }) {

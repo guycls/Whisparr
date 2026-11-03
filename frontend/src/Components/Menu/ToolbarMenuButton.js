@@ -1,10 +1,12 @@
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useContext } from 'react';
 import Icon from 'Components/Icon';
 import MenuButton from 'Components/Menu/MenuButton';
+import ToolbarIconSlot, { TOOLBAR_ICON_SIZE, ToolbarOverflowContext, toolbarButtonSx, toolbarOverflowItemSx } from 'Components/Page/Toolbar/ToolbarIconSlot';
+import Tooltip from 'Components/Tooltip/Tooltip';
+import { tooltipPositions } from 'Helpers/Props';
 
 function ToolbarMenuButton(props) {
   const {
@@ -14,73 +16,79 @@ function ToolbarMenuButton(props) {
     ...otherProps
   } = props;
 
-  return (
-    <MenuButton
-      {...otherProps}
-      sx={{
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: '2px',
-        width: 72,
-        minWidth: 72,
-        maxWidth: 72,
-        height: 56,
-        minHeight: 56,
-        m: 0,
-        p: '6px 4px 4px',
-        border: 'none',
-        borderRadius: 1,
-        color: 'inherit',
-        lineHeight: 1,
-        overflow: 'hidden',
-        textTransform: 'none',
-        whiteSpace: 'normal',
-        '&.MuiButton-outlined, &.MuiButton-text, &.MuiButton-contained': {
-          border: 'none'
-        },
-        '&:hover': {
-          border: 'none',
-          backgroundColor: 'action.hover',
-          color: 'primary.main'
-        }
-      }}
-    >
-      <Stack
-        spacing={0.25}
-        sx={{ alignItems: 'center', width: '100%', lineHeight: 1 }}
+  const inOverflow = useContext(ToolbarOverflowContext);
+
+  if (inOverflow) {
+    return (
+      <MenuButton
+        aria-label={text}
+        {...otherProps}
+        sx={toolbarOverflowItemSx}
       >
         <Badge
           color="error"
           variant="dot"
           invisible={!showIndicator}
+          sx={{
+            '& .MuiBadge-badge': {
+              right: -2,
+              top: 2
+            }
+          }}
         >
-          <Icon
-            name={iconName}
-            size={21}
-          />
+          <ToolbarIconSlot>
+            <Icon
+              name={iconName}
+              size={TOOLBAR_ICON_SIZE}
+            />
+          </ToolbarIconSlot>
         </Badge>
         {
-          text &&
-            <Box
-              component="span"
-              sx={{
-                width: '100%',
-                height: 24,
-                px: '3px',
-                overflow: 'hidden',
-                color: 'text.secondary',
-                fontSize: 11,
-                lineHeight: '12px',
-                textAlign: 'center',
-                whiteSpace: 'normal'
-              }}
-            >
-              {text}
-            </Box>
+          text ?
+            <Box component="span">{text}</Box> :
+            null
         }
-      </Stack>
+      </MenuButton>
+    );
+  }
+
+  const button = (
+    <MenuButton
+      aria-label={text}
+      {...otherProps}
+      sx={toolbarButtonSx}
+    >
+      <Badge
+        color="error"
+        variant="dot"
+        invisible={!showIndicator}
+        sx={{
+          '& .MuiBadge-badge': {
+            right: -2,
+            top: 2
+          }
+        }}
+      >
+        <ToolbarIconSlot>
+          <Icon
+            name={iconName}
+            size={TOOLBAR_ICON_SIZE}
+          />
+        </ToolbarIconSlot>
+      </Badge>
     </MenuButton>
+  );
+
+  if (!text) {
+    return button;
+  }
+
+  return (
+    <Tooltip
+      position={tooltipPositions.TOP}
+      tooltip={text}
+      anchor={button}
+    />
   );
 }
 

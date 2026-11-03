@@ -24,6 +24,10 @@ function getDimensions(width, height) {
 // Variables
 
 export const section = 'app';
+
+export const persistState = [
+  'app.sidebarWidth'
+];
 const messagesSection = 'app.messages';
 let abortPingServer = null;
 let pingTimeout = null;
@@ -43,6 +47,7 @@ export const defaultState = {
   isDisconnected: false,
   isRestarting: false,
   isSidebarVisible: !getDimensions(window.innerWidth, window.innerHeight).isSmallScreen,
+  sidebarWidth: 196,
   translations: {
     isFetching: true,
     isPopulated: false,

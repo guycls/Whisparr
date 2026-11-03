@@ -161,14 +161,14 @@ class QualityProfileItem extends Component {
 
         {
           connectDragSource(
-            <Box sx={sxDragHandle}>
+            <div style={sxDragHandle}>
               <Box sx={sxDragIcon}>
 <Icon
                 title={translate('CreateGroup')}
                 name={icons.REORDER}
               />
 </Box>
-            </Box>
+            </div>
           )
         }
       </Box>

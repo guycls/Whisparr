@@ -1276,6 +1276,7 @@
   "PortNumber": "Port Number",
   "PosterOptions": "Poster Options",
   "PosterSize": "Poster Size",
+  "CardSize": "Card Size",
   "Posters": "Posters",
   "PreferAndUpgrade": "Prefer and Upgrade",
   "PreferProtocol": "Prefer {preferredProtocol}",

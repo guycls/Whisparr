@@ -35,7 +35,11 @@ function AppMenu(props) {
     <MenuCloseContext.Provider value={onClose}>
       <Box
         className={className}
-        sx={{ display: 'inline-flex' }}
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          height: '100%'
+        }}
       >
         {
           button &&

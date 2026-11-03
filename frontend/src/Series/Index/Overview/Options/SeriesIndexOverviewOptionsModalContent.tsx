@@ -10,6 +10,11 @@ import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
 import ModalHeader from 'Components/Modal/ModalHeader';
 import { inputTypes } from 'Helpers/Props';
+import AppState from 'App/State/AppState';
+import {
+  posterSizeFromCardSize,
+  resolveSitesCardSize,
+} from 'Series/Index/cardSize';
 import { setSeriesOverviewOption } from 'Store/Actions/seriesIndexActions';
 import translate from 'Utilities/String/translate';
 import selectOverviewOptions from '../selectOverviewOptions';
@@ -44,9 +49,14 @@ function SeriesIndexOverviewOptionsModalContent(
 ) {
   const { onModalClose } = props;
 
+  const overviewOptions = useSelector(selectOverviewOptions);
+  const cardSize = useSelector((state: AppState) => state.seriesIndex.cardSize);
+  const posterSize = useSelector(
+    (state: AppState) => state.seriesIndex.posterOptions.size
+  );
+
   const {
     detailedProgressBar,
-    size,
     showMonitored,
     showNetwork,
     showQualityProfile,
@@ -57,7 +67,11 @@ function SeriesIndexOverviewOptionsModalContent(
     showSizeOnDisk,
     showTags,
     showSearchAction,
-  } = useSelector(selectOverviewOptions);
+  } = overviewOptions;
+
+  const size = posterSizeFromCardSize(
+    resolveSitesCardSize(cardSize, posterSize)
+  );
 
   const dispatch = useDispatch();
 

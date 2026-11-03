@@ -13,6 +13,7 @@ export interface SeriesIndexAppState {
   secondarySortKey: string;
   secondarySortDirection: SortDirection;
   view: string;
+  cardSize: number | null;
 
   posterOptions: {
     detailedProgressBar: boolean;

@@ -60,6 +60,10 @@ export default function Icon({
   const color = kindColor(kind, theme.palette);
   const opacity = darken ? 0.7 : undefined;
 
+  if (!IconComponent) {
+    return null;
+  }
+
   const icon =
     isSpinning && IconComponent === icons.SPINNER ? (
       <CircularProgress

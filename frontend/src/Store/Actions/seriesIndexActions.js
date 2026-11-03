@@ -1,6 +1,11 @@
 import moment from 'moment';
 import { createAction } from 'redux-actions';
 import { sortDirections } from 'Helpers/Props';
+import {
+  cardSizeFromPosterSize,
+  clampSitesCardSize,
+  posterSizeFromCardSize
+} from 'Series/Index/cardSize';
 import translate from 'Utilities/String/translate';
 import createHandleActions from './Creators/createHandleActions';
 import createSetClientSideCollectionFilterReducer from './Creators/Reducers/createSetClientSideCollectionFilterReducer';
@@ -22,6 +27,7 @@ export const defaultState = {
   secondarySortKey: 'sortTitle',
   secondarySortDirection: sortDirections.ASCENDING,
   view: 'posters',
+  cardSize: null,
 
   posterOptions: {
     detailedProgressBar: false,
@@ -277,7 +283,8 @@ export const persistState = [
   'seriesIndex.columns',
   'seriesIndex.posterOptions',
   'seriesIndex.overviewOptions',
-  'seriesIndex.tableOptions'
+  'seriesIndex.tableOptions',
+  'seriesIndex.cardSize'
 ];
 
 //
@@ -289,6 +296,7 @@ export const SET_SERIES_VIEW = 'seriesIndex/setSeriesView';
 export const SET_SERIES_TABLE_OPTION = 'seriesIndex/setSeriesTableOption';
 export const SET_SERIES_POSTER_OPTION = 'seriesIndex/setSeriesPosterOption';
 export const SET_SERIES_OVERVIEW_OPTION = 'seriesIndex/setSeriesOverviewOption';
+export const SET_SERIES_CARD_SIZE = 'seriesIndex/setSeriesCardSize';
 
 //
 // Action Creators
@@ -299,6 +307,7 @@ export const setSeriesView = createAction(SET_SERIES_VIEW);
 export const setSeriesTableOption = createAction(SET_SERIES_TABLE_OPTION);
 export const setSeriesPosterOption = createAction(SET_SERIES_POSTER_OPTION);
 export const setSeriesOverviewOption = createAction(SET_SERIES_OVERVIEW_OPTION);
+export const setSeriesCardSize = createAction(SET_SERIES_CARD_SIZE);
 
 //
 // Reducers
@@ -316,24 +325,64 @@ export const reducers = createHandleActions({
 
   [SET_SERIES_POSTER_OPTION]: function(state, { payload }) {
     const posterOptions = state.posterOptions;
-
-    return {
+    const nextState = {
       ...state,
       posterOptions: {
         ...posterOptions,
         ...payload
       }
     };
+
+    if (payload.size) {
+      const cardSize = cardSizeFromPosterSize(payload.size);
+
+      nextState.cardSize = cardSize;
+      nextState.overviewOptions = {
+        ...state.overviewOptions,
+        size: posterSizeFromCardSize(cardSize)
+      };
+    }
+
+    return nextState;
   },
 
   [SET_SERIES_OVERVIEW_OPTION]: function(state, { payload }) {
     const overviewOptions = state.overviewOptions;
-
-    return {
+    const nextState = {
       ...state,
       overviewOptions: {
         ...overviewOptions,
         ...payload
+      }
+    };
+
+    if (payload.size) {
+      const cardSize = cardSizeFromPosterSize(payload.size);
+
+      nextState.cardSize = cardSize;
+      nextState.posterOptions = {
+        ...state.posterOptions,
+        size: posterSizeFromCardSize(cardSize)
+      };
+    }
+
+    return nextState;
+  },
+
+  [SET_SERIES_CARD_SIZE]: function(state, { payload }) {
+    const cardSize = clampSitesCardSize(payload.cardSize);
+    const size = posterSizeFromCardSize(cardSize);
+
+    return {
+      ...state,
+      cardSize,
+      posterOptions: {
+        ...state.posterOptions,
+        size
+      },
+      overviewOptions: {
+        ...state.overviewOptions,
+        size
       }
     };
   }

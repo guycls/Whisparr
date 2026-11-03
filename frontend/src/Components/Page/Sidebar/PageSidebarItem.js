@@ -1,3 +1,4 @@
+import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -42,61 +43,53 @@ class PageSidebarItem extends Component {
 
     const label = typeof title === 'function' ? title() : title;
 
-    return (
-      <div>
+    const button = (
+      <ListItem disablePadding>
         <ListItemButton
           component={RouterLink}
           to={withUrlBase(to)}
           selected={isActive || isActiveParent}
           onClick={this.onPress}
           sx={{
-            mx: 0.75,
-            my: '2px',
-            width: 'auto',
-            minHeight: 36,
-            borderRadius: 1,
-            pl: isChildItem ? 3.5 : 1.25,
-            pr: 1,
-            '&.Mui-selected': {
-              bgcolor: 'action.selected',
-            },
-            '&.Mui-selected:hover': {
-              bgcolor: 'action.selected',
-            },
+            ...(isChildItem ? { pl: 4 } : null),
+            '& .MuiListItemText-primary': {
+              whiteSpace: 'nowrap'
+            }
           }}
         >
           {
             !!iconName &&
-              <ListItemIcon sx={{ minWidth: 28 }}>
-                <Icon name={iconName} />
+              <ListItemIcon>
+                <Icon
+                  name={iconName}
+                  size={24}
+                />
               </ListItemIcon>
           }
 
-          <ListItemText
-            primary={label}
-            slotProps={{
-              primary: {
-                sx: {
-                  whiteSpace: 'normal',
-                  lineHeight: 1.3,
-                },
-              },
-            }}
-          />
+          <ListItemText primary={label} />
 
           {
             !!StatusComponent &&
               <StatusComponent />
           }
         </ListItemButton>
+      </ListItem>
+    );
 
+    if (!children) {
+      return button;
+    }
+
+    return (
+      <>
+        {button}
         {
-          children &&
-            map(children, (child) => {
-              return React.cloneElement(child, { isChildItem: true });
-            })
+          map(children, (child) => {
+            return React.cloneElement(child, { isChildItem: true });
+          })
         }
-      </div>
+      </>
     );
   }
 }

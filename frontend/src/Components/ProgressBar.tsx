@@ -47,6 +47,8 @@ function ProgressBar({
   const progressPercent = Number(progress.toFixed(precision));
   const progressText = text || `${progressPercent}%`;
   const color = kindToColor(kind);
+  const keepsStatusBlue =
+    kind === 'primary' || kind === 'pink' || kind === 'purple';
 
   return (
     <Box
@@ -58,7 +60,18 @@ function ProgressBar({
         variant="determinate"
         value={Math.max(0, Math.min(100, progress))}
         color={color === 'inherit' ? 'primary' : color}
-        sx={{ height: barHeight(size), borderRadius: 1 }}
+        sx={{
+          height: barHeight(size),
+          borderRadius: 1,
+          ...(keepsStatusBlue
+            ? {
+                bgcolor: 'rgba(25, 118, 210, 0.2)',
+                '& .MuiLinearProgress-bar': {
+                  bgcolor: '#1976d2',
+                },
+              }
+            : {}),
+        }}
         aria-label={translate('ProgressBarProgress', {
           progress: progress.toFixed(0),
         })}

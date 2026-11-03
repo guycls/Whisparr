@@ -157,13 +157,13 @@ class DelayProfile extends Component {
           {
             id !== 1 &&
               connectDragSource(
-                <Box sx={sxDragHandle}>
+                <div style={sxDragHandle}>
                   <Box sx={sxDragIcon}>
 <Icon
                     name={icons.REORDER}
                   />
 </Box>
-                </Box>
+                </div>
               )
           }
         </Box>

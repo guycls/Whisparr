@@ -52,6 +52,7 @@ export interface CustomFilter {
 export interface AppSectionState {
   isConnected: boolean;
   isReconnecting: boolean;
+  sidebarWidth: number;
   version: string;
   prevVersion?: string;
   dimensions: {
@@ -96,6 +97,7 @@ interface AppState {
     };
     maxEpisodeRuntime: number;
     activeSeriesId: number;
+    cardSize: number;
     sceneModalPanePercent: number;
     unifiedGrid: {
       isFetching: boolean;

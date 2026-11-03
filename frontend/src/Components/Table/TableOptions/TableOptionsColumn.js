@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -32,9 +31,8 @@ function TableOptionsColumn(props) {
       secondaryAction={
         connectDragSource ?
           connectDragSource(
-            <Box
-              component="span"
-              sx={{
+            <span
+              style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -43,7 +41,7 @@ function TableOptionsColumn(props) {
               }}
             >
               <Icon name={icons.REORDER} />
-            </Box>
+            </span>
           ) :
           undefined
       }

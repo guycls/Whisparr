@@ -7,10 +7,6 @@ import { QUALITY_PROFILE_ITEM } from 'Helpers/dragTypes';
 import QualityProfileItem from './QualityProfileItem';
 import QualityProfileItemGroup from './QualityProfileItemGroup';
 
-const sxQualityProfileItemDragSource = (theme) => ({
-  padding: theme.spacing(0.5, 0)
-});
-
 const sxQualityProfileItemPlaceholder = (theme) => ({
   width: '100%',
   height: 30,
@@ -154,8 +150,7 @@ class QualityProfileItemDragSource extends Component {
     const isAfter = !isDragging && isDraggingDown && isOverCurrent;
 
     return connectDropTarget(
-      <Box
-       sx={sxQualityProfileItemDragSource}>
+      <div style={{ padding: '4px 0' }}>
         {
           isBefore &&
             <Box
@@ -206,7 +201,7 @@ class QualityProfileItemDragSource extends Component {
             <Box
              sx={[sxQualityProfileItemPlaceholder, sxQualityProfileItemPlaceholderAfter]} />
         }
-      </Box>
+      </div>
     );
   }
 }

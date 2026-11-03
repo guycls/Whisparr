@@ -1,18 +1,62 @@
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
+import Toolbar from '@mui/material/Toolbar';
+import { alpha } from '@mui/material/styles';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import QueueStatus from 'Activity/Queue/Status/QueueStatus';
 import { icons } from 'Helpers/Props';
 import locationShape from 'Helpers/Props/Shapes/locationShape';
+import { set } from 'Store/Actions/baseActions';
 import HealthStatus from 'System/Status/Health/HealthStatus';
 import translate from 'Utilities/String/translate';
 import MessagesConnector from './Messages/MessagesConnector';
 import PageSidebarItem from './PageSidebarItem';
 
-const SIDEBAR_WIDTH = 196;
+const DEFAULT_SIDEBAR_WIDTH = 196;
+const MAX_SIDEBAR_WIDTH = 480;
+const BADGE_WIDTH = 44;
+const HANDLE_WIDTH = 6;
+const PARENT_PADDING_LEFT = 16;
+const CHILD_PADDING_LEFT = 32;
+const PADDING_RIGHT = 16;
+const ICON_SLOT = 56;
+
+let measureContext;
+
+function measureLabel(text) {
+  if (!measureContext && typeof document !== 'undefined') {
+    measureContext = document.createElement('canvas').getContext('2d');
+  }
+
+  if (!measureContext) {
+    return text.length * 8;
+  }
+
+  measureContext.font = '16px Roboto, Helvetica, Arial, sans-serif';
+
+  return measureContext.measureText(text).width;
+}
+
+function rowWidth(label, isChild, hasBadge) {
+  return Math.ceil(
+    (isChild ? CHILD_PADDING_LEFT : PARENT_PADDING_LEFT + ICON_SLOT) +
+      measureLabel(label) +
+      PADDING_RIGHT +
+      (hasBadge ? BADGE_WIDTH : 0) +
+      HANDLE_WIDTH +
+      8
+  );
+}
+
+function clampSidebarWidth(value, minWidth) {
+  const width = Number.isFinite(value) ? value : DEFAULT_SIDEBAR_WIDTH;
+
+  return Math.min(MAX_SIDEBAR_WIDTH, Math.max(minWidth, Math.round(width)));
+}
 
 const links = [
   {
@@ -236,6 +280,92 @@ function PageSidebar(props) {
     onSidebarVisibleChange
   } = props;
 
+  const dispatch = useDispatch();
+  const persistedSidebarWidth = useSelector((state) => state.app.sidebarWidth);
+  const translationsPopulated = useSelector((state) => state.app.translations.isPopulated);
+  const uiLanguage = useSelector((state) => state.settings.ui.item.uiLanguage);
+  const minWidth = useMemo(() => {
+    return links.reduce((widest, link) => {
+      const parentShowsBadge = !!link.statusComponent ||
+        _.some(link.children, (child) => !!child.statusComponent);
+      const parentWidth = rowWidth(link.title(), false, parentShowsBadge);
+      const childWidth = (link.children || []).reduce((childWidest, child) => {
+        return Math.max(
+          childWidest,
+          rowWidth(child.title(), true, !!child.statusComponent)
+        );
+      }, 0);
+
+      return Math.max(widest, parentWidth, childWidth);
+    }, DEFAULT_SIDEBAR_WIDTH);
+  }, [translationsPopulated, uiLanguage]);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    return clampSidebarWidth(persistedSidebarWidth, minWidth);
+  });
+  const sidebarWidthRef = useRef(sidebarWidth);
+  const dragStartRef = useRef(null);
+
+  useEffect(() => {
+    const nextWidth = clampSidebarWidth(persistedSidebarWidth, minWidth);
+    sidebarWidthRef.current = nextWidth;
+    setSidebarWidth(nextWidth);
+
+    if (nextWidth !== persistedSidebarWidth) {
+      dispatch(set({
+        section: 'app',
+        sidebarWidth: nextWidth
+      }));
+    }
+  }, [persistedSidebarWidth, minWidth, dispatch]);
+
+  const updateSidebarWidth = useCallback((clientX) => {
+    const dragStart = dragStartRef.current;
+
+    if (!dragStart) {
+      return;
+    }
+
+    const nextWidth = clampSidebarWidth(
+      dragStart.width + (clientX - dragStart.x),
+      minWidth
+    );
+    sidebarWidthRef.current = nextWidth;
+    setSidebarWidth(nextWidth);
+    dispatch(set({
+      section: 'app',
+      sidebarWidth: nextWidth
+    }));
+  }, [minWidth, dispatch]);
+
+  const handleResizePointerDown = useCallback((event) => {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragStartRef.current = {
+      x: event.clientX,
+      width: sidebarWidthRef.current
+    };
+  }, []);
+
+  const handleResizePointerMove = useCallback((event) => {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+      return;
+    }
+
+    updateSidebarWidth(event.clientX);
+  }, [updateSidebarWidth]);
+
+  const handleResizePointerUp = useCallback((event) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    dragStartRef.current = null;
+    dispatch(set({
+      section: 'app',
+      sidebarWidth: sidebarWidthRef.current
+    }));
+  }, [dispatch]);
+
   const urlBase = window.Whisparr.urlBase;
   const pathname = urlBase ? location.pathname.substr(urlBase.length) || '/' : location.pathname;
   const activeParent = getActiveParent(pathname);
@@ -252,20 +382,25 @@ function PageSidebar(props) {
       open={isSmallScreen ? isSidebarVisible : true}
       onClose={() => onSidebarVisibleChange(false)}
       sx={{
-        width: isSmallScreen ? 0 : SIDEBAR_WIDTH,
+        width: isSmallScreen ? 0 : sidebarWidth,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: SIDEBAR_WIDTH,
+          width: sidebarWidth,
           boxSizing: 'border-box',
-          ...(isSmallScreen ? {} : { position: 'relative' })
+          overflow: 'hidden',
+          bgcolor: isSmallScreen ? 'background.paper' : 'transparent',
+          backgroundImage: 'none'
         }
       }}
     >
+      <Toolbar sx={{ flexShrink: 0, minHeight: 56 }} />
+
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
+          flex: '1 1 auto',
+          minHeight: 0,
           overflow: 'auto'
         }}
       >
@@ -320,6 +455,32 @@ function PageSidebar(props) {
 
         <MessagesConnector />
       </Box>
+
+      {
+        !isSmallScreen &&
+          <Box
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={translate('Resize')}
+            onPointerDown={handleResizePointerDown}
+            onPointerMove={handleResizePointerMove}
+            onPointerUp={handleResizePointerUp}
+            onPointerCancel={handleResizePointerUp}
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              zIndex: 2,
+              width: HANDLE_WIDTH,
+              height: '100%',
+              cursor: 'col-resize',
+              touchAction: 'none',
+              '&:hover, &:active': {
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.45)
+              }
+            }}
+          />
+      }
     </Drawer>
   );
 }
