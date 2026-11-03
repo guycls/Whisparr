@@ -15,6 +15,7 @@ interface EpisodeTitleLinkProps {
   showOpenSeriesButton: boolean;
   onModalOpen?(): void;
   renderModal?: boolean;
+  wrap?: boolean;
 }
 
 function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
@@ -24,6 +25,7 @@ function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
     finaleType,
     onModalOpen,
     renderModal = true,
+    wrap = false,
     ...otherProps
   } = props;
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -50,26 +52,60 @@ function EpisodeTitleLink(props: EpisodeTitleLinkProps) {
   }, []);
 
   return (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+    <Box
+      sx={
+        wrap
+          ? { display: 'block', width: '100%', minWidth: 0 }
+          : { display: 'inline-flex', alignItems: 'center' }
+      }
+    >
       <Box
-        sx={{
-          maxWidth: 800,
-          '@media (min-width: 2560px)': { maxWidth: 1200 },
-          '@media (min-width: 3840px)': { maxWidth: 2000 },
-          '& .MuiButton-root': {
-            display: 'inline-block',
-            overflow: 'hidden',
-            maxWidth: '100%',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            cursor: 'pointer',
-            userSelect: 'text',
-            '&:hover': {
-              color: 'var(--linkHoverColor)',
-              textDecoration: 'underline',
-            },
-          },
-        }}
+        sx={
+          wrap
+            ? {
+                width: '100%',
+                minWidth: 0,
+                '& .MuiButton-root': {
+                  display: 'block',
+                  width: '100%',
+                  height: 'auto',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  p: 0,
+                  overflow: 'visible',
+                  textOverflow: 'unset',
+                  whiteSpace: 'normal',
+                  overflowWrap: 'break-word',
+                  wordBreak: 'break-word',
+                  textAlign: 'left',
+                  lineHeight: 1.35,
+                  cursor: 'pointer',
+                  userSelect: 'text',
+                  '&:hover': {
+                    color: 'var(--linkHoverColor)',
+                    textDecoration: 'underline',
+                  },
+                },
+              }
+            : {
+                maxWidth: 800,
+                '@media (min-width: 2560px)': { maxWidth: 1200 },
+                '@media (min-width: 3840px)': { maxWidth: 2000 },
+                '& .MuiButton-root': {
+                  display: 'inline-block',
+                  overflow: 'hidden',
+                  maxWidth: '100%',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  userSelect: 'text',
+                  '&:hover': {
+                    color: 'var(--linkHoverColor)',
+                    textDecoration: 'underline',
+                  },
+                },
+              }
+        }
       >
         <Link
           className={className}

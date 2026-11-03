@@ -22,19 +22,23 @@ function PageHeaderActionsMenu(props) {
       <Menu alignMenu={align.RIGHT}>
         <MenuButton
           aria-label="Menu Button"
+          title={translate('Menu')}
           sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             minWidth: 40,
             width: 40,
             height: 40,
             p: 0,
+            lineHeight: 0,
             borderRadius: '50%',
             color: 'inherit'
           }}
         >
           <Icon
             name={icons.INTERACTIVE}
-            size={18}
-            title={translate('Menu')}
+            size={22}
           />
         </MenuButton>
 

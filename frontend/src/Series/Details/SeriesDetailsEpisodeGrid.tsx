@@ -36,6 +36,7 @@ function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
     <Box
       sx={{
         display: 'grid',
+        alignItems: 'stretch',
         gridTemplateColumns: gridColumns,
         gap: { xs: '10px', md: '15px' },
         padding: { xs: '0 10px 10px', md: '0 15px 15px' },

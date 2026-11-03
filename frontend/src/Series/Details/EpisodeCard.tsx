@@ -81,6 +81,7 @@ function EpisodeCard(props: EpisodeCardProps) {
       sx={{
         display: 'flex',
         flexDirection: 'column',
+        height: '100%',
         overflow: 'hidden',
         border: 1,
         borderColor: 'divider',
@@ -91,6 +92,7 @@ function EpisodeCard(props: EpisodeCardProps) {
       <Box
         sx={{
           position: 'relative',
+          flexShrink: 0,
           aspectRatio: '16 / 9',
           bgcolor: 'action.hover',
         }}
@@ -134,22 +136,19 @@ function EpisodeCard(props: EpisodeCardProps) {
         sx={{
           display: 'flex',
           flexDirection: 'column',
+          flex: 1,
           gap: '4px',
+          minWidth: 0,
           p: { xs: '6px', md: 1 },
         }}
       >
         <Typography
           sx={{
+            minWidth: 0,
             overflowWrap: 'break-word',
             wordBreak: 'break-word',
             fontSize: 14,
-            '& a, & span, & .MuiButton-root': {
-              display: 'block',
-              maxWidth: 'none',
-              overflow: 'visible',
-              textOverflow: 'unset',
-              whiteSpace: 'normal',
-            },
+            lineHeight: 1.35,
           }}
         >
           <EpisodeTitleLink
@@ -159,6 +158,7 @@ function EpisodeCard(props: EpisodeCardProps) {
             episodeEntity={episodeEntity}
             showOpenSeriesButton={false}
             renderModal={false}
+            wrap={true}
             onModalOpen={openDetailsModal}
           />
         </Typography>
@@ -213,6 +213,8 @@ function EpisodeCard(props: EpisodeCardProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexShrink: 0,
+          mt: 'auto',
           py: '4px',
           px: 1,
           borderTop: 1,
