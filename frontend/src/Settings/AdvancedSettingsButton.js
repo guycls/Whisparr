@@ -51,7 +51,6 @@ function AdvancedSettingsButton(props) {
 
         <Box
           component="span"
-          className="fa-layers fa-fw"
           sx={{
             position: 'absolute',
             top: '10px',

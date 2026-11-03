@@ -1,25 +1,29 @@
-import {
-  FontAwesomeIcon,
-  FontAwesomeIconProps,
-} from '@fortawesome/react-fontawesome';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Theme, useTheme } from '@mui/material/styles';
 import React, { ComponentProps } from 'react';
-import { kinds } from 'Helpers/Props';
+import { icons, kinds } from 'Helpers/Props';
+import type { IconName } from 'Helpers/Props/icons';
 import { Kind } from 'Helpers/Props/kinds';
 
-export interface IconProps
-  extends Omit<
-    FontAwesomeIconProps,
-    'icon' | 'spin' | 'name' | 'title' | 'size'
-  > {
+export interface IconProps {
   containerClassName?: ComponentProps<'span'>['className'];
-  name: FontAwesomeIconProps['icon'];
+  className?: string;
+  name: IconName;
   kind?: Kind;
   size?: number;
-  isSpinning?: FontAwesomeIconProps['spin'];
+  isSpinning?: boolean;
   title?: string | (() => string);
+  fixedWidth?: boolean;
   darken?: boolean;
 }
+
+const spinAnimation = {
+  animation: 'icon-spin 1s linear infinite',
+  '@keyframes icon-spin': {
+    from: { transform: 'rotate(0deg)' },
+    to: { transform: 'rotate(360deg)' },
+  },
+};
 
 function kindColor(kind: Kind, palette: Theme['palette']) {
   switch (kind) {
@@ -45,30 +49,38 @@ function kindColor(kind: Kind, palette: Theme['palette']) {
 export default function Icon({
   containerClassName,
   className,
-  name,
+  name: IconComponent,
   kind = kinds.DEFAULT,
   size = 14,
   title,
   isSpinning = false,
-  fixedWidth = false,
   darken = false,
-  ...otherProps
 }: IconProps) {
   const theme = useTheme();
-  const icon = (
-    <FontAwesomeIcon
-      className={className}
-      icon={name}
-      spin={isSpinning}
-      fixedWidth={fixedWidth}
-      style={{
-        fontSize: `${size}px`,
-        color: kindColor(kind, theme.palette),
-        opacity: darken ? 0.7 : undefined,
-      }}
-      {...otherProps}
-    />
-  );
+  const color = kindColor(kind, theme.palette);
+  const opacity = darken ? 0.7 : undefined;
+
+  const icon =
+    isSpinning && IconComponent === icons.SPINNER ? (
+      <CircularProgress
+        className={className}
+        size={size}
+        sx={{
+          color,
+          opacity,
+        }}
+      />
+    ) : (
+      <IconComponent
+        className={className}
+        sx={{
+          fontSize: size,
+          color,
+          opacity,
+          ...(isSpinning ? spinAnimation : undefined),
+        }}
+      />
+    );
 
   if (title) {
     return (

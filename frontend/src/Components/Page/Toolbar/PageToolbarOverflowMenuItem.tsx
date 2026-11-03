@@ -1,12 +1,12 @@
-import { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import Box from '@mui/material/Box';
 import React from 'react';
 import MenuItem from 'Components/Menu/MenuItem';
 import SpinnerIcon from 'Components/SpinnerIcon';
+import type { IconName } from 'Helpers/Props/icons';
 
 interface PageToolbarOverflowMenuItemProps {
-  iconName: IconDefinition;
-  spinningName?: IconDefinition;
+  iconName: IconName;
+  spinningName?: IconName;
   isDisabled?: boolean;
   isSpinning?: boolean;
   showIndicator?: boolean;

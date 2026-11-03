@@ -1,11 +1,11 @@
-import { IconDefinition } from '@fortawesome/fontawesome-common-types';
 import React, { useCallback } from 'react';
 import { useSelect } from 'App/SelectContext';
 import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
+import type { IconName } from 'Helpers/Props/icons';
 
 interface SeriesIndexSelectModeButtonProps {
   label: string;
-  iconName: IconDefinition;
+  iconName: IconName;
   isSelectMode: boolean;
   overflowComponent: React.FunctionComponent<never>;
   onPress: () => void;

@@ -1,11 +1,11 @@
-import { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import Box from '@mui/material/Box';
 import React from 'react';
 import Icon from 'Components/Icon';
+import type { IconName } from 'Helpers/Props/icons';
 
 interface SeriesIndexOverviewInfoRowProps {
   title?: string;
-  iconName?: IconDefinition;
+  iconName?: IconName;
   label: string | null;
 }
 

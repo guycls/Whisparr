@@ -1,8 +1,8 @@
-import { IconDefinition } from '@fortawesome/free-regular-svg-icons';
 import Box from '@mui/material/Box';
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { icons } from 'Helpers/Props';
+import type { IconName } from 'Helpers/Props/icons';
 import createUISettingsSelector from 'Store/Selectors/createUISettingsSelector';
 import QualityProfile from 'typings/QualityProfile';
 import { UiSettings } from 'typings/UiSettings';
@@ -20,7 +20,7 @@ interface RowProps {
 
 interface RowInfoProps {
   title: string;
-  iconName: IconDefinition;
+  iconName: IconName;
   label: string;
 }
 

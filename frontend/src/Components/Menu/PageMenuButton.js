@@ -43,7 +43,6 @@ function PageMenuButton(props) {
       {
         showIndicator ?
           <Box
-            className="fa-layers fa-fw"
             component="span"
             sx={{
               position: 'absolute',
