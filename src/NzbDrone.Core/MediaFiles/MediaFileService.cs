@@ -68,8 +68,14 @@ namespace NzbDrone.Core.MediaFiles
         public void Delete(EpisodeFile episodeFile, DeleteMediaFileReason reason)
         {
             // Little hack so we have the episodes and series attached for the event consumers
-            episodeFile.Episodes.LazyLoad();
-            episodeFile.Path = Path.Combine(episodeFile.Series.Value.Path, episodeFile.RelativePath);
+            episodeFile.Episodes?.LazyLoad();
+
+            var seriesPath = episodeFile.Series?.Value?.Path;
+
+            if (!string.IsNullOrWhiteSpace(seriesPath) && !string.IsNullOrWhiteSpace(episodeFile.RelativePath))
+            {
+                episodeFile.Path = Path.Combine(seriesPath, episodeFile.RelativePath);
+            }
 
             _hardLinkRepository.DeleteForEpisodeFile(episodeFile.Id);
             _mediaFileRepository.Delete(episodeFile);

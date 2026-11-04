@@ -8,7 +8,7 @@ import { icons } from 'Helpers/Props';
 const SNACKBAR_ICON_PX = 18;
 const SNACKBAR_STEP_PX = 44;
 
-function getIconName(name) {
+function getIconName(name, type) {
   switch (name) {
     case 'ApplicationUpdate':
       return icons.RESTART;
@@ -30,6 +30,20 @@ function getIconName(name) {
       return icons.SEARCH;
     case 'UpdateSceneMapping':
       return icons.REFRESH;
+    case 'Notification':
+      if (type === 'warning') {
+        return icons.WARNING;
+      }
+
+      if (type === 'success') {
+        return icons.CHECK_CIRCLE;
+      }
+
+      if (type === 'info') {
+        return icons.INFO;
+      }
+
+      return icons.DANGER;
     default:
       return icons.SPINNER;
   }
@@ -84,7 +98,7 @@ function Message(props) {
         variant="filled"
         icon={(
           <Icon
-            name={getIconName(name)}
+            name={getIconName(name, type)}
             title={name}
             size={SNACKBAR_ICON_PX}
           />
@@ -106,7 +120,8 @@ function Message(props) {
             }
           },
           '& .MuiAlert-message': {
-            py: '6px'
+            py: '6px',
+            overflowWrap: 'anywhere'
           },
           '& .MuiAlert-action': {
             alignItems: 'center',

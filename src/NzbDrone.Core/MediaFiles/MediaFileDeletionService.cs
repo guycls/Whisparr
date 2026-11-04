@@ -133,6 +133,7 @@ namespace NzbDrone.Core.MediaFiles
                 RecycleFile(series, fullPath);
             }
 
+            AttachSeries(series, episodeFile);
             _mediaFileService.Delete(episodeFile, DeleteMediaFileReason.Manual);
         }
 
@@ -213,16 +214,31 @@ namespace NzbDrone.Core.MediaFiles
                     catch (Exception ex)
                     {
                         _logger.Error(ex, "Unable to delete hard link {0}", path);
+                        Notify($"Unable to delete hard link {path}: {ex.Message}");
                     }
                 }
             }
 
             foreach (var file in related)
             {
+                AttachSeries(series, file);
                 _mediaFileService.Delete(file, DeleteMediaFileReason.Manual);
             }
 
             return related.Select(file => file.Id).Distinct().ToList();
+        }
+
+        private static void AttachSeries(Series series, EpisodeFile episodeFile)
+        {
+            if (episodeFile != null && episodeFile.SeriesId == series.Id)
+            {
+                episodeFile.Series = series;
+            }
+        }
+
+        private void Notify(string message)
+        {
+            _eventAggregator.PublishEvent(new ClientNotificationEvent(message));
         }
 
         private void RecycleFile(Series series, string fullPath)
@@ -298,6 +314,7 @@ namespace NzbDrone.Core.MediaFiles
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Unable to delete hard links for {0} while deleting series {1}", episodeFile.RelativePath, series.Title);
+                    Notify($"Unable to delete hard links for {episodeFile.RelativePath} while deleting series {series.Title}: {ex.Message}");
                 }
             }
         }
@@ -310,7 +327,13 @@ namespace NzbDrone.Core.MediaFiles
                 return;
             }
 
-            var series = message.EpisodeFile.Series.Value;
+            var series = message.EpisodeFile.Series?.Value;
+
+            if (series == null)
+            {
+                return;
+            }
+
             var seriesPath = series.Path;
             var folder = message.EpisodeFile.Path.GetParentPath();
 

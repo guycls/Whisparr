@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { setAppValue, setVersion } from 'Store/Actions/appActions';
+import { setAppValue, setVersion, showMessage } from 'Store/Actions/appActions';
 import { removeItem, update, updateItem } from 'Store/Actions/baseActions';
 import { fetchCommands, finishCommand, updateCommand } from 'Store/Actions/commandActions';
 import { fetchQueue, fetchQueueDetails } from 'Store/Actions/queueActions';
@@ -53,7 +53,8 @@ const mapDispatchToProps = {
   dispatchFetchRootFolders: fetchRootFolders,
   dispatchFetchSeries: fetchSeries,
   dispatchFetchTags: fetchTags,
-  dispatchFetchTagDetails: fetchTagDetails
+  dispatchFetchTagDetails: fetchTagDetails,
+  dispatchShowMessage: showMessage
 };
 
 function Logger(minimumLogLevel) {
@@ -204,6 +205,18 @@ class SignalRConnector extends Component {
 
   handleHealth = () => {
     this.props.dispatchFetchHealth();
+  };
+
+  handleNotification = (body) => {
+    const type = body.type || 'error';
+
+    this.props.dispatchShowMessage({
+      id: `notification-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      name: 'Notification',
+      message: body.message,
+      type,
+      hideAfter: type === 'error' || type === 'warning' ? 0 : 4
+    });
   };
 
   handleSeries = (body) => {
@@ -368,7 +381,8 @@ SignalRConnector.propTypes = {
   dispatchFetchRootFolders: PropTypes.func.isRequired,
   dispatchFetchSeries: PropTypes.func.isRequired,
   dispatchFetchTags: PropTypes.func.isRequired,
-  dispatchFetchTagDetails: PropTypes.func.isRequired
+  dispatchFetchTagDetails: PropTypes.func.isRequired,
+  dispatchShowMessage: PropTypes.func.isRequired
 };
 
 export default connect(createMapStateToProps, mapDispatchToProps)(SignalRConnector);
