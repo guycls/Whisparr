@@ -1,14 +1,17 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import HistoryDetails from 'Activity/History/Details/HistoryDetails';
-import HistoryEventTypeCell from 'Activity/History/HistoryEventTypeCell';
+import {
+  getIconKind,
+  getIconName,
+  getTooltip
+} from 'Activity/History/HistoryEventTypeCell';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
-import TableRowCell from 'Components/Table/Cells/TableRowCell';
-import TableRow from 'Components/Table/TableRow';
-import Popover from 'Components/Tooltip/Popover';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import EpisodeFormats from 'Episode/EpisodeFormats';
 import EpisodeLanguages from 'Episode/EpisodeLanguages';
@@ -16,15 +19,25 @@ import EpisodeQuality from 'Episode/EpisodeQuality';
 import { icons, kinds, tooltipPositions } from 'Helpers/Props';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import translate from 'Utilities/String/translate';
+
 function getTitle(eventType) {
   switch (eventType) {
-    case 'grabbed': return 'Grabbed';
-    case 'seriesFolderImported': return 'Site Folder Imported';
-    case 'downloadFolderImported': return 'Download Folder Imported';
-    case 'downloadFailed': return 'Download Failed';
-    case 'episodeFileDeleted': return 'Episode File Deleted';
-    case 'episodeFileRenamed': return 'Episode File Renamed';
-    default: return 'Unknown';
+    case 'grabbed':
+      return 'Grabbed';
+    case 'seriesFolderImported':
+      return 'Site Folder Imported';
+    case 'downloadFolderImported':
+      return 'Download Folder Imported';
+    case 'downloadFailed':
+      return 'Download Failed';
+    case 'episodeFileDeleted':
+      return 'Episode File Deleted';
+    case 'episodeFileRenamed':
+      return 'Episode File Renamed';
+    case 'downloadIgnored':
+      return 'Download Ignored';
+    default:
+      return 'Unknown';
   }
 }
 
@@ -67,7 +80,7 @@ class EpisodeHistoryRow extends Component {
       languages,
       quality,
       qualityCutoffNotMet,
-      customFormats,
+      customFormats = [],
       customFormatScore,
       date,
       data,
@@ -78,74 +91,117 @@ class EpisodeHistoryRow extends Component {
       isMarkAsFailedModalOpen
     } = this.state;
 
+    const score = formatCustomFormatScore(customFormatScore, customFormats.length);
+
     return (
-      <TableRow>
-        <HistoryEventTypeCell
-          eventType={eventType}
-          data={data}
-        />
+      <Box
+        sx={{
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 1,
+          p: 1.5
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 1
+          }}
+        >
+          <Box sx={{ flexShrink: 0, pt: '2px' }}>
+            <Icon
+              name={getIconName(eventType, data)}
+              kind={getIconKind(eventType)}
+              title={getTooltip(eventType, data)}
+            />
+          </Box>
 
-        <TableRowCell>
-          {sourceTitle}
-        </TableRowCell>
+          <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
+            <Typography variant="subtitle2">
+              {getTitle(eventType)}
+            </Typography>
 
-        <TableRowCell>
+            <Typography
+              variant="body2"
+              sx={{
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word'
+              }}
+            >
+              {sourceTitle}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              flexShrink: 0,
+              color: 'text.secondary',
+              fontSize: 12,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <RelativeDateCell
+              date={date}
+              component="span"
+              includeSeconds={true}
+              includeTime={true}
+            />
+          </Box>
+
+          {
+            eventType === 'grabbed' &&
+              <Box sx={{ flexShrink: 0 }}>
+                <IconButton
+                  title={translate('MarkAsFailed')}
+                  name={icons.REMOVE}
+                  onPress={this.onMarkAsFailedPress}
+                />
+              </Box>
+          }
+        </Box>
+
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 0.5,
+            mt: 1
+          }}
+        >
           <EpisodeLanguages languages={languages} />
-        </TableRowCell>
 
-        <TableRowCell>
           <EpisodeQuality
             quality={quality}
             isCutoffNotMet={qualityCutoffNotMet}
           />
-        </TableRowCell>
 
-        <RelativeDateCell
-          date={date}
-          includeSeconds={true}
-          includeTime={true}
-        />
-
-        <TableRowCell sx={{ width: 65 }}>
-          <Popover
-            anchor={
-              <Icon
-                name={icons.INFO}
-              />
-            }
-            title={getTitle(eventType)}
-            body={
-              <HistoryDetails
-                eventType={eventType}
-                sourceTitle={sourceTitle}
-                data={data}
-                downloadId={downloadId}
-              />
-            }
-            position={tooltipPositions.LEFT}
-          />
-        </TableRowCell>
-
-        <TableRowCell sx={{ width: 55 }}>
-          <Tooltip
-            anchor={
-              formatCustomFormatScore(customFormatScore, customFormats.length)
-            }
-            tooltip={<EpisodeFormats formats={customFormats} />}
-            position={tooltipPositions.BOTTOM}
-          />
-        </TableRowCell>
-
-        <TableRowCell sx={{ width: 65 }}>
           {
-            eventType === 'grabbed' &&
-              <IconButton
-                title={translate('MarkAsFailed')}
-                name={icons.REMOVE}
-                onPress={this.onMarkAsFailedPress}
-              />
+            score ?
+              <Tooltip
+                anchor={score}
+                tooltip={<EpisodeFormats formats={customFormats} />}
+                position={tooltipPositions.BOTTOM}
+              /> :
+              null
           }
-        </TableRowCell>
+
+          {
+            customFormats.length ?
+              <EpisodeFormats formats={customFormats} /> :
+              null
+          }
+        </Box>
+
+        <Box sx={{ mt: 1 }}>
+          <HistoryDetails
+            eventType={eventType}
+            sourceTitle={sourceTitle}
+            data={data}
+            downloadId={downloadId}
+          />
+        </Box>
 
         <ConfirmModal
           isOpen={isMarkAsFailedModalOpen}
@@ -156,7 +212,7 @@ class EpisodeHistoryRow extends Component {
           onConfirm={this.onConfirmMarkAsFailed}
           onCancel={this.onMarkAsFailedModalClose}
         />
-      </TableRow>
+      </Box>
     );
   }
 }

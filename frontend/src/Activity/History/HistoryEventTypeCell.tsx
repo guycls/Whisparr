@@ -10,7 +10,7 @@ import {
 } from 'typings/History';
 import translate from 'Utilities/String/translate';
 
-function getIconName(eventType: HistoryEventType, data: HistoryData) {
+export function getIconName(eventType: HistoryEventType, data: HistoryData) {
   switch (eventType) {
     case 'grabbed':
       return icons.DOWNLOADING;
@@ -33,7 +33,7 @@ function getIconName(eventType: HistoryEventType, data: HistoryData) {
   }
 }
 
-function getIconKind(eventType: HistoryEventType) {
+export function getIconKind(eventType: HistoryEventType) {
   switch (eventType) {
     case 'downloadFailed':
       return kinds.DANGER;
@@ -42,7 +42,7 @@ function getIconKind(eventType: HistoryEventType) {
   }
 }
 
-function getTooltip(eventType: HistoryEventType, data: HistoryData) {
+export function getTooltip(eventType: HistoryEventType, data: HistoryData) {
   switch (eventType) {
     case 'grabbed':
       return translate('EpisodeGrabbedTooltip', {

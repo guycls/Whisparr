@@ -1,59 +1,11 @@
+import Box from '@mui/material/Box';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Alert from 'Components/Alert';
-import Icon from 'Components/Icon';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import Table from 'Components/Table/Table';
-import TableBody from 'Components/Table/TableBody';
-import { icons, kinds } from 'Helpers/Props';
+import { kinds } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import EpisodeHistoryRow from './EpisodeHistoryRow';
-
-const columns = [
-  {
-    name: 'eventType',
-    isVisible: true
-  },
-  {
-    name: 'sourceTitle',
-    label: () => translate('SourceTitle'),
-    isVisible: true
-  },
-  {
-    name: 'languages',
-    label: () => translate('Languages'),
-    isVisible: true
-  },
-  {
-    name: 'quality',
-    label: () => translate('Quality'),
-    isVisible: true
-  },
-  {
-    name: 'date',
-    label: () => translate('Date'),
-    isVisible: true
-  },
-  {
-    name: 'details',
-    label: () => translate('Details'),
-    isVisible: true
-  },
-  {
-    name: 'customFormatScore',
-    label: React.createElement(Icon, {
-      name: icons.SCORE,
-      title: () => translate('CustomFormatScore')
-    }),
-    isSortable: true,
-    isVisible: true
-  },
-  {
-    name: 'actions',
-    label: () => translate('Actions'),
-    isVisible: true
-  }
-];
 
 class EpisodeHistory extends Component {
 
@@ -91,23 +43,19 @@ class EpisodeHistory extends Component {
 
     if (isPopulated && hasItems && !error) {
       return (
-        <Table
-          columns={columns}
-        >
-          <TableBody>
-            {
-              items.map((item) => {
-                return (
-                  <EpisodeHistoryRow
-                    key={item.id}
-                    {...item}
-                    onMarkAsFailedPress={onMarkAsFailedPress}
-                  />
-                );
-              })
-            }
-          </TableBody>
-        </Table>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          {
+            items.map((item) => {
+              return (
+                <EpisodeHistoryRow
+                  key={item.id}
+                  {...item}
+                  onMarkAsFailedPress={onMarkAsFailedPress}
+                />
+              );
+            })
+          }
+        </Box>
       );
     }
 
