@@ -1,25 +1,31 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import { toggleEpisodesMonitored } from 'Store/Actions/episodeActions';
 import {
-  fetchMoreSeriesDetailsUnifiedGrid
+  fetchMoreSeriesDetailsUnifiedGrid,
+  fetchSeriesSceneBookmarks,
+  getSceneBookmarkListKey,
+  toggleSeriesSceneBookmark
 } from 'Store/Actions/seriesDetailsActions';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
 import translate from 'Utilities/String/translate';
+import SeriesDetailsBookmarkRail from './SeriesDetailsBookmarkRail';
 import SeriesDetailsEpisodeGrid from './SeriesDetailsEpisodeGrid';
 
 function createMapStateToProps() {
   return createSelector(
     (state) => state.seriesDetails.unifiedGrid,
+    (state) => state.seriesDetails.sceneBookmarks,
     createDimensionsSelector(),
-    (unifiedGrid, dimensions) => {
+    (unifiedGrid, sceneBookmarks, dimensions) => {
       return {
         ...unifiedGrid,
+        sceneBookmarks,
         isSmallScreen: dimensions.isSmallScreen
       };
     }
@@ -28,6 +34,8 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchMoreSeriesDetailsUnifiedGrid,
+  fetchSeriesSceneBookmarks,
+  toggleSeriesSceneBookmark,
   toggleEpisodesMonitored
 };
 
@@ -42,11 +50,23 @@ function SeriesDetailsUnifiedGridConnector(props) {
     isFetching,
     isPopulated,
     error,
+    sortKey,
+    sortDirection,
+    sceneBookmarks,
     isSmallScreen,
     isSelectMode = false,
     fetchMoreSeriesDetailsUnifiedGrid: fetchMore,
+    fetchSeriesSceneBookmarks: fetchBookmarks,
+    toggleSeriesSceneBookmark: toggleBookmark,
     toggleEpisodesMonitored: toggleMonitored
   } = props;
+
+  const gridAnchorRef = useRef(null);
+  const bookmarkedIds = (sceneBookmarks && sceneBookmarks[getSceneBookmarkListKey(sortKey, sortDirection)]) || [];
+
+  useEffect(() => {
+    fetchBookmarks({ seriesId });
+  }, [seriesId, fetchBookmarks]);
 
   useEffect(() => {
     if (
@@ -69,6 +89,15 @@ function SeriesDetailsUnifiedGridConnector(props) {
       episodeEntity: 'seriesDetails.unifiedGrid'
     });
   }, [toggleMonitored]);
+
+  const onBookmarkPress = useCallback((episodeId) => {
+    toggleBookmark({
+      seriesId,
+      episodeId,
+      sortKey,
+      sortDirection
+    });
+  }, [seriesId, sortKey, sortDirection, toggleBookmark]);
 
   if (!isPopulated && isFetching) {
     return <LoadingIndicator />;
@@ -95,13 +124,23 @@ function SeriesDetailsUnifiedGridConnector(props) {
 
   return (
     <div>
-      <Box sx={{ px: '15px', pb: '15px' }}>
-        <SeriesDetailsEpisodeGrid
-          items={items}
-          isSmallScreen={isSmallScreen}
-          isSelectMode={isSelectMode}
-          episodeEntity="seriesDetails.unifiedGrid"
-          onMonitorEpisodePress={onMonitorEpisodePress}
+      <Box ref={gridAnchorRef}>
+        <Box sx={{ px: '15px', pb: '15px' }}>
+          <SeriesDetailsEpisodeGrid
+            items={items}
+            isSmallScreen={isSmallScreen}
+            isSelectMode={isSelectMode}
+            episodeEntity="seriesDetails.unifiedGrid"
+            bookmarkedIds={bookmarkedIds}
+            onBookmarkPress={onBookmarkPress}
+            onMonitorEpisodePress={onMonitorEpisodePress}
+          />
+        </Box>
+
+        <SeriesDetailsBookmarkRail
+          anchorRef={gridAnchorRef}
+          episodeIds={bookmarkedIds}
+          itemCount={items.length}
         />
       </Box>
 
@@ -139,8 +178,13 @@ SeriesDetailsUnifiedGridConnector.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   isPopulated: PropTypes.bool.isRequired,
   error: PropTypes.object,
+  sortKey: PropTypes.string,
+  sortDirection: PropTypes.string,
+  sceneBookmarks: PropTypes.object,
   isSmallScreen: PropTypes.bool.isRequired,
   fetchMoreSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
+  fetchSeriesSceneBookmarks: PropTypes.func.isRequired,
+  toggleSeriesSceneBookmark: PropTypes.func.isRequired,
   toggleEpisodesMonitored: PropTypes.func.isRequired
 };
 

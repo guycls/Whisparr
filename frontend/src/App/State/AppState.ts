@@ -99,6 +99,16 @@ interface AppState {
     activeSeriesId: number;
     cardSize: number;
     sceneModalPanePercent: number;
+    sceneBookmarks: {
+      seriesId: number;
+      isFetching: boolean;
+      isPopulated: boolean;
+      error: unknown;
+      releaseDateAscending: number[];
+      releaseDateDescending: number[];
+      titleAscending: number[];
+      titleDescending: number[];
+    };
     unifiedGrid: {
       isFetching: boolean;
       isPopulated: boolean;

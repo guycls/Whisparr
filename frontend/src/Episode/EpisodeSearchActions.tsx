@@ -11,9 +11,10 @@ import MenuButton from 'Components/Menu/MenuButton';
 import MenuContent from 'Components/Menu/MenuContent';
 import MenuItem from 'Components/Menu/MenuItem';
 import SpinnerIcon from 'Components/SpinnerIcon';
+import Tooltip from 'Components/Tooltip/Tooltip';
 import { EpisodeEntities } from 'Episode/useEpisode';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
-import { align, icons } from 'Helpers/Props';
+import { align, icons, tooltipPositions } from 'Helpers/Props';
 import { executeCommand } from 'Store/Actions/commandActions';
 import translate from 'Utilities/String/translate';
 import EpisodeDetailsModal from './EpisodeDetailsModal';
@@ -78,30 +79,39 @@ function EpisodeSearchActions(props: EpisodeSearchActionsProps) {
         className={className}
         sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}
       >
-        <Menu alignMenu={align.RIGHT} enforceMaxHeight={false}>
-          <MenuButton>
-            <Icon name={icons.ACTIONS} size={18} />
-          </MenuButton>
+        <Tooltip
+          position={tooltipPositions.TOP}
+          tooltip={translate('Search')}
+          anchor={
+            <Menu alignMenu={align.RIGHT} enforceMaxHeight={false}>
+              <MenuButton>
+                <Icon name={icons.ACTIONS} size={18} />
+              </MenuButton>
 
-          <MenuContent>
-            <MenuItem onPress={handleSearchPress} isDisabled={isSearching}>
-              <Box component="span" sx={{ mr: '8px', display: 'inline-flex' }}>
-                <SpinnerIcon
-                  name={icons.SEARCH}
-                  isSpinning={isSearching}
-                />
-              </Box>
-              {translate('AutomaticSearch')}
-            </MenuItem>
+              <MenuContent>
+                <MenuItem onPress={handleSearchPress} isDisabled={isSearching}>
+                  <Box
+                    component="span"
+                    sx={{ mr: '8px', display: 'inline-flex' }}
+                  >
+                    <SpinnerIcon name={icons.SEARCH} isSpinning={isSearching} />
+                  </Box>
+                  {translate('AutomaticSearch')}
+                </MenuItem>
 
-            <MenuItem onPress={setDetailsModalOpen}>
-              <Box component="span" sx={{ mr: '8px', display: 'inline-flex' }}>
-                <Icon name={icons.INTERACTIVE} />
-              </Box>
-              {translate('InteractiveSearch')}
-            </MenuItem>
-          </MenuContent>
-        </Menu>
+                <MenuItem onPress={setDetailsModalOpen}>
+                  <Box
+                    component="span"
+                    sx={{ mr: '8px', display: 'inline-flex' }}
+                  >
+                    <Icon name={icons.INTERACTIVE} />
+                  </Box>
+                  {translate('InteractiveSearch')}
+                </MenuItem>
+              </MenuContent>
+            </Menu>
+          }
+        />
 
         {modal}
       </Box>
@@ -117,6 +127,7 @@ function EpisodeSearchActions(props: EpisodeSearchActionsProps) {
         name={icons.SEARCH}
         isSpinning={isSearching}
         title={translate('AutomaticSearch')}
+        useTooltip={true}
         size={20}
         onPress={handleSearchPress}
       />
@@ -124,6 +135,7 @@ function EpisodeSearchActions(props: EpisodeSearchActionsProps) {
       <IconButton
         name={icons.INTERACTIVE}
         title={translate('InteractiveSearch')}
+        useTooltip={true}
         size={20}
         onPress={setDetailsModalOpen}
       />

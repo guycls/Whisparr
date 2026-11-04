@@ -9,6 +9,7 @@ interface MonitorToggleButtonProps {
   size?: number;
   isDisabled?: boolean;
   isSaving?: boolean;
+  useTooltip?: boolean;
   onPress: (value: boolean, options: { shiftKey: boolean }) => unknown;
 }
 
@@ -19,6 +20,7 @@ function MonitorToggleButton(props: MonitorToggleButtonProps) {
     isDisabled = false,
     isSaving = false,
     size,
+    useTooltip = false,
     onPress,
     ...otherProps
   } = props;
@@ -52,6 +54,7 @@ function MonitorToggleButton(props: MonitorToggleButtonProps) {
       name={iconName}
       size={size}
       title={title}
+      useTooltip={useTooltip}
       isDisabled={isDisabled}
       isSpinning={isSaving}
       sx={{

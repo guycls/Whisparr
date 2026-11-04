@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { sceneMetadataBackground } from 'App/createAppTheme';
 import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
+import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
@@ -19,8 +20,10 @@ import EpisodeStatus from 'Episode/EpisodeStatus';
 import EpisodeTitleLink from 'Episode/EpisodeTitleLink';
 import { EpisodeEntities } from 'Episode/useEpisode';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
+import { icons } from 'Helpers/Props';
 import { Image } from 'Series/Series';
 import formatRuntime from 'Utilities/Number/formatRuntime';
+import translate from 'Utilities/String/translate';
 import SeriesDetailsEpisodeSelect from './Select/SeriesDetailsEpisodeSelect';
 
 interface EpisodeCardProps {
@@ -38,6 +41,8 @@ interface EpisodeCardProps {
   isSmallScreen: boolean;
   isSelectMode?: boolean;
   episodeEntity?: EpisodeEntities;
+  isBookmarked?: boolean;
+  onBookmarkPress?(id: number): void;
   onMonitorEpisodePress(
     id: number,
     monitored: boolean,
@@ -61,6 +66,8 @@ function EpisodeCard(props: EpisodeCardProps) {
     isSmallScreen,
     isSelectMode = false,
     episodeEntity = 'episodes',
+    isBookmarked = false,
+    onBookmarkPress,
     onMonitorEpisodePress,
   } = props;
 
@@ -103,8 +110,19 @@ function EpisodeCard(props: EpisodeCardProps) {
     [id, onMonitorEpisodePress]
   );
 
+  const handleBookmarkPress = useCallback(
+    (event: SyntheticEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onBookmarkPress?.(id);
+    },
+    [id, onBookmarkPress]
+  );
+
   return (
     <Box
+      data-episode-id={id}
+      data-episode-title={title}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -294,10 +312,28 @@ function EpisodeCard(props: EpisodeCardProps) {
             isDisabled={!seriesMonitored}
             isSaving={isSaving}
             size={20}
+            useTooltip={true}
             onPress={handleMonitorPress}
           />
 
-          <Box sx={{ flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            {onBookmarkPress ? (
+              <IconButton
+                name={
+                  isBookmarked
+                    ? icons.SCENE_BOOKMARK
+                    : icons.SCENE_BOOKMARK_OUTLINE
+                }
+                size={20}
+                title={translate(
+                  isBookmarked ? 'RemoveBookmark' : 'BookmarkScene'
+                )}
+                useTooltip={true}
+                aria-pressed={isBookmarked}
+                onPress={handleBookmarkPress}
+              />
+            ) : null}
+
             <EpisodeSearchActions
               episodeId={id}
               episodeEntity={episodeEntity}

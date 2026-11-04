@@ -120,6 +120,8 @@ namespace NzbDrone.Core.Datastore
 
             Mapper.Entity<EpisodeFileHardLink>("EpisodeFileHardLinks").RegisterModel();
 
+            Mapper.Entity<SeriesSceneBookmark>("SeriesSceneBookmarks").RegisterModel();
+
             Mapper.Entity<Episode>("Episodes").RegisterModel()
                   .Ignore(e => e.SeriesTitle)
                   .Ignore(e => e.Series)

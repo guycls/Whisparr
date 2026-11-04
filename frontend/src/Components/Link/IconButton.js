@@ -2,6 +2,8 @@ import MuiIconButton from '@mui/material/IconButton';
 import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from 'Components/Icon';
+import Tooltip from 'Components/Tooltip/Tooltip';
+import { tooltipPositions } from 'Helpers/Props';
 import translate from 'Utilities/String/translate';
 import { withUrlBase } from './Link';
 
@@ -19,6 +21,7 @@ function IconButton(props) {
     to,
     target,
     noRouter,
+    useTooltip = false,
     onPress,
     ...otherProps
   } = props;
@@ -33,51 +36,43 @@ function IconButton(props) {
     />
   );
 
-  if (to && externalUrlRegex.test(to)) {
-    return (
-      <MuiIconButton
-        component="a"
-        href={to}
-        target={target || '_blank'}
-        rel="noreferrer"
-        aria-label={label}
-        title={label}
-        disabled={isDisabled}
-        onClick={onPress}
-        {...otherProps}
-      >
-        {icon}
-      </MuiIconButton>
-    );
-  }
-
-  if (to) {
-    return (
-      <MuiIconButton
-        component="a"
-        href={noRouter ? to : withUrlBase(to)}
-        target={target}
-        aria-label={label}
-        title={label}
-        disabled={isDisabled}
-        onClick={onPress}
-        {...otherProps}
-      >
-        {icon}
-      </MuiIconButton>
-    );
-  }
-
-  return (
+  const isExternal = to && externalUrlRegex.test(to);
+  const button = isExternal || to ? (
     <MuiIconButton
+      component="a"
+      href={isExternal || noRouter ? to : withUrlBase(to)}
+      target={isExternal ? (target || '_blank') : target}
+      rel={isExternal ? 'noreferrer' : undefined}
       aria-label={label}
-      title={label}
+      title={useTooltip ? undefined : label}
       disabled={isDisabled}
       onClick={onPress}
       {...otherProps}
     >
       {icon}
     </MuiIconButton>
+  ) : (
+    <MuiIconButton
+      aria-label={label}
+      title={useTooltip ? undefined : label}
+      disabled={isDisabled}
+      onClick={onPress}
+      {...otherProps}
+    >
+      {icon}
+    </MuiIconButton>
+  );
+
+  if (!useTooltip) {
+    return button;
+  }
+
+  return (
+    <Tooltip
+      position={tooltipPositions.TOP}
+      tooltip={label}
+      anchor={button}
+    />
   );
 }
 
@@ -93,6 +88,7 @@ IconButton.propTypes = {
   noRouter: PropTypes.bool,
   isSpinning: PropTypes.bool,
   isDisabled: PropTypes.bool,
+  useTooltip: PropTypes.bool,
   onPress: PropTypes.func,
   sx: PropTypes.any
 };

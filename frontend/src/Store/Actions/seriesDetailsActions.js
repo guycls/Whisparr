@@ -56,6 +56,16 @@ export const defaultState = {
     lastPageSize: 0,
     error: null,
     items: []
+  },
+  sceneBookmarks: {
+    seriesId: 0,
+    isFetching: false,
+    isPopulated: false,
+    error: null,
+    releaseDateAscending: [],
+    releaseDateDescending: [],
+    titleAscending: [],
+    titleDescending: []
   }
 };
 
@@ -91,6 +101,8 @@ export const GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE = 'seriesDetails/gotoFi
 export const CLEAR_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/clearSeriesDetailsUnifiedGrid';
 export const SET_SERIES_DETAILS_SORT = 'seriesDetails/setSeriesDetailsSort';
 export const SYNC_SERIES_DETAILS_UNIFIED_GRID_SORT = 'seriesDetails/syncSeriesDetailsUnifiedGridSort';
+export const FETCH_SERIES_SCENE_BOOKMARKS = 'seriesDetails/fetchSeriesSceneBookmarks';
+export const TOGGLE_SERIES_SCENE_BOOKMARK = 'seriesDetails/toggleSeriesSceneBookmark';
 
 //
 // Action Creators
@@ -109,6 +121,37 @@ export const gotoSeriesDetailsUnifiedGridFirstPage = createThunk(GOTO_FIRST_SERI
 export const clearSeriesDetailsUnifiedGrid = createAction(CLEAR_SERIES_DETAILS_UNIFIED_GRID);
 export const setSeriesDetailsSort = createThunk(SET_SERIES_DETAILS_SORT);
 export const syncSeriesDetailsUnifiedGridSort = createThunk(SYNC_SERIES_DETAILS_UNIFIED_GRID_SORT);
+export const fetchSeriesSceneBookmarks = createThunk(FETCH_SERIES_SCENE_BOOKMARKS);
+export const toggleSeriesSceneBookmark = createThunk(TOGGLE_SERIES_SCENE_BOOKMARK);
+
+function emptySceneBookmarks(seriesId = 0) {
+  return {
+    seriesId,
+    isFetching: false,
+    isPopulated: false,
+    error: null,
+    releaseDateAscending: [],
+    releaseDateDescending: [],
+    titleAscending: [],
+    titleDescending: []
+  };
+}
+
+function normalizeSceneBookmarks(seriesId, data) {
+  return {
+    seriesId,
+    isFetching: false,
+    isPopulated: true,
+    error: null,
+    releaseDateAscending: data.releaseDateAscending || [],
+    releaseDateDescending: data.releaseDateDescending || [],
+    titleAscending: data.titleAscending || [],
+    titleDescending: data.titleDescending || []
+  };
+}
+
+let sceneBookmarkFetchId = 0;
+let sceneBookmarkRevision = 0;
 
 export function toSeriesDetailsSortKey(sortKey) {
   if (sortKey === 'title' || sortKey === 'episodes.title') {
@@ -124,6 +167,14 @@ export function toSeriesDetailsSortKey(sortKey) {
   }
 
   return sortKey;
+}
+
+export function getSceneBookmarkListKey(sortKey, sortDirection) {
+  const normalized = toSeriesDetailsSortKey(sortKey);
+  const field = normalized === 'title' ? 'title' : 'releaseDate';
+  const direction = sortDirection === sortDirections.ASCENDING ? 'Ascending' : 'Descending';
+
+  return `${field}${direction}`;
 }
 
 function toUnifiedGridSortKey(sortKey) {
@@ -381,6 +432,134 @@ export const actionHandlers = handleThunks({
 
   [SYNC_SERIES_DETAILS_UNIFIED_GRID_SORT]: function(getState, payload, dispatch) {
     applyEpisodeSortToUnifiedGrid(getState, dispatch);
+  },
+
+  [FETCH_SERIES_SCENE_BOOKMARKS]: function(getState, payload, dispatch) {
+    const seriesId = payload.seriesId;
+    sceneBookmarkFetchId += 1;
+    const fetchId = sceneBookmarkFetchId;
+    const revision = sceneBookmarkRevision;
+
+    if (!seriesId) {
+      dispatch(set({
+        section,
+        sceneBookmarks: emptySceneBookmarks()
+      }));
+
+      return;
+    }
+
+    const current = getState().seriesDetails.sceneBookmarks || emptySceneBookmarks();
+
+    dispatch(set({
+      section,
+      sceneBookmarks: {
+        ...(current.seriesId === seriesId ? current : emptySceneBookmarks(seriesId)),
+        seriesId,
+        isFetching: true,
+        error: null
+      }
+    }));
+
+    const promise = createAjaxRequest({
+      url: `/series/${seriesId}/scenebookmark`
+    }).request;
+
+    promise.done((data) => {
+      if (fetchId !== sceneBookmarkFetchId || revision !== sceneBookmarkRevision) {
+        return;
+      }
+
+      dispatch(set({
+        section,
+        sceneBookmarks: normalizeSceneBookmarks(seriesId, data || {})
+      }));
+    });
+
+    promise.fail((xhr) => {
+      if (fetchId !== sceneBookmarkFetchId || revision !== sceneBookmarkRevision) {
+        return;
+      }
+
+      const latest = getState().seriesDetails.sceneBookmarks || emptySceneBookmarks(seriesId);
+
+      dispatch(set({
+        section,
+        sceneBookmarks: {
+          ...(latest.seriesId === seriesId ? latest : emptySceneBookmarks(seriesId)),
+          seriesId,
+          isFetching: false,
+          error: xhr
+        }
+      }));
+    });
+  },
+
+  [TOGGLE_SERIES_SCENE_BOOKMARK]: function(getState, payload, dispatch) {
+    const {
+      seriesId,
+      episodeId,
+      sortKey,
+      sortDirection
+    } = payload;
+    const listKey = getSceneBookmarkListKey(sortKey, sortDirection);
+    const previous = getState().seriesDetails.sceneBookmarks || emptySceneBookmarks(seriesId);
+    const current = previous[listKey] || [];
+    const next = current.includes(episodeId) ?
+      current.filter((id) => id !== episodeId) :
+      current.concat(episodeId);
+
+    sceneBookmarkRevision += 1;
+    const revision = sceneBookmarkRevision;
+
+    dispatch(set({
+      section,
+      sceneBookmarks: {
+        ...previous,
+        seriesId,
+        isPopulated: true,
+        error: null,
+        [listKey]: next
+      }
+    }));
+
+    const promise = createAjaxRequest({
+      url: `/series/${seriesId}/scenebookmark`,
+      method: 'POST',
+      data: JSON.stringify({
+        sortKey: toSeriesDetailsSortKey(sortKey),
+        sortDirection,
+        episodeId
+      }),
+      dataType: 'json'
+    }).request;
+
+    promise.done((data) => {
+      if (revision !== sceneBookmarkRevision) {
+        return;
+      }
+
+      if ((getState().seriesDetails.sceneBookmarks || {}).seriesId !== seriesId) {
+        return;
+      }
+
+      dispatch(set({
+        section,
+        sceneBookmarks: normalizeSceneBookmarks(seriesId, data || {})
+      }));
+    });
+
+    promise.fail(() => {
+      if (revision !== sceneBookmarkRevision) {
+        return;
+      }
+
+      if ((getState().seriesDetails.sceneBookmarks || {}).seriesId !== seriesId) {
+        return;
+      }
+
+      dispatch(fetchSeriesSceneBookmarks({ seriesId }));
+    });
   }
 });
 

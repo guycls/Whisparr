@@ -14,6 +14,8 @@ interface SeriesDetailsEpisodeGridProps {
   isSmallScreen: boolean;
   isSelectMode?: boolean;
   episodeEntity?: EpisodeEntities;
+  bookmarkedIds?: number[];
+  onBookmarkPress?(id: number): void;
   onMonitorEpisodePress(
     id: number,
     monitored: boolean,
@@ -27,8 +29,12 @@ function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
     isSmallScreen,
     isSelectMode = false,
     episodeEntity = 'episodes',
+    bookmarkedIds = [],
+    onBookmarkPress,
     onMonitorEpisodePress,
   } = props;
+
+  const bookmarkedIdSet = new Set(bookmarkedIds);
 
   const cardSize = useSelector(
     (state: AppState) => state.seriesDetails.cardSize || 200
@@ -52,6 +58,8 @@ function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
             isSmallScreen={isSmallScreen}
             isSelectMode={isSelectMode}
             episodeEntity={episodeEntity}
+            isBookmarked={bookmarkedIdSet.has(item.id)}
+            onBookmarkPress={onBookmarkPress}
             onMonitorEpisodePress={onMonitorEpisodePress}
           />
         );
