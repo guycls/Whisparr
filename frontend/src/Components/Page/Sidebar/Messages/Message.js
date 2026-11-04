@@ -5,7 +5,8 @@ import React, { useCallback } from 'react';
 import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
 
-const SNACKBAR_STEP_PX = 68;
+const SNACKBAR_ICON_PX = 18;
+const SNACKBAR_STEP_PX = 44;
 
 function getIconName(name) {
   switch (name) {
@@ -85,10 +86,43 @@ function Message(props) {
           <Icon
             name={getIconName(name)}
             title={name}
-            size={22}
+            size={SNACKBAR_ICON_PX}
           />
         )}
         onClose={onClose}
+        sx={{
+          alignItems: 'center',
+          py: 0,
+          pl: 1.25,
+          pr: 0.5,
+          '& .MuiAlert-icon': {
+            alignItems: 'center',
+            mr: 1,
+            py: 0,
+            opacity: 1,
+            '& span': {
+              display: 'flex',
+              lineHeight: 0
+            }
+          },
+          '& .MuiAlert-message': {
+            py: '6px'
+          },
+          '& .MuiAlert-action': {
+            alignItems: 'center',
+            py: 0,
+            pl: 0.5,
+            mr: 0
+          },
+          '& .MuiAlert-action .MuiIconButton-root': {
+            p: 0.5
+          },
+          '& .MuiAlert-icon svg, & .MuiAlert-action svg': {
+            fontSize: SNACKBAR_ICON_PX,
+            width: SNACKBAR_ICON_PX,
+            height: SNACKBAR_ICON_PX
+          }
+        }}
       >
         {message}
       </Alert>
