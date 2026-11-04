@@ -34,6 +34,7 @@ namespace NzbDrone.Core.MediaFiles
         private readonly IImportScript _scriptImportDecider;
         private readonly IEventAggregator _eventAggregator;
         private readonly IConfigService _configService;
+        private readonly IEpisodeFileHardLinkRepository _hardLinkRepository;
         private readonly Logger _logger;
 
         public EpisodeFileMovingService(IEpisodeService episodeService,
@@ -45,6 +46,7 @@ namespace NzbDrone.Core.MediaFiles
                                 IImportScript scriptImportDecider,
                                 IEventAggregator eventAggregator,
                                 IConfigService configService,
+                                IEpisodeFileHardLinkRepository hardLinkRepository,
                                 Logger logger)
         {
             _episodeService = episodeService;
@@ -56,6 +58,7 @@ namespace NzbDrone.Core.MediaFiles
             _scriptImportDecider = scriptImportDecider;
             _eventAggregator = eventAggregator;
             _configService = configService;
+            _hardLinkRepository = hardLinkRepository;
             _logger = logger;
         }
 
@@ -205,6 +208,11 @@ namespace NzbDrone.Core.MediaFiles
             }
 
             _mediaFileAttributeService.SetFilePermissions(destinationFilePath);
+
+            if (episodeFile.Id > 0)
+            {
+                _hardLinkRepository.RetargetPath(episodeFile.Id, episodeFilePath, destinationFilePath);
+            }
 
             return episodeFile;
         }

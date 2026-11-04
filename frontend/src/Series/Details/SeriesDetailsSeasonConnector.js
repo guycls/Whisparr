@@ -16,27 +16,8 @@ import {
   isFullRuntimeRange
 } from 'Utilities/Number/runtimeFilterUtils';
 import { filterEpisodesByQualityRange, isFullQualityRange } from 'Utilities/Quality/qualityFilterTiers';
+import { filterEpisodesByMonitorStatus } from './getSeriesDetailsSelectableEpisodes';
 import SeriesDetailsSeason from './SeriesDetailsSeason';
-
-function filterByMonitorStatus(episodes, monitorStatusFilter) {
-  if (monitorStatusFilter === 'monitored') {
-    return episodes.filter((e) => e.monitored);
-  }
-
-  if (monitorStatusFilter === 'unmonitored') {
-    return episodes.filter((e) => !e.monitored);
-  }
-
-  if (monitorStatusFilter === 'downloaded') {
-    return episodes.filter((e) => e.hasFile);
-  }
-
-  if (monitorStatusFilter === 'missing') {
-    return episodes.filter((e) => e.monitored && !e.hasFile);
-  }
-
-  return episodes;
-}
 
 function createMapStateToProps() {
   return createSelector(
@@ -58,7 +39,7 @@ function createMapStateToProps() {
       }));
 
       const allItems = episodes.items.filter((episode) => episode.seasonNumber === seasonNumber);
-      const monitorFilteredItems = filterByMonitorStatus(allItems, monitorStatusFilter);
+      const monitorFilteredItems = filterEpisodesByMonitorStatus(allItems, monitorStatusFilter);
       const qualityFilteredItems = filterEpisodesByQualityRange(
         monitorFilteredItems,
         episodeFiles,

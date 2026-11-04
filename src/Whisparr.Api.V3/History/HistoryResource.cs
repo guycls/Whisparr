@@ -27,6 +27,7 @@ namespace Whisparr.Api.V3.History
         public EpisodeHistoryEventType EventType { get; set; }
 
         public Dictionary<string, string> Data { get; set; }
+        public List<string> HardLinks { get; set; }
 
         public EpisodeResource Episode { get; set; }
         public SeriesResource Series { get; set; }

@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
@@ -26,10 +27,22 @@ interface HistoryDetailsProps {
   sourceTitle: string;
   data: HistoryData;
   downloadId?: string;
+  hardLinks?: string[];
+}
+
+function pathsMatch(left?: string, right?: string) {
+  if (!left || !right) {
+    return false;
+  }
+
+  const normalize = (path: string) =>
+    path.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+
+  return normalize(left) === normalize(right);
 }
 
 function HistoryDetails(props: HistoryDetailsProps) {
-  const { eventType, sourceTitle, data, downloadId } = props;
+  const { eventType, sourceTitle, data, downloadId, hardLinks } = props;
 
   const { shortDateFormat, timeFormat } = useSelector(
     createUISettingsSelector()
@@ -150,6 +163,9 @@ function HistoryDetails(props: HistoryDetailsProps) {
   if (eventType === 'downloadFolderImported') {
     const { customFormatScore, droppedPath, importedPath } =
       data as DownloadFolderImportedHistory;
+    const extraHardLinks = (hardLinks ?? []).filter(
+      (path) => path && !pathsMatch(path, importedPath)
+    );
 
     return (
       <DescriptionList>
@@ -169,6 +185,24 @@ function HistoryDetails(props: HistoryDetailsProps) {
           <DescriptionListItem
             title={translate('ImportedTo')}
             data={importedPath}
+          />
+        ) : null}
+
+        {extraHardLinks.length ? (
+          <DescriptionListItem
+            title={translate('HardLinks')}
+            data={
+              <Box>
+                {extraHardLinks.map((path) => (
+                  <Box
+                    key={path}
+                    sx={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+                  >
+                    {path}
+                  </Box>
+                ))}
+              </Box>
+            }
           />
         ) : null}
 

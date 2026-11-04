@@ -37,6 +37,7 @@ interface HistoryDetailsModalProps {
   sourceTitle: string;
   data: HistoryData;
   downloadId?: string;
+  hardLinks?: string[];
   isMarkingAsFailed: boolean;
   onMarkAsFailedPress: () => void;
   onModalClose: () => void;
@@ -49,6 +50,7 @@ function HistoryDetailsModal(props: HistoryDetailsModalProps) {
     sourceTitle,
     data,
     downloadId,
+    hardLinks,
     isMarkingAsFailed = false,
     onMarkAsFailedPress,
     onModalClose,
@@ -65,6 +67,7 @@ function HistoryDetailsModal(props: HistoryDetailsModalProps) {
             sourceTitle={sourceTitle}
             data={data}
             downloadId={downloadId}
+            hardLinks={hardLinks}
           />
         </ModalBody>
 

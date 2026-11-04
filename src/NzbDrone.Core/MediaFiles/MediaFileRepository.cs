@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Datastore;
 using NzbDrone.Core.Messaging.Events;
 
@@ -11,6 +12,8 @@ namespace NzbDrone.Core.MediaFiles
         List<EpisodeFile> GetFilesBySeason(int seriesId, int seasonNumber);
         List<EpisodeFile> GetFilesWithoutMediaInfo();
         List<EpisodeFile> GetFilesWithRelativePath(int seriesId, string relativePath);
+        List<EpisodeFile> GetFilesByHardLinkIdentity(string volumeId, string fileId);
+        List<EpisodeFile> FindByIds(List<int> ids);
         void DeleteForSeries(List<int> seriesIds);
     }
 
@@ -40,6 +43,26 @@ namespace NzbDrone.Core.MediaFiles
         {
             return Query(c => c.SeriesId == seriesId && c.RelativePath == relativePath)
                         .ToList();
+        }
+
+        public List<EpisodeFile> GetFilesByHardLinkIdentity(string volumeId, string fileId)
+        {
+            if (volumeId.IsNullOrWhiteSpace() || fileId.IsNullOrWhiteSpace())
+            {
+                return new List<EpisodeFile>();
+            }
+
+            return Query(file => file.HardLinkVolumeId == volumeId && file.HardLinkFileId == fileId).ToList();
+        }
+
+        public List<EpisodeFile> FindByIds(List<int> ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return new List<EpisodeFile>();
+            }
+
+            return Query(file => ids.Contains(file.Id)).ToList();
         }
 
         public void DeleteForSeries(List<int> seriesIds)

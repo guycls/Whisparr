@@ -9,6 +9,7 @@ using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.Events;
 using NzbDrone.Core.MediaFiles.MediaInfo;
+using NzbDrone.Core.Qualities;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
 using NzbDrone.Test.Common;
@@ -313,6 +314,98 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaInfo
 
             Mocker.GetMock<IMediaFileService>()
                 .Verify(v => v.Update(episodeFile), Times.Never());
+        }
+
+        [Test]
+        public void should_set_unknown_quality_from_existing_media_info_dimensions()
+        {
+            var episodeFile = Builder<EpisodeFile>.CreateNew()
+                .With(v => v.Path = null)
+                .With(v => v.RelativePath = "media.mkv")
+                .With(v => v.Quality = new QualityModel(Quality.Unknown))
+                .With(v => v.MediaInfo = new MediaInfoModel
+                {
+                    SchemaRevision = VideoFileInfoReader.CURRENT_MEDIA_INFO_SCHEMA_REVISION,
+                    Width = 1920,
+                    Height = 1080
+                })
+                .Build();
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(v => v.GetFilesBySeries(1))
+                  .Returns(new List<EpisodeFile> { episodeFile });
+
+            GivenFileExists();
+
+            Subject.Handle(new SeriesScannedEvent(_series, new List<string>()));
+
+            episodeFile.Quality.Quality.Should().Be(Quality.HDTV1080p);
+
+            Mocker.GetMock<IVideoFileInfoReader>()
+                  .Verify(v => v.GetMediaInfo(It.IsAny<string>()), Times.Never());
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Verify(v => v.Update(episodeFile), Times.Once());
+        }
+
+        [Test]
+        public void should_not_replace_a_stored_quality()
+        {
+            var episodeFile = Builder<EpisodeFile>.CreateNew()
+                .With(v => v.Path = null)
+                .With(v => v.RelativePath = "media.mkv")
+                .With(v => v.Quality = new QualityModel(Quality.WEBDL1080p))
+                .With(v => v.MediaInfo = new MediaInfoModel
+                {
+                    SchemaRevision = VideoFileInfoReader.CURRENT_MEDIA_INFO_SCHEMA_REVISION,
+                    Width = 1920,
+                    Height = 1080
+                })
+                .Build();
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(v => v.GetFilesBySeries(1))
+                  .Returns(new List<EpisodeFile> { episodeFile });
+
+            GivenFileExists();
+
+            Subject.Handle(new SeriesScannedEvent(_series, new List<string>()));
+
+            episodeFile.Quality.Quality.Should().Be(Quality.WEBDL1080p);
+
+            Mocker.GetMock<IVideoFileInfoReader>()
+                  .Verify(v => v.GetMediaInfo(It.IsAny<string>()), Times.Never());
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Verify(v => v.Update(It.IsAny<EpisodeFile>()), Times.Never());
+        }
+
+        [Test]
+        public void should_leave_unknown_quality_when_media_info_has_no_dimensions()
+        {
+            var episodeFile = Builder<EpisodeFile>.CreateNew()
+                .With(v => v.Path = null)
+                .With(v => v.RelativePath = "media.mkv")
+                .With(v => v.Quality = new QualityModel(Quality.Unknown))
+                .With(v => v.MediaInfo = new MediaInfoModel
+                {
+                    SchemaRevision = VideoFileInfoReader.CURRENT_MEDIA_INFO_SCHEMA_REVISION
+                })
+                .Build();
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(v => v.GetFilesBySeries(1))
+                  .Returns(new List<EpisodeFile> { episodeFile });
+
+            GivenFileExists();
+            GivenSuccessfulScan();
+
+            Subject.Handle(new SeriesScannedEvent(_series, new List<string>()));
+
+            episodeFile.Quality.Quality.Should().Be(Quality.Unknown);
+
+            Mocker.GetMock<IVideoFileInfoReader>()
+                  .Verify(v => v.GetMediaInfo(Path.Combine(_series.Path, "media.mkv")), Times.Once());
         }
     }
 }

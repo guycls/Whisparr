@@ -287,6 +287,7 @@ namespace NzbDrone.Common.Disk
         }
 
         public abstract bool TryCreateHardLink(string source, string destination);
+        public abstract FileLinkIdentity GetFileLinkIdentity(string path);
 
         public virtual bool TryCreateRefLink(string source, string destination)
         {

@@ -11,6 +11,18 @@ export function frostedBackground(theme: Theme) {
   };
 }
 
+export function sceneMetadataBackground(theme: Theme) {
+  return {
+    backgroundColor: alpha(
+      theme.palette.background.paper,
+      theme.palette.mode === 'dark' ? 0.35 : 0.3
+    ),
+    backgroundImage: 'none',
+    backdropFilter: 'blur(18px)',
+    WebkitBackdropFilter: 'blur(18px)',
+  };
+}
+
 function dropdownPaper(theme: Theme) {
   return {
     ...frostedBackground(theme),

@@ -240,6 +240,29 @@ namespace NzbDrone.Core.Test.TvTests.EpisodeRepositoryTests
         }
 
         [Test]
+        public void should_attach_episode_file_quality_for_downloaded_scenes()
+        {
+            var pagingSpec = new PagingSpec<Episode>
+            {
+                Page = 1,
+                PageSize = 10,
+                SortKey = "Runtime",
+                SortDirection = SortDirection.Ascending
+            };
+
+            var result = Subject.GetEpisodesPaged(pagingSpec, _series.Id, new EpisodePagedFilter());
+
+            var sd = result.Records.Single(e => e.EpisodeFileId != 0 && e.Runtime == 45);
+            var hd = result.Records.Single(e => e.EpisodeFileId != 0 && e.Runtime == 90);
+            var missing = result.Records.Where(e => e.EpisodeFileId == 0);
+
+            sd.EpisodeFile.IsLoaded.Should().BeTrue();
+            sd.EpisodeFile.Value.Quality.Quality.Should().Be(Quality.SDTV);
+            hd.EpisodeFile.Value.Quality.Quality.Should().Be(Quality.HDTV720p);
+            missing.Should().OnlyContain(e => !e.EpisodeFile.IsLoaded);
+        }
+
+        [Test]
         public void should_return_rounded_max_runtime()
         {
             Subject.GetMaxEpisodeRuntime(_series.Id).Should().Be(90);

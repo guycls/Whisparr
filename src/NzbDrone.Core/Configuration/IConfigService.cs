@@ -30,6 +30,7 @@ namespace NzbDrone.Core.Configuration
         bool CreateEmptySeriesFolders { get; set; }
         bool DeleteEmptyFolders { get; set; }
         FileDateType FileDate { get; set; }
+        DeleteBehavior DeleteBehavior { get; set; }
         bool SkipFreeSpaceCheckWhenImporting { get; set; }
         int MinimumFreeSpaceWhenImporting { get; set; }
         bool CopyUsingHardlinks { get; set; }

@@ -131,7 +131,13 @@ namespace NzbDrone.Core.Tv
             pagingSpec.TotalRecords = GetPagedRecordCount(countBuilder.SelectCountDistinct<Episode>(x => x.Id), pagingSpec);
 
             var recordsBuilder = BuildEpisodesPagedBuilder(seriesId, filter);
-            pagingSpec.Records = GetPagedRecords(recordsBuilder, pagingSpec, Query);
+
+            if (!filter.RequiresEpisodeFileJoin)
+            {
+                recordsBuilder = recordsBuilder.LeftJoin<Episode, EpisodeFile>((e, ef) => e.EpisodeFileId == ef.Id);
+            }
+
+            pagingSpec.Records = GetPagedRecords(recordsBuilder, pagingSpec, QueryWithEpisodeFile);
 
             return pagingSpec;
         }
@@ -164,6 +170,21 @@ namespace NzbDrone.Core.Tv
             }
 
             return builder;
+        }
+
+        private IEnumerable<Episode> QueryWithEpisodeFile(SqlBuilder builder)
+        {
+            return _database.QueryJoined<Episode, EpisodeFile>(
+                builder,
+                (episode, episodeFile) =>
+                {
+                    if (episodeFile != null && episodeFile.Id > 0)
+                    {
+                        episode.EpisodeFile = episodeFile;
+                    }
+
+                    return episode;
+                });
         }
 
         public int GetMaxEpisodeRuntime(int seriesId)

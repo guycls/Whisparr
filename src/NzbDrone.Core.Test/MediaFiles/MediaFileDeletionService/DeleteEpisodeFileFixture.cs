@@ -1,8 +1,10 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using FizzWare.NBuilder;
 using Moq;
 using NUnit.Framework;
 using NzbDrone.Common.Disk;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Test.Framework;
@@ -138,6 +140,159 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaFileDeletionService
             ExceptionVerification.ExpectedErrors(1);
             Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(_episodeFile.Path, "Series Title"), Times.Once());
             Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_episodeFile, DeleteMediaFileReason.Manual), Times.Never());
+        }
+
+        [Test]
+        public void should_not_delete_other_hard_links_for_whisparr_entry()
+        {
+            GivenRootFolderExists();
+            GivenRootFolderHasFolders();
+            GivenSeriesFolderExists();
+
+            var extraPath = @"C:\downloads\file.mkv".AsOsAgnostic();
+
+            _episodeFile.HardLinkVolumeId = "vol";
+            _episodeFile.HardLinkFileId = "99";
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.DeleteBehavior)
+                  .Returns(DeleteBehavior.WhisparrEntry);
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.FileExists(_episodeFile.Path))
+                  .Returns(true);
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.FileExists(extraPath))
+                  .Returns(true);
+
+            Subject.DeleteEpisodeFile(_series, _episodeFile);
+
+            Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(_episodeFile.Path, "Series Title"), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.DeleteFile(extraPath), Times.Never());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_episodeFile, DeleteMediaFileReason.Manual), Times.Once());
+        }
+
+        [Test]
+        public void should_delete_stored_hard_links_for_underlying_file()
+        {
+            GivenRootFolderExists();
+            GivenRootFolderHasFolders();
+            GivenSeriesFolderExists();
+
+            var extraPath = @"C:\downloads\file.mkv".AsOsAgnostic();
+            var sibling = Builder<EpisodeFile>.CreateNew()
+                                              .With(f => f.Id = 42)
+                                              .With(f => f.SeriesId = 2)
+                                              .With(f => f.RelativePath = "other.mkv")
+                                              .With(f => f.HardLinkVolumeId = "vol")
+                                              .With(f => f.HardLinkFileId = "99")
+                                              .Build();
+
+            _episodeFile.HardLinkVolumeId = "vol";
+            _episodeFile.HardLinkFileId = "99";
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.DeleteBehavior)
+                  .Returns(DeleteBehavior.UnderlyingFile);
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.Find(_episodeFile.Id))
+                  .Returns(_episodeFile);
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetFilesByHardLinkIdentity("vol", "99"))
+                  .Returns(new List<EpisodeFile> { _episodeFile, sibling });
+
+            Mocker.GetMock<IEpisodeFileHardLinkRepository>()
+                  .Setup(s => s.GetByEpisodeFileIds(It.IsAny<List<int>>()))
+                  .Returns(new List<EpisodeFileHardLink>
+                  {
+                      new EpisodeFileHardLink { EpisodeFileId = _episodeFile.Id, Path = _episodeFile.Path },
+                      new EpisodeFileHardLink { EpisodeFileId = sibling.Id, Path = extraPath }
+                  });
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.FileExists(It.IsAny<string>()))
+                  .Returns(true);
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.GetFileLinkIdentity(It.IsAny<string>()))
+                  .Returns(new FileLinkIdentity { VolumeId = "vol", FileId = "99", LinkCount = 2 });
+
+            Subject.DeleteEpisodeFile(_series, _episodeFile);
+
+            Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(_episodeFile.Path, "Series Title"), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.DeleteFile(extraPath), Times.Once());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_episodeFile, DeleteMediaFileReason.Manual), Times.Once());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(sibling, DeleteMediaFileReason.Manual), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(It.IsAny<string>(), true), Times.Never());
+        }
+
+        [Test]
+        public void should_delete_only_tracked_file_when_hard_link_identity_is_stale()
+        {
+            GivenRootFolderExists();
+            GivenRootFolderHasFolders();
+            GivenSeriesFolderExists();
+
+            var extraPath = @"C:\downloads\file.mkv".AsOsAgnostic();
+
+            _episodeFile.HardLinkVolumeId = "vol";
+            _episodeFile.HardLinkFileId = "99";
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.DeleteBehavior)
+                  .Returns(DeleteBehavior.UnderlyingFile);
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.Find(_episodeFile.Id))
+                  .Returns(_episodeFile);
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.FileExists(_episodeFile.Path))
+                  .Returns(true);
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.GetFileLinkIdentity(_episodeFile.Path))
+                  .Returns(new FileLinkIdentity { VolumeId = "vol", FileId = "100", LinkCount = 2 });
+
+            Subject.DeleteEpisodeFile(_series, _episodeFile);
+
+            Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(_episodeFile.Path, "Series Title"), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.DeleteFile(extraPath), Times.Never());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.GetFilesByHardLinkIdentity(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_episodeFile, DeleteMediaFileReason.Manual), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(It.IsAny<string>(), true), Times.Never());
+            ExceptionVerification.ExpectedWarns(1);
+        }
+
+        [Test]
+        public void should_delete_only_tracked_file_when_hard_links_were_never_indexed()
+        {
+            GivenRootFolderExists();
+            GivenRootFolderHasFolders();
+            GivenSeriesFolderExists();
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.DeleteBehavior)
+                  .Returns(DeleteBehavior.UnderlyingFile);
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.Find(_episodeFile.Id))
+                  .Returns(_episodeFile);
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.FileExists(_episodeFile.Path))
+                  .Returns(true);
+
+            Subject.DeleteEpisodeFile(_series, _episodeFile);
+
+            Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFile(_episodeFile.Path, "Series Title"), Times.Once());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.GetFilesByHardLinkIdentity(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_episodeFile, DeleteMediaFileReason.Manual), Times.Once());
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(It.IsAny<string>(), true), Times.Never());
+            ExceptionVerification.ExpectedWarns(1);
         }
     }
 }

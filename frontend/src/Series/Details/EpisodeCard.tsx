@@ -1,8 +1,9 @@
 import Box from '@mui/material/Box';
-import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import React, { useCallback } from 'react';
+import React, { SyntheticEvent, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import { sceneMetadataBackground } from 'App/createAppTheme';
+import { useSelect } from 'App/SelectContext';
 import AppState from 'App/State/AppState';
 import Link from 'Components/Link/Link';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
@@ -18,6 +19,7 @@ import { EpisodeEntities } from 'Episode/useEpisode';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { Image } from 'Series/Series';
 import formatRuntime from 'Utilities/Number/formatRuntime';
+import SeriesDetailsEpisodeSelect from './Select/SeriesDetailsEpisodeSelect';
 
 interface EpisodeCardProps {
   id: number;
@@ -32,6 +34,7 @@ interface EpisodeCardProps {
   isSaving?: boolean;
   seriesMonitored: boolean;
   isSmallScreen: boolean;
+  isSelectMode?: boolean;
   episodeEntity?: EpisodeEntities;
   onMonitorEpisodePress(
     id: number,
@@ -54,6 +57,7 @@ function EpisodeCard(props: EpisodeCardProps) {
     isSaving,
     seriesMonitored,
     isSmallScreen,
+    isSelectMode = false,
     episodeEntity = 'episodes',
     onMonitorEpisodePress,
   } = props;
@@ -64,6 +68,25 @@ function EpisodeCard(props: EpisodeCardProps) {
 
   const [isDetailsModalOpen, openDetailsModal, closeDetailsModal] =
     useModalOpenState(false);
+  const [selectState, selectDispatch] = useSelect();
+  const isSelected = !!selectState.selectedState[id];
+
+  const onSelectPress = useCallback(
+    (event?: SyntheticEvent) => {
+      const shiftKey =
+        !!event &&
+        'shiftKey' in event.nativeEvent &&
+        !!event.nativeEvent.shiftKey;
+
+      selectDispatch({
+        type: 'toggleSelected',
+        id,
+        isSelected: !isSelected,
+        shiftKey,
+      });
+    },
+    [id, isSelected, selectDispatch]
+  );
 
   const joinedPerformers = actors
     .map((a) => a.character)
@@ -99,6 +122,7 @@ function EpisodeCard(props: EpisodeCardProps) {
           bgcolor: 'action.hover',
         }}
       >
+        {isSelectMode ? <SeriesDetailsEpisodeSelect episodeId={id} /> : null}
         <Box
           sx={{
             width: '100%',
@@ -120,16 +144,38 @@ function EpisodeCard(props: EpisodeCardProps) {
             },
           }}
         >
-          <Link onPress={openDetailsModal}>
+          <Link onPress={isSelectMode ? onSelectPress : openDetailsModal}>
             <EpisodeScreenshot images={images} blur={safeForWorkMode} />
           </Link>
         </Box>
 
-        <Box sx={{ position: 'absolute', top: 6, left: 6, zIndex: 2 }}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 6,
+            left: isSelectMode ? 42 : 6,
+            zIndex: 2,
+            maxWidth: 'calc(100% - 12px)',
+            '& .MuiChip-root': {
+              height: 22,
+              maxWidth: '100%',
+            },
+            '& .MuiChip-outlined': {
+              bgcolor: 'rgba(0, 0, 0, 0.72)',
+              color: 'common.white',
+              borderColor: 'transparent',
+            },
+            '& .MuiChip-label': {
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+          }}
+        >
           <EpisodeStatus
             episodeId={id}
             episodeEntity={episodeEntity}
             episodeFileId={episodeFileId || 0}
+            resolutionOnly={true}
           />
         </Box>
       </Box>
@@ -140,13 +186,7 @@ function EpisodeCard(props: EpisodeCardProps) {
           flexDirection: 'column',
           flex: 1,
           minHeight: 0,
-          backgroundColor: alpha(
-            theme.palette.background.paper,
-            theme.palette.mode === 'dark' ? 0.35 : 0.3
-          ),
-          backgroundImage: 'none',
-          backdropFilter: 'blur(18px)',
-          WebkitBackdropFilter: 'blur(18px)',
+          ...sceneMetadataBackground(theme),
         })}
       >
         <Box
@@ -176,7 +216,9 @@ function EpisodeCard(props: EpisodeCardProps) {
               showOpenSeriesButton={false}
               renderModal={false}
               wrap={true}
-              onModalOpen={openDetailsModal}
+              onModalOpen={
+                isSelectMode ? () => onSelectPress() : openDetailsModal
+              }
             />
           </Typography>
 

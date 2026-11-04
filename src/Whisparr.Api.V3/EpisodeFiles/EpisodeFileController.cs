@@ -165,12 +165,13 @@ namespace Whisparr.Api.V3.EpisodeFiles
         public object DeleteEpisodeFiles([FromBody] EpisodeFileListResource resource)
         {
             var episodeFiles = _mediaFileService.GetFiles(resource.EpisodeFileIds);
-            var series = _seriesService.GetSeries(episodeFiles.First().SeriesId);
 
-            foreach (var episodeFile in episodeFiles)
+            if (!episodeFiles.Any())
             {
-                _mediaFileDeletionService.DeleteEpisodeFile(series, episodeFile);
+                throw new BadRequestException("No episode files to delete");
             }
+
+            _mediaFileDeletionService.DeleteEpisodeFiles(episodeFiles);
 
             return new { };
         }

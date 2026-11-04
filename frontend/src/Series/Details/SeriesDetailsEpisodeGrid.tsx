@@ -12,6 +12,7 @@ interface EpisodeItem {
 interface SeriesDetailsEpisodeGridProps {
   items: EpisodeItem[];
   isSmallScreen: boolean;
+  isSelectMode?: boolean;
   episodeEntity?: EpisodeEntities;
   onMonitorEpisodePress(
     id: number,
@@ -24,6 +25,7 @@ function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
   const {
     items,
     isSmallScreen,
+    isSelectMode = false,
     episodeEntity = 'episodes',
     onMonitorEpisodePress,
   } = props;
@@ -48,6 +50,7 @@ function SeriesDetailsEpisodeGrid(props: SeriesDetailsEpisodeGridProps) {
             key={item.id}
             {...item}
             isSmallScreen={isSmallScreen}
+            isSelectMode={isSelectMode}
             episodeEntity={episodeEntity}
             onMonitorEpisodePress={onMonitorEpisodePress}
           />

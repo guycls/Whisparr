@@ -101,26 +101,32 @@ export const actionHandlers = handleThunks({
     }).request;
 
     promise.done(() => {
-      const episodes = getState().episodes.items;
-      const episodesWithRemovedFiles = episodeFileIds.reduce((acc, episodeFileId) => {
-        acc.push(..._.filter(episodes, { episodeFileId }));
+      const episodes = getState().episodes.items || [];
+      const gridEpisodes = _.get(getState(), 'seriesDetails.unifiedGrid.items', []);
 
-        return acc;
-      }, []);
+      const clearFiles = (items, episodeSection) => {
+        return episodeFileIds.reduce((acc, episodeFileId) => {
+          _.filter(items, { episodeFileId }).forEach((episode) => {
+            acc.push(updateItem({
+              section: episodeSection,
+              id: episode.id,
+              updateOnly: true,
+              episodeFileId: 0,
+              hasFile: false
+            }));
+          });
+
+          return acc;
+        }, []);
+      };
 
       dispatch(batchActions([
         ...episodeFileIds.map((id) => {
           return removeItem({ section, id });
         }),
 
-        ...episodesWithRemovedFiles.map((episode) => {
-          return updateItem({
-            section: 'episodes',
-            ...episode,
-            episodeFileId: 0,
-            hasFile: false
-          });
-        }),
+        ...clearFiles(episodes, 'episodes'),
+        ...clearFiles(gridEpisodes, 'seriesDetails.unifiedGrid'),
 
         set({
           section,

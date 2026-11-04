@@ -6,8 +6,10 @@ import Icon from 'Components/Icon';
 import ProgressBar from 'Components/ProgressBar';
 import Episode from 'Episode/Episode';
 import useEpisode, { EpisodeEntities } from 'Episode/useEpisode';
+import { EpisodeFile } from 'EpisodeFile/EpisodeFile';
 import useEpisodeFile from 'EpisodeFile/useEpisodeFile';
 import { icons, kinds, sizes } from 'Helpers/Props';
+import { QualityModel } from 'Quality/Quality';
 import { createQueueItemSelectorForHook } from 'Store/Selectors/createQueueItemSelector';
 import isBefore from 'Utilities/Date/isBefore';
 import translate from 'Utilities/String/translate';
@@ -17,23 +19,48 @@ interface EpisodeStatusProps {
   episodeId: number;
   episodeEntity?: EpisodeEntities;
   episodeFileId: number;
+  resolutionOnly?: boolean;
+}
+
+function hasPresentQuality(quality?: QualityModel) {
+  const qualityId = quality?.quality?.id;
+
+  return qualityId != null && qualityId !== 0;
+}
+
+function hasKnownQuality(
+  episodeFile?: EpisodeFile
+): episodeFile is EpisodeFile {
+  return hasPresentQuality(episodeFile?.quality);
 }
 
 function EpisodeStatus(props: EpisodeStatusProps) {
-  const { episodeId, episodeEntity = 'episodes', episodeFileId } = props;
+  const {
+    episodeId,
+    episodeEntity = 'episodes',
+    episodeFileId,
+    resolutionOnly = false,
+  } = props;
 
   const episode = useEpisode(episodeId, episodeEntity) as Episode | undefined;
+  const queueItem = useSelector(createQueueItemSelectorForHook(episodeId));
+  const storedFile = useEpisodeFile(episodeFileId);
 
   if (!episode) {
     return null;
   }
 
-  const { releaseDate, monitored, grabbed = false, hasFile = false } = episode;
+  const {
+    releaseDate,
+    monitored,
+    grabbed = false,
+    hasFile = false,
+    episodeFile: embeddedFile,
+  } = episode;
 
-  const queueItem = useSelector(createQueueItemSelectorForHook(episodeId));
-  const episodeFile = useEpisodeFile(episodeFileId);
+  const episodeFile = storedFile ?? embeddedFile;
 
-  const hasEpisodeFile = !!episodeFile;
+  const hasEpisodeFile = hasKnownQuality(episodeFile);
   const isQueued = !!queueItem;
   const hasAired = isBefore(releaseDate);
 
@@ -79,7 +106,13 @@ function EpisodeStatus(props: EpisodeStatusProps) {
           quality={quality}
           size={episodeFile.size}
           isCutoffNotMet={isCutoffNotMet}
-          title={translate('EpisodeDownloaded')}
+          resolutionOnly={resolutionOnly}
+          mediaInfoResolution={episodeFile.mediaInfo?.resolution}
+          title={
+            resolutionOnly
+              ? `${translate('EpisodeDownloaded')} - ${quality.quality.name}`
+              : translate('EpisodeDownloaded')
+          }
         />
       </Box>
     );

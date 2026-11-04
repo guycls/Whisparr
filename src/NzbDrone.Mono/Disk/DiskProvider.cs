@@ -430,6 +430,34 @@ namespace NzbDrone.Mono.Disk
             return Syscall.rename(source, destination) == 0;
         }
 
+        public override FileLinkIdentity GetFileLinkIdentity(string path)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(path) || Syscall.lstat(path, out var stat) != 0)
+                {
+                    return null;
+                }
+
+                if ((stat.st_mode & FilePermissions.S_IFMT) == FilePermissions.S_IFLNK)
+                {
+                    return null;
+                }
+
+                return new FileLinkIdentity
+                {
+                    VolumeId = stat.st_dev.ToString(),
+                    FileId = stat.st_ino.ToString(),
+                    LinkCount = (int)stat.st_nlink
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.Debug(ex, "Unable to read file identity for {0}", path);
+                return null;
+            }
+        }
+
         public override bool TryCreateHardLink(string source, string destination)
         {
             try

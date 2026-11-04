@@ -5,6 +5,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component, useEffect, useState } from 'react';
 import TextTruncate from 'react-text-truncate';
+import { SelectProvider } from 'App/SelectContext';
 import HeartRating from 'Components/HeartRating';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
@@ -45,6 +46,11 @@ import SeriesDetailsRuntimeFilterMenu from './Menus/SeriesDetailsRuntimeFilterMe
 import SeriesDetailsSortMenu from './Menus/SeriesDetailsSortMenu';
 import SeriesDetailsStatusMenu from './Menus/SeriesDetailsStatusMenu';
 import SeriesDetailsViewMenu from './Menus/SeriesDetailsViewMenu';
+import SeriesDetailsSelectAllButton from './Select/SeriesDetailsSelectAllButton';
+import SeriesDetailsSelectAllMenuItem from './Select/SeriesDetailsSelectAllMenuItem';
+import SeriesDetailsSelectFooter from './Select/SeriesDetailsSelectFooter';
+import SeriesDetailsSelectModeButton from './Select/SeriesDetailsSelectModeButton';
+import SeriesDetailsSelectModeMenuItem from './Select/SeriesDetailsSelectModeMenuItem';
 import SeriesAlternateTitles from './SeriesAlternateTitles';
 import SeriesDetailsLinks from './SeriesDetailsLinks';
 import SeriesDetailsSeasonConnector from './SeriesDetailsSeasonConnector';
@@ -171,6 +177,7 @@ class SeriesDetails extends Component {
       isSeriesHistoryModalOpen: false,
       isMonitorOptionsModalOpen: false,
       isSiteRipModalOpen: false,
+      isSelectMode: false,
       allExpanded: false,
       allCollapsed: false,
       expandedState: {}
@@ -262,6 +269,10 @@ class SeriesDetails extends Component {
     });
   };
 
+  onSelectModePress = () => {
+    this.setState({ isSelectMode: !this.state.isSelectMode });
+  };
+
   //
   // Render
 
@@ -316,7 +327,8 @@ class SeriesDetails extends Component {
       onQualityFilterChange,
       onRuntimeFilterChange,
       onCardSizeChange,
-      onSortSelect
+      onSortSelect,
+      selectableItems
     } = this.props;
 
     const {
@@ -332,6 +344,7 @@ class SeriesDetails extends Component {
       isSeriesHistoryModalOpen,
       isMonitorOptionsModalOpen,
       isSiteRipModalOpen,
+      isSelectMode,
       allExpanded,
       allCollapsed,
       expandedState
@@ -359,581 +372,613 @@ class SeriesDetails extends Component {
     const isUnifiedGridView = view === 'unifiedGrid';
 
     return (
-      <PageContent title={title}>
-        <PageToolbar>
-          <PageToolbarSection>
-            <PageToolbarButton
-              label={translate('RefreshAndScan')}
-              iconName={icons.REFRESH}
-              spinningName={icons.REFRESH}
-              title={translate('RefreshAndScanTooltip')}
-              isSpinning={isRefreshing}
-              onPress={onRefreshPress}
-            />
+      <SelectProvider items={selectableItems || []}>
+        <PageContent title={title}>
+          <PageToolbar>
+            <PageToolbarSection>
+              <SeriesDetailsSelectModeButton
+                label={
+                  isSelectMode ?
+                    translate('StopSelecting') :
+                    translate('SelectScenes')
+                }
+                iconName={isSelectMode ? icons.SERIES_ENDED : icons.CHECK}
+                isSelectMode={isSelectMode}
+                overflowComponent={SeriesDetailsSelectModeMenuItem}
+                onPress={this.onSelectModePress}
+              />
 
-            <PageToolbarButton
-              label={translate('SearchMonitored')}
-              iconName={icons.PAGEVIEW}
-              isDisabled={!monitored || !hasMonitoredEpisodes || !hasEpisodes}
-              isSpinning={isSearching}
-              title={hasMonitoredEpisodes ? undefined : translate('NoMonitoredEpisodes')}
-              onPress={onSearchPress}
-            />
+              <SeriesDetailsSelectAllButton
+                isSelectMode={isSelectMode}
+                overflowComponent={SeriesDetailsSelectAllMenuItem}
+              />
 
-            {
-              hasQBittorrent ?
-                <PageToolbarButton
-                  label={translate('SiteRipSearch')}
-                  iconName={icons.SITE_RIP_SEARCH}
-                  isDisabled={!hasEpisodes}
-                  onPress={this.onSiteRipPress}
-                /> :
-                null
-            }
+              <PageToolbarSeparator />
+              <PageToolbarButton
+                label={translate('RefreshAndScan')}
+                iconName={icons.REFRESH}
+                spinningName={icons.REFRESH}
+                title={translate('RefreshAndScanTooltip')}
+                isSpinning={isRefreshing}
+                onPress={onRefreshPress}
+              />
 
-            <PageToolbarSeparator />
+              <PageToolbarButton
+                label={translate('SearchMonitored')}
+                iconName={icons.PAGEVIEW}
+                isDisabled={!monitored || !hasMonitoredEpisodes || !hasEpisodes}
+                isSpinning={isSearching}
+                title={hasMonitoredEpisodes ? undefined : translate('NoMonitoredEpisodes')}
+                onPress={onSearchPress}
+              />
 
-            <PageToolbarButton
-              label={translate('PreviewRename')}
-              iconName={icons.ORGANIZE}
-              isDisabled={!hasEpisodeFiles}
-              onPress={this.onOrganizePress}
-            />
+              {
+                hasQBittorrent ?
+                  <PageToolbarButton
+                    label={translate('SiteRipSearch')}
+                    iconName={icons.SITE_RIP_SEARCH}
+                    isDisabled={!hasEpisodes}
+                    onPress={this.onSiteRipPress}
+                  /> :
+                  null
+              }
 
-            <PageToolbarButton
-              label={translate('ManageEpisodes')}
-              iconName={icons.LIST}
-              onPress={this.onManageEpisodesPress}
-            />
+              <PageToolbarSeparator />
 
-            <PageToolbarButton
-              label={translate('History')}
-              iconName={icons.HISTORY}
-              isDisabled={!hasEpisodes}
-              onPress={this.onSeriesHistoryPress}
-            />
+              <PageToolbarButton
+                label={translate('PreviewRename')}
+                iconName={icons.ORGANIZE}
+                isDisabled={!hasEpisodeFiles}
+                onPress={this.onOrganizePress}
+              />
 
-            <PageToolbarSeparator />
+              <PageToolbarButton
+                label={translate('ManageEpisodes')}
+                iconName={icons.LIST}
+                onPress={this.onManageEpisodesPress}
+              />
 
-            <PageToolbarButton
-              label={translate('SiteMonitoring')}
-              iconName={icons.MONITORED}
-              onPress={this.onMonitorOptionsPress}
-            />
+              <PageToolbarButton
+                label={translate('History')}
+                iconName={icons.HISTORY}
+                isDisabled={!hasEpisodes}
+                onPress={this.onSeriesHistoryPress}
+              />
 
-            <PageToolbarButton
-              label={translate('Edit')}
-              iconName={icons.SERIES_EDIT}
-              onPress={this.onEditSeriesPress}
-            />
+              <PageToolbarSeparator />
 
-            <PageToolbarButton
-              label={translate('Delete')}
-              iconName={icons.DELETE}
-              onPress={this.onDeleteSeriesPress}
-            />
+              <PageToolbarButton
+                label={translate('SiteMonitoring')}
+                iconName={icons.MONITORED}
+                onPress={this.onMonitorOptionsPress}
+              />
 
-          </PageToolbarSection>
+              <PageToolbarButton
+                label={translate('Edit')}
+                iconName={icons.SERIES_EDIT}
+                onPress={this.onEditSeriesPress}
+              />
 
-          <PageToolbarSection alignContent={align.RIGHT}>
-            <CardSizeMenu
-              cardSize={cardSize}
-              min={SERIES_DETAILS_CARD_SIZE_MIN}
-              max={SERIES_DETAILS_CARD_SIZE_MAX}
-              step={SERIES_DETAILS_CARD_SIZE_STEP}
-              onCardSizeChange={onCardSizeChange}
-            />
+              <PageToolbarButton
+                label={translate('Delete')}
+                iconName={icons.DELETE}
+                onPress={this.onDeleteSeriesPress}
+              />
 
-            <PageToolbarSeparator />
+            </PageToolbarSection>
 
-            <SeriesDetailsRuntimeFilterMenu
-              runtimeFilter={runtimeFilter}
-              seriesMaxRuntime={maxEpisodeRuntime}
-              onRuntimeFilterChange={onRuntimeFilterChange}
-            />
+            <PageToolbarSection alignContent={align.RIGHT}>
+              <CardSizeMenu
+                cardSize={cardSize}
+                min={SERIES_DETAILS_CARD_SIZE_MIN}
+                max={SERIES_DETAILS_CARD_SIZE_MAX}
+                step={SERIES_DETAILS_CARD_SIZE_STEP}
+                onCardSizeChange={onCardSizeChange}
+              />
 
-            <PageToolbarSeparator />
+              <PageToolbarSeparator />
 
-            <SeriesDetailsQualityFilterMenu
-              qualityFilter={qualityFilter}
-              onQualityFilterChange={onQualityFilterChange}
-            />
+              <SeriesDetailsRuntimeFilterMenu
+                runtimeFilter={runtimeFilter}
+                seriesMaxRuntime={maxEpisodeRuntime}
+                onRuntimeFilterChange={onRuntimeFilterChange}
+              />
 
-            <PageToolbarSeparator />
+              <PageToolbarSeparator />
 
-            <SeriesDetailsStatusMenu
-              monitorStatusFilter={monitorStatusFilter}
-              onStatusSelect={onStatusSelect}
-            />
+              <SeriesDetailsQualityFilterMenu
+                qualityFilter={qualityFilter}
+                onQualityFilterChange={onQualityFilterChange}
+              />
 
-            <PageToolbarSeparator />
+              <PageToolbarSeparator />
 
-            <SeriesDetailsViewMenu
-              view={view}
-              onViewSelect={onViewSelect}
-            />
+              <SeriesDetailsStatusMenu
+                monitorStatusFilter={monitorStatusFilter}
+                onStatusSelect={onStatusSelect}
+              />
 
-            <SeriesDetailsSortMenu
-              sortKey={sortKey}
-              sortDirection={sortDirection}
-              onSortSelect={onSortSelect}
-            />
+              <PageToolbarSeparator />
 
-            <PageToolbarSeparator />
+              <SeriesDetailsViewMenu
+                view={view}
+                onViewSelect={onViewSelect}
+              />
 
-            {
-              !isUnifiedGridView &&
-                <PageToolbarButton
-                  label={allExpanded ? translate('CollapseAll') : translate('ExpandAll')}
-                  iconName={expandIcon}
-                  onPress={this.onExpandAllPress}
-                />
-            }
-          </PageToolbarSection>
-        </PageToolbar>
+              <SeriesDetailsSortMenu
+                sortKey={sortKey}
+                sortDirection={sortDirection}
+                onSortSelect={onSortSelect}
+              />
 
-        <PageContentBody>
-          <Box sx={{ m: { xs: '-10px', md: '-20px' } }}>
-            <Box
-              sx={{
-                position: 'relative',
-                width: '100%',
-                minHeight: 210,
-                height: 'auto',
-                bgcolor: 'transparent'
-              }}
-            >
+              <PageToolbarSeparator />
+
+              {
+                !isUnifiedGridView &&
+                  <PageToolbarButton
+                    label={allExpanded ? translate('CollapseAll') : translate('ExpandAll')}
+                    iconName={expandIcon}
+                    onPress={this.onExpandAllPress}
+                  />
+              }
+            </PageToolbarSection>
+          </PageToolbar>
+
+          <PageContentBody>
+            <Box sx={{ m: { xs: '-10px', md: '-20px' } }}>
               <Box
                 sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', md: 'row' },
-                  alignItems: { xs: 'stretch', md: 'flex-start' },
-                  gap: { xs: 2, md: 3 },
-                  p: { xs: '15px', md: '30px' },
+                  position: 'relative',
                   width: '100%',
-                  color: 'text.primary'
+                  minHeight: 210,
+                  height: 'auto',
+                  bgcolor: 'transparent'
                 }}
               >
                 <Box
                   sx={{
                     display: 'flex',
-                    alignItems: 'center',
-                    flex: '0 0 auto',
-                    alignSelf: { md: 'center' },
-                    minWidth: 0,
-                    maxWidth: { md: '46%' }
+                    flexDirection: { xs: 'column', md: 'row' },
+                    alignItems: { xs: 'stretch', md: 'flex-start' },
+                    gap: { xs: 2, md: 3 },
+                    p: { xs: '15px', md: '30px' },
+                    width: '100%',
+                    color: 'text.primary'
                   }}
                 >
-                  <Box sx={{ alignSelf: 'center', mr: '10px', flexShrink: 0 }}>
-                    <MonitorToggleButton
-                      sx={{
-                        width: 40,
-                        '&:hover': { color: 'text.secondary' }
-                      }}
-                      monitored={monitored}
-                      isSaving={isSaving}
-                      size={40}
-                      onPress={onMonitorTogglePress}
-                    />
-                  </Box>
-
-                  <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center' }}>
-                    <BannerSiteTitle
-                      images={images}
-                      title={title}
-                      blur={safeForWorkMode}
-                    />
-
-                    {
-                      !!alternateTitles.length &&
-                        <Box sx={{ alignSelf: 'flex-end', ml: '20px', flexShrink: 0 }}>
-                          <Popover
-                            anchor={
-                              <Icon
-                                name={icons.ALTERNATE_TITLES}
-                                size={20}
-                              />
-                            }
-                            title={translate('AlternateTitles')}
-                            body={<SeriesAlternateTitles alternateTitles={alternateTitles} />}
-                            position={tooltipPositions.BOTTOM}
-                          />
-                        </Box>
-                    }
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, ml: 2 }}>
-                    <IconButton
-                      sx={bannerNavButtonSx}
-                      name={icons.ARROW_LEFT}
-                      size={30}
-                      title={translate('SiteDetailsGoTo', { title: previousSeries.title })}
-                      to={`/site/${previousSeries.titleSlug}`}
-                    />
-
-                    <IconButton
-                      sx={bannerNavButtonSx}
-                      name={icons.ARROW_RIGHT}
-                      size={30}
-                      title={translate('SiteDetailsGoTo', { title: nextSeries.title })}
-                      to={`/site/${nextSeries.titleSlug}`}
-                    />
-                  </Box>
-                </Box>
-
-                <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
-                  <Box sx={{ mb: 1, color: 'text.primary', fontWeight: 300, fontSize: 20 }}>
-                    <div>
-                      {
-                        !!runtime &&
-                          <Box component="span" sx={{ mr: '15px' }}>
-                            {translate('SiteDetailsRuntime', { runtime })}
-                          </Box>
-                      }
-
-                      {
-                        ratings.value ?
-                          <HeartRating
-                            rating={ratings.value}
-                            iconSize={20}
-                          /> :
-                          null
-                      }
-
-                      <SeriesGenres genres={genres} />
-
-                      <span>
-                        {runningYears}
-                      </span>
-                    </div>
-                  </Box>
-
                   <Box
                     sx={{
                       display: 'flex',
-                      flexWrap: 'wrap',
                       alignItems: 'center',
-                      '& .MuiChip-root': {
-                        m: '5px 10px 5px 0',
-                        maxWidth: '100%',
-                        height: 'auto',
-                        '& .MuiChip-label': {
-                          whiteSpace: 'normal',
-                          overflowWrap: 'anywhere'
-                        }
-                      },
-                      '& .MuiChip-root.MuiChip-outlined': {
-                        bgcolor: (theme) => alpha(theme.palette.text.primary, 0.08),
-                        color: 'text.primary',
-                        borderColor: (theme) => alpha(theme.palette.text.primary, 0.16)
-                      }
+                      flex: '0 0 auto',
+                      alignSelf: { md: 'center' },
+                      minWidth: 0,
+                      maxWidth: { md: '46%' }
                     }}
                   >
-                    <Label
-                      size={sizes.LARGE}
-                    >
+                    <Box sx={{ alignSelf: 'center', mr: '10px', flexShrink: 0 }}>
+                      <MonitorToggleButton
+                        sx={{
+                          width: 40,
+                          '&:hover': { color: 'text.secondary' }
+                        }}
+                        monitored={monitored}
+                        isSaving={isSaving}
+                        size={40}
+                        onPress={onMonitorTogglePress}
+                      />
+                    </Box>
 
-                      <div>
-                        <Icon
-                          name={icons.FOLDER}
-                          size={17}
-                        />
-                        <Box component="span" sx={detailValueSx}>
-                          {path}
-                        </Box>
-                      </div>
-                    </Label>
+                    <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center' }}>
+                      <BannerSiteTitle
+                        images={images}
+                        title={title}
+                        blur={safeForWorkMode}
+                      />
 
-                    <Tooltip
-                      anchor={
-                        <Label
-                          size={sizes.LARGE}
-                        >
-
-                          <div>
-                            <Icon
-                              name={icons.DRIVE}
-                              size={17}
+                      {
+                        !!alternateTitles.length &&
+                          <Box sx={{ alignSelf: 'flex-end', ml: '20px', flexShrink: 0 }}>
+                            <Popover
+                              anchor={
+                                <Icon
+                                  name={icons.ALTERNATE_TITLES}
+                                  size={20}
+                                />
+                              }
+                              title={translate('AlternateTitles')}
+                              body={<SeriesAlternateTitles alternateTitles={alternateTitles} />}
+                              position={tooltipPositions.BOTTOM}
                             />
+                          </Box>
+                      }
+                    </Box>
 
-                            <Box component="span" sx={detailValueSx}>
-                              {formatBytes(sizeOnDisk)}
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, ml: 2 }}>
+                      <IconButton
+                        sx={bannerNavButtonSx}
+                        name={icons.ARROW_LEFT}
+                        size={30}
+                        title={translate('SiteDetailsGoTo', { title: previousSeries.title })}
+                        to={`/site/${previousSeries.titleSlug}`}
+                      />
+
+                      <IconButton
+                        sx={bannerNavButtonSx}
+                        name={icons.ARROW_RIGHT}
+                        size={30}
+                        title={translate('SiteDetailsGoTo', { title: nextSeries.title })}
+                        to={`/site/${nextSeries.titleSlug}`}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
+                    <Box sx={{ mb: 1, color: 'text.primary', fontWeight: 300, fontSize: 20 }}>
+                      <div>
+                        {
+                          !!runtime &&
+                            <Box component="span" sx={{ mr: '15px' }}>
+                              {translate('SiteDetailsRuntime', { runtime })}
                             </Box>
-                          </div>
-                        </Label>
-                      }
-                      tooltip={
+                        }
+
+                        {
+                          ratings.value ?
+                            <HeartRating
+                              rating={ratings.value}
+                              iconSize={20}
+                            /> :
+                            null
+                        }
+
+                        <SeriesGenres genres={genres} />
+
                         <span>
-                          {episodeFilesCountMessage}
+                          {runningYears}
                         </span>
-                      }
-                      kind={kinds.INVERSE}
-                      position={tooltipPositions.BOTTOM}
-                    />
+                      </div>
+                    </Box>
 
-                    <Label
-                      title={translate('QualityProfile')}
-                      size={sizes.LARGE}
-                    >
-
-                      <div>
-                        <Icon
-                          name={icons.PROFILE}
-                          size={17}
-                        />
-                        <Box component="span" sx={detailValueSx}>
-                          {
-                            <QualityProfileNameConnector
-                              qualityProfileId={qualityProfileId}
-                            />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        '& .MuiChip-root': {
+                          m: '5px 10px 5px 0',
+                          maxWidth: '100%',
+                          height: 'auto',
+                          '& .MuiChip-label': {
+                            whiteSpace: 'normal',
+                            overflowWrap: 'anywhere'
                           }
-                        </Box>
-                      </div>
-                    </Label>
-
-                    <Label
-                      size={sizes.LARGE}
+                        },
+                        '& .MuiChip-root.MuiChip-outlined': {
+                          bgcolor: (theme) => alpha(theme.palette.text.primary, 0.08),
+                          color: 'text.primary',
+                          borderColor: (theme) => alpha(theme.palette.text.primary, 0.16)
+                        }
+                      }}
                     >
+                      <Label
+                        size={sizes.LARGE}
+                      >
 
-                      <div>
-                        <Icon
-                          name={monitored ? icons.MONITORED : icons.UNMONITORED}
-                          size={17}
-                        />
-                        <Box component="span" sx={detailValueSx}>
-                          {monitored ? translate('Monitored') : translate('Unmonitored')}
-                        </Box>
-                      </div>
-                    </Label>
+                        <div>
+                          <Icon
+                            name={icons.FOLDER}
+                            size={17}
+                          />
+                          <Box component="span" sx={detailValueSx}>
+                            {path}
+                          </Box>
+                        </div>
+                      </Label>
 
-                    <Label
-                      title={statusDetails.message}
-                      size={sizes.LARGE}
-                      kind={status === 'deleted' ? kinds.INVERSE : undefined}
-                    >
+                      <Tooltip
+                        anchor={
+                          <Label
+                            size={sizes.LARGE}
+                          >
 
-                      <div>
-                        <Icon
-                          name={statusDetails.icon}
-                          size={17}
-                        />
-                        <Box component="span" sx={detailValueSx}>
-                          {statusDetails.title}
-                        </Box>
-                      </div>
-                    </Label>
+                            <div>
+                              <Icon
+                                name={icons.DRIVE}
+                                size={17}
+                              />
 
-                    {
-                      !!network &&
-                        <Label
-                          title={translate('Network')}
-                          size={sizes.LARGE}
-                        >
+                              <Box component="span" sx={detailValueSx}>
+                                {formatBytes(sizeOnDisk)}
+                              </Box>
+                            </div>
+                          </Label>
+                        }
+                        tooltip={
+                          <span>
+                            {episodeFilesCountMessage}
+                          </span>
+                        }
+                        kind={kinds.INVERSE}
+                        position={tooltipPositions.BOTTOM}
+                      />
 
-                          <div>
+                      <Label
+                        title={translate('QualityProfile')}
+                        size={sizes.LARGE}
+                      >
+
+                        <div>
+                          <Icon
+                            name={icons.PROFILE}
+                            size={17}
+                          />
+                          <Box component="span" sx={detailValueSx}>
+                            {
+                              <QualityProfileNameConnector
+                                qualityProfileId={qualityProfileId}
+                              />
+                            }
+                          </Box>
+                        </div>
+                      </Label>
+
+                      <Label
+                        size={sizes.LARGE}
+                      >
+
+                        <div>
+                          <Icon
+                            name={monitored ? icons.MONITORED : icons.UNMONITORED}
+                            size={17}
+                          />
+                          <Box component="span" sx={detailValueSx}>
+                            {monitored ? translate('Monitored') : translate('Unmonitored')}
+                          </Box>
+                        </div>
+                      </Label>
+
+                      <Label
+                        title={statusDetails.message}
+                        size={sizes.LARGE}
+                        kind={status === 'deleted' ? kinds.INVERSE : undefined}
+                      >
+
+                        <div>
+                          <Icon
+                            name={statusDetails.icon}
+                            size={17}
+                          />
+                          <Box component="span" sx={detailValueSx}>
+                            {statusDetails.title}
+                          </Box>
+                        </div>
+                      </Label>
+
+                      {
+                        !!network &&
+                          <Label
+                            title={translate('Network')}
+                            size={sizes.LARGE}
+                          >
+
+                            <div>
+                              <Icon
+                                name={icons.NETWORK}
+                                size={17}
+                              />
+                              <Box component="span" sx={detailValueSx}>
+                                {network}
+                              </Box>
+                            </div>
+                          </Label>
+                      }
+
+                      {
+                        !!tvdbId && (
+                          <Label
+                            title={translate('TPDB ID')}
+                            size={sizes.LARGE}
+                          >
                             <Icon
                               name={icons.NETWORK}
                               size={17}
                             />
                             <Box component="span" sx={detailValueSx}>
-                              {network}
+                              {tvdbId}
                             </Box>
-                          </div>
-                        </Label>
-                    }
-
-                    {
-                      !!tvdbId && (
-                        <Label
-                          title={translate('TPDB ID')}
-                          size={sizes.LARGE}
-                        >
-                          <Icon
-                            name={icons.NETWORK}
-                            size={17}
-                          />
-                          <Box component="span" sx={detailValueSx}>
-                            {tvdbId}
-                          </Box>
-                        </Label>
-                      )
-                    }
-
-                    <Tooltip
-                      anchor={
-                        <Label
-                          size={sizes.LARGE}
-                        >
-
-                          <div>
-                            <Icon
-                              name={icons.EXTERNAL_LINK}
-                              size={17}
-                            />
-                            <Box component="span" sx={detailValueSx}>
-                              {translate('Links')}
-                            </Box>
-                          </div>
-                        </Label>
+                          </Label>
+                        )
                       }
 
-                      tooltip={
-                        <SeriesDetailsLinks
-                          tvdbId={tvdbId}
-                        />
-                      }
-                      kind={kinds.INVERSE}
-                      position={tooltipPositions.BOTTOM}
-                    />
+                      <Tooltip
+                        anchor={
+                          <Label
+                            size={sizes.LARGE}
+                          >
 
-                    {
-                      !!tags.length &&
-                        <Tooltip
-                          anchor={
-                            <Label
-                              size={sizes.LARGE}
-                            >
+                            <div>
                               <Icon
-                                name={icons.TAGS}
+                                name={icons.EXTERNAL_LINK}
                                 size={17}
                               />
-
                               <Box component="span" sx={detailValueSx}>
-                                {translate('Tags')}
+                                {translate('Links')}
                               </Box>
-                            </Label>
-                          }
-                          tooltip={<SeriesTagsConnector seriesId={id} />}
-                          kind={kinds.INVERSE}
-                          position={tooltipPositions.BOTTOM}
-                        />
+                            </div>
+                          </Label>
+                        }
 
-                    }
+                        tooltip={
+                          <SeriesDetailsLinks
+                            tvdbId={tvdbId}
+                          />
+                        }
+                        kind={kinds.INVERSE}
+                        position={tooltipPositions.BOTTOM}
+                      />
+
+                      {
+                        !!tags.length &&
+                          <Tooltip
+                            anchor={
+                              <Label
+                                size={sizes.LARGE}
+                              >
+                                <Icon
+                                  name={icons.TAGS}
+                                  size={17}
+                                />
+
+                                <Box component="span" sx={detailValueSx}>
+                                  {translate('Tags')}
+                                </Box>
+                              </Label>
+                            }
+                            tooltip={<SeriesTagsConnector seriesId={id} />}
+                            kind={kinds.INVERSE}
+                            position={tooltipPositions.BOTTOM}
+                          />
+
+                      }
+                    </Box>
+
+                    <Box sx={{ mt: 1, fontSize: 15 }}>
+                      <TextTruncate
+                        line={4}
+                        text={overview}
+                      />
+                    </Box>
+
+                    <MetadataAttribution />
                   </Box>
-
-                  <Box sx={{ mt: 1, fontSize: 15 }}>
-                    <TextTruncate
-                      line={4}
-                      text={overview}
-                    />
-                  </Box>
-
-                  <MetadataAttribution />
                 </Box>
+              </Box>
+
+              <Box sx={{ p: { xs: '20px 0', md: '20px' } }}>
+                {
+                  !isPopulated && !isUnifiedGridView && !episodesError && !episodeFilesError &&
+                    <LoadingIndicator />
+                }
+
+                {
+                  !isFetching && !isUnifiedGridView && episodesError &&
+                    <div>{translate('EpisodesLoadError')}</div>
+                }
+
+                {
+                  !isFetching && !isUnifiedGridView && episodeFilesError &&
+                    <div>{translate('EpisodeFilesLoadError')}</div>
+                }
+
+                {
+                  isUnifiedGridView &&
+                    <SeriesDetailsUnifiedGridConnector
+                      seriesId={id}
+                      isSelectMode={isSelectMode}
+                    />
+                }
+
+                {
+                  isPopulated && !isUnifiedGridView && !!seasons.length &&
+                    <div>
+                      {
+                        seasons.slice(0).reverse().map((season) => {
+                          return (
+                            <SeriesDetailsSeasonConnector
+                              key={season.seasonNumber}
+                              seriesId={id}
+                              view={view}
+                              monitorStatusFilter={monitorStatusFilter}
+                              qualityFilter={qualityFilter}
+                              runtimeFilter={runtimeFilter}
+                              maxEpisodeRuntime={maxEpisodeRuntime}
+                              {...season}
+                              isExpanded={expandedState[season.seasonNumber]}
+                              isSelectMode={isSelectMode}
+                              onExpandPress={this.onExpandPress}
+                            />
+                          );
+                        })
+                      }
+                    </div>
+                }
+
+                {
+                  isPopulated && !isUnifiedGridView && !seasons.length &&
+                    <div>
+                      {translate('NoEpisodeInformation')}
+                    </div>
+                }
+
               </Box>
             </Box>
 
-            <Box sx={{ p: { xs: '20px 0', md: '20px' } }}>
-              {
-                !isPopulated && !isUnifiedGridView && !episodesError && !episodeFilesError &&
-                  <LoadingIndicator />
-              }
+            <OrganizePreviewModalConnector
+              isOpen={isOrganizeModalOpen}
+              seriesId={id}
+              onModalClose={this.onOrganizeModalClose}
+            />
 
-              {
-                !isFetching && !isUnifiedGridView && episodesError &&
-                  <div>{translate('EpisodesLoadError')}</div>
-              }
+            <InteractiveImportModal
+              isOpen={isManageEpisodesOpen}
+              seriesId={id}
+              title={title}
+              folder={path}
+              initialSortKey="relativePath"
+              initialSortDirection={sortDirections.DESCENDING}
+              showSeries={false}
+              allowSeriesChange={false}
+              showDelete={true}
+              showImportMode={false}
+              modalTitle={translate('ManageEpisodes')}
+              onModalClose={this.onManageEpisodesModalClose}
+            />
 
-              {
-                !isFetching && !isUnifiedGridView && episodeFilesError &&
-                  <div>{translate('EpisodeFilesLoadError')}</div>
-              }
+            <SeriesHistoryModal
+              isOpen={isSeriesHistoryModalOpen}
+              seriesId={id}
+              onModalClose={this.onSeriesHistoryModalClose}
+            />
 
-              {
-                isUnifiedGridView &&
-                  <SeriesDetailsUnifiedGridConnector
-                    seriesId={id}
-                  />
-              }
+            <EditSeriesModalConnector
+              isOpen={isEditSeriesModalOpen}
+              seriesId={id}
+              onModalClose={this.onEditSeriesModalClose}
+              onDeleteSeriesPress={this.onDeleteSeriesPress}
+            />
 
-              {
-                isPopulated && !isUnifiedGridView && !!seasons.length &&
-                  <div>
-                    {
-                      seasons.slice(0).reverse().map((season) => {
-                        return (
-                          <SeriesDetailsSeasonConnector
-                            key={season.seasonNumber}
-                            seriesId={id}
-                            view={view}
-                            monitorStatusFilter={monitorStatusFilter}
-                            qualityFilter={qualityFilter}
-                            runtimeFilter={runtimeFilter}
-                            maxEpisodeRuntime={maxEpisodeRuntime}
-                            {...season}
-                            isExpanded={expandedState[season.seasonNumber]}
-                            onExpandPress={this.onExpandPress}
-                          />
-                        );
-                      })
-                    }
-                  </div>
-              }
+            <DeleteSeriesModal
+              isOpen={isDeleteSeriesModalOpen}
+              seriesId={id}
+              onModalClose={this.onDeleteSeriesModalClose}
+            />
 
-              {
-                isPopulated && !isUnifiedGridView && !seasons.length &&
-                  <div>
-                    {translate('NoEpisodeInformation')}
-                  </div>
-              }
+            <MonitoringOptionsModal
+              isOpen={isMonitorOptionsModalOpen}
+              seriesId={id}
+              onModalClose={this.onMonitorOptionsClose}
+            />
 
-            </Box>
-          </Box>
+            <SiteRipSearchModal
+              isOpen={isSiteRipModalOpen}
+              seriesId={id}
+              seriesTitle={title}
+              onModalClose={this.onSiteRipModalClose}
+            />
+          </PageContentBody>
 
-          <OrganizePreviewModalConnector
-            isOpen={isOrganizeModalOpen}
-            seriesId={id}
-            onModalClose={this.onOrganizeModalClose}
-          />
-
-          <InteractiveImportModal
-            isOpen={isManageEpisodesOpen}
-            seriesId={id}
-            title={title}
-            folder={path}
-            initialSortKey="relativePath"
-            initialSortDirection={sortDirections.DESCENDING}
-            showSeries={false}
-            allowSeriesChange={false}
-            showDelete={true}
-            showImportMode={false}
-            modalTitle={translate('ManageEpisodes')}
-            onModalClose={this.onManageEpisodesModalClose}
-          />
-
-          <SeriesHistoryModal
-            isOpen={isSeriesHistoryModalOpen}
-            seriesId={id}
-            onModalClose={this.onSeriesHistoryModalClose}
-          />
-
-          <EditSeriesModalConnector
-            isOpen={isEditSeriesModalOpen}
-            seriesId={id}
-            onModalClose={this.onEditSeriesModalClose}
-            onDeleteSeriesPress={this.onDeleteSeriesPress}
-          />
-
-          <DeleteSeriesModal
-            isOpen={isDeleteSeriesModalOpen}
-            seriesId={id}
-            onModalClose={this.onDeleteSeriesModalClose}
-          />
-
-          <MonitoringOptionsModal
-            isOpen={isMonitorOptionsModalOpen}
-            seriesId={id}
-            onModalClose={this.onMonitorOptionsClose}
-          />
-
-          <SiteRipSearchModal
-            isOpen={isSiteRipModalOpen}
-            seriesId={id}
-            seriesTitle={title}
-            onModalClose={this.onSiteRipModalClose}
-          />
-        </PageContentBody>
-      </PageContent>
+          {
+            isSelectMode ?
+              <SeriesDetailsSelectFooter
+                items={selectableItems || []}
+                seriesMonitored={monitored}
+                episodeEntity={isUnifiedGridView ? 'seriesDetails.unifiedGrid' : 'episodes'}
+              /> :
+              null
+          }
+        </PageContent>
+      </SelectProvider>
     );
   }
 }
@@ -970,6 +1015,7 @@ SeriesDetails.propTypes = {
   hasEpisodes: PropTypes.bool.isRequired,
   hasMonitoredEpisodes: PropTypes.bool.isRequired,
   hasEpisodeFiles: PropTypes.bool.isRequired,
+  selectableItems: PropTypes.arrayOf(PropTypes.object),
   hasQBittorrent: PropTypes.bool.isRequired,
   previousSeries: PropTypes.object.isRequired,
   nextSeries: PropTypes.object.isRequired,

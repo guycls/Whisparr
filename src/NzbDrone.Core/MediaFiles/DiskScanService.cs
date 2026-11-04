@@ -41,6 +41,7 @@ namespace NzbDrone.Core.MediaFiles
         private readonly IMediaFileTableCleanupService _mediaFileTableCleanupService;
         private readonly IRootFolderService _rootFolderService;
         private readonly IUpdateMediaInfo _updateMediaInfoService;
+        private readonly IHardLinkScanService _hardLinkScanService;
         private readonly IEventAggregator _eventAggregator;
         private readonly Logger _logger;
 
@@ -53,6 +54,7 @@ namespace NzbDrone.Core.MediaFiles
                                IMediaFileTableCleanupService mediaFileTableCleanupService,
                                IRootFolderService rootFolderService,
                                IUpdateMediaInfo updateMediaInfoService,
+                               IHardLinkScanService hardLinkScanService,
                                IEventAggregator eventAggregator,
                                Logger logger)
         {
@@ -65,6 +67,7 @@ namespace NzbDrone.Core.MediaFiles
             _mediaFileTableCleanupService = mediaFileTableCleanupService;
             _rootFolderService = rootFolderService;
             _updateMediaInfoService = updateMediaInfoService;
+            _hardLinkScanService = hardLinkScanService;
             _eventAggregator = eventAggregator;
             _logger = logger;
         }
@@ -278,19 +281,31 @@ namespace NzbDrone.Core.MediaFiles
 
         public void Execute(RescanSeriesCommand message)
         {
+            List<Series> scanned;
+
             if (message.SeriesId.HasValue)
             {
                 var series = _seriesService.GetSeries(message.SeriesId.Value);
                 Scan(series);
+                scanned = new List<Series> { series };
             }
             else
             {
-                var allSeries = _seriesService.GetAllSeries();
+                scanned = _seriesService.GetAllSeries();
 
-                foreach (var series in allSeries)
+                foreach (var series in scanned)
                 {
                     Scan(series);
                 }
+            }
+
+            try
+            {
+                _hardLinkScanService.UpdateHardLinks(scanned);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e, "Couldn't update hard links");
             }
         }
     }

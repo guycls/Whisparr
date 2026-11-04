@@ -27,6 +27,7 @@ namespace NzbDrone.Core.Tv
         private readonly IRefreshEpisodeService _refreshEpisodeService;
         private readonly IEventAggregator _eventAggregator;
         private readonly IDiskScanService _diskScanService;
+        private readonly IHardLinkScanService _hardLinkScanService;
         private readonly ICheckIfSeriesShouldBeRefreshed _checkIfSeriesShouldBeRefreshed;
         private readonly IConfigService _configService;
         private readonly IAutoTaggingService _autoTaggingService;
@@ -40,6 +41,7 @@ namespace NzbDrone.Core.Tv
                                     IRefreshEpisodeService refreshEpisodeService,
                                     IEventAggregator eventAggregator,
                                     IDiskScanService diskScanService,
+                                    IHardLinkScanService hardLinkScanService,
                                     ICheckIfSeriesShouldBeRefreshed checkIfSeriesShouldBeRefreshed,
                                     IConfigService configService,
                                     IAutoTaggingService autoTaggingService,
@@ -53,6 +55,7 @@ namespace NzbDrone.Core.Tv
             _refreshEpisodeService = refreshEpisodeService;
             _eventAggregator = eventAggregator;
             _diskScanService = diskScanService;
+            _hardLinkScanService = hardLinkScanService;
             _checkIfSeriesShouldBeRefreshed = checkIfSeriesShouldBeRefreshed;
             _configService = configService;
             _autoTaggingService = autoTaggingService;
@@ -224,6 +227,7 @@ namespace NzbDrone.Core.Tv
         {
             var trigger = message.Trigger;
             var isNew = message.IsNewSeries;
+            var processedSeries = new List<Series>();
             _eventAggregator.PublishEvent(new SeriesRefreshStartingEvent(trigger == CommandTrigger.Manual));
 
             if (message.SeriesIds.Any())
@@ -239,16 +243,19 @@ namespace NzbDrone.Core.Tv
                         series = RefreshSeriesInfo(seriesId);
                         UpdateTags(series);
                         RescanSeries(series, isNew, trigger);
+                        processedSeries.Add(series);
                     }
                     catch (SeriesNotFoundException)
                     {
                         _logger.Error("Series '{0}' (tvdbid {1}) was not found, it may have been removed from TheTVDB.", series.Title, series.TvdbId);
+                        processedSeries.Add(series);
                     }
                     catch (Exception e)
                     {
                         _logger.Error(e, "Couldn't refresh info for {0}", series);
                         UpdateTags(series);
                         RescanSeries(series, isNew, trigger);
+                        processedSeries.Add(series);
                         throw;
                     }
                 }
@@ -273,6 +280,7 @@ namespace NzbDrone.Core.Tv
                         catch (SeriesNotFoundException)
                         {
                             _logger.Error("Series '{0}' (tvdbid {1}) was not found, it may have been removed from TheTVDB.", seriesLocal.Title, seriesLocal.TvdbId);
+                            processedSeries.Add(seriesLocal);
                             continue;
                         }
                         catch (Exception e)
@@ -289,7 +297,18 @@ namespace NzbDrone.Core.Tv
                         UpdateTags(series);
                         RescanSeries(seriesLocal, false, trigger);
                     }
+
+                    processedSeries.Add(seriesLocal);
                 }
+            }
+
+            try
+            {
+                _hardLinkScanService.UpdateHardLinks(processedSeries);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e, "Couldn't update hard links");
             }
 
             _eventAggregator.PublishEvent(new SeriesRefreshCompleteEvent());

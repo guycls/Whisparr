@@ -91,7 +91,7 @@ namespace Whisparr.Api.V3.Episodes
 
             return pagingSpec.ApplyToPage(
                 spec => _episodeService.GetEpisodesPaged(spec, request.SeriesId, filter),
-                episode => MapToResource(episode, false, false, request.IncludeImages));
+                episode => MapToResource(episode, false, true, request.IncludeImages));
         }
 
         [HttpGet("filterBounds")]

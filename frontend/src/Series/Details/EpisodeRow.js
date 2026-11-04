@@ -20,6 +20,7 @@ import formatBytes from 'Utilities/Number/formatBytes';
 import formatCustomFormatScore from 'Utilities/Number/formatCustomFormatScore';
 import formatRuntime from 'Utilities/Number/formatRuntime';
 import translate from 'Utilities/String/translate';
+import EpisodeSelectCell from './EpisodeSelectCell';
 
 const episodeCellSx = {
   p: 1,
@@ -84,11 +85,17 @@ class EpisodeRow extends Component {
       customFormats,
       customFormatScore,
       indexerFlags,
-      columns
+      columns,
+      isSelectMode
     } = this.props;
 
     return (
       <TableRow>
+        {
+          isSelectMode ?
+            <EpisodeSelectCell id={id} /> :
+            null
+        }
         {
           columns.map((column) => {
             const {
@@ -410,6 +417,7 @@ EpisodeRow.propTypes = {
   mediaInfo: PropTypes.object,
   alternateTitles: PropTypes.arrayOf(PropTypes.object).isRequired,
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
+  isSelectMode: PropTypes.bool,
   onMonitorEpisodePress: PropTypes.func.isRequired
 };
 

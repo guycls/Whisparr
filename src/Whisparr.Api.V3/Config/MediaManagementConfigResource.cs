@@ -15,6 +15,7 @@ namespace Whisparr.Api.V3.Config
         public bool CreateEmptySeriesFolders { get; set; }
         public bool DeleteEmptyFolders { get; set; }
         public FileDateType FileDate { get; set; }
+        public DeleteBehavior DeleteBehavior { get; set; }
         public RescanAfterRefreshType RescanAfterRefresh { get; set; }
 
         public bool SetPermissionsLinux { get; set; }
@@ -45,6 +46,7 @@ namespace Whisparr.Api.V3.Config
                 CreateEmptySeriesFolders = model.CreateEmptySeriesFolders,
                 DeleteEmptyFolders = model.DeleteEmptyFolders,
                 FileDate = model.FileDate,
+                DeleteBehavior = model.DeleteBehavior,
                 RescanAfterRefresh = model.RescanAfterRefresh,
 
                 SetPermissionsLinux = model.SetPermissionsLinux,

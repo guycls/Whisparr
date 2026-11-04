@@ -43,6 +43,7 @@ function SeriesDetailsUnifiedGridConnector(props) {
     isPopulated,
     error,
     isSmallScreen,
+    isSelectMode = false,
     fetchMoreSeriesDetailsUnifiedGrid: fetchMore,
     toggleEpisodesMonitored: toggleMonitored
   } = props;
@@ -98,6 +99,7 @@ function SeriesDetailsUnifiedGridConnector(props) {
         <SeriesDetailsEpisodeGrid
           items={items}
           isSmallScreen={isSmallScreen}
+          isSelectMode={isSelectMode}
           episodeEntity="seriesDetails.unifiedGrid"
           onMonitorEpisodePress={onMonitorEpisodePress}
         />
@@ -128,6 +130,7 @@ function SeriesDetailsUnifiedGridConnector(props) {
 
 SeriesDetailsUnifiedGridConnector.propTypes = {
   seriesId: PropTypes.number.isRequired,
+  isSelectMode: PropTypes.bool,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   page: PropTypes.number,
   totalPages: PropTypes.number,

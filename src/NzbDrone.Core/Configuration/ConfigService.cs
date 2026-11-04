@@ -196,6 +196,13 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("FileDate", value); }
         }
 
+        public DeleteBehavior DeleteBehavior
+        {
+            get { return GetValueEnum("DeleteBehavior", DeleteBehavior.WhisparrEntry); }
+
+            set { SetValue("DeleteBehavior", value); }
+        }
+
         public string DownloadClientWorkingFolders
         {
             get { return GetValue("DownloadClientWorkingFolders", "_UNPACK_|_FAILED_"); }

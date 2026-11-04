@@ -3,6 +3,7 @@ import Label from 'Components/Label';
 import { kinds } from 'Helpers/Props';
 import { QualityModel } from 'Quality/Quality';
 import formatBytes from 'Utilities/Number/formatBytes';
+import formatQualityResolution from 'Utilities/Quality/formatQualityResolution';
 import translate from 'Utilities/String/translate';
 
 function getTooltip(
@@ -74,6 +75,8 @@ interface EpisodeQualityProps {
   size?: number;
   isCutoffNotMet?: boolean;
   showRevision?: boolean;
+  resolutionOnly?: boolean;
+  mediaInfoResolution?: string;
 }
 
 function EpisodeQuality(props: EpisodeQualityProps) {
@@ -84,11 +87,17 @@ function EpisodeQuality(props: EpisodeQualityProps) {
     size,
     isCutoffNotMet,
     showRevision = false,
+    resolutionOnly = false,
+    mediaInfoResolution,
   } = props;
 
   if (!quality) {
     return null;
   }
+
+  const label = resolutionOnly
+    ? formatQualityResolution(quality, mediaInfoResolution)
+    : quality.quality.name;
 
   return (
     <span>
@@ -97,7 +106,7 @@ function EpisodeQuality(props: EpisodeQualityProps) {
         kind={isCutoffNotMet ? kinds.INVERSE : kinds.DEFAULT}
         title={getTooltip(title, quality, size)}
       >
-        {quality.quality.name}
+        {label}
       </Label>
       {revisionLabel(className, quality, showRevision)}
     </span>

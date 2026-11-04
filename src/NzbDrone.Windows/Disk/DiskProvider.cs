@@ -1,9 +1,11 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.Win32.SafeHandles;
 using NLog;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnsureThat;
@@ -25,6 +27,25 @@ namespace NzbDrone.Windows.Disk
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool CreateHardLink(string lpFileName, string lpExistingFileName, IntPtr lpSecurityAttributes);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out ByHandleFileInformation lpFileInformation);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct ByHandleFileInformation
+        {
+            public uint FileAttributes;
+            public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime;
+            public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
+            public System.Runtime.InteropServices.ComTypes.FILETIME LastWriteTime;
+            public uint VolumeSerialNumber;
+            public uint FileSizeHigh;
+            public uint FileSizeLow;
+            public uint NumberOfLinks;
+            public uint FileIndexHigh;
+            public uint FileIndexLow;
+        }
 
         public override IMount GetMount(string path)
         {
@@ -164,6 +185,51 @@ namespace NzbDrone.Windows.Disk
             }
 
             return 0;
+        }
+
+        public override FileLinkIdentity GetFileLinkIdentity(string path)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(path) || (!File.Exists(path) && !Directory.Exists(path)))
+                {
+                    return null;
+                }
+
+                var attributes = File.GetAttributes(path);
+
+                if (attributes.HasFlag(FileAttributes.ReparsePoint))
+                {
+                    return null;
+                }
+
+                var isDirectory = attributes.HasFlag(FileAttributes.Directory);
+
+                // FILE_FLAG_BACKUP_SEMANTICS is required to open a directory handle. FileOptions.BackupSemantics is not available on net6.0.
+                const FileOptions backupSemantics = (FileOptions)0x02000000;
+
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 1, isDirectory ? backupSemantics : FileOptions.None))
+                {
+                    if (!GetFileInformationByHandle(stream.SafeFileHandle, out var info))
+                    {
+                        return null;
+                    }
+
+                    var fileId = ((ulong)info.FileIndexHigh << 32) | info.FileIndexLow;
+
+                    return new FileLinkIdentity
+                    {
+                        VolumeId = info.VolumeSerialNumber.ToString(CultureInfo.InvariantCulture),
+                        FileId = fileId.ToString(CultureInfo.InvariantCulture),
+                        LinkCount = (int)info.NumberOfLinks
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug(ex, "Unable to read file identity for {0}", path);
+                return null;
+            }
         }
 
         public override bool TryCreateHardLink(string source, string destination)

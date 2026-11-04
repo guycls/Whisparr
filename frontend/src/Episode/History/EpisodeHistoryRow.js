@@ -84,7 +84,8 @@ class EpisodeHistoryRow extends Component {
       customFormatScore,
       date,
       data,
-      downloadId
+      downloadId,
+      hardLinks
     } = this.props;
 
     const {
@@ -200,6 +201,7 @@ class EpisodeHistoryRow extends Component {
             sourceTitle={sourceTitle}
             data={data}
             downloadId={downloadId}
+            hardLinks={hardLinks}
           />
         </Box>
 
@@ -229,6 +231,7 @@ EpisodeHistoryRow.propTypes = {
   date: PropTypes.string.isRequired,
   data: PropTypes.object.isRequired,
   downloadId: PropTypes.string,
+  hardLinks: PropTypes.arrayOf(PropTypes.string),
   onMarkAsFailedPress: PropTypes.func.isRequired
 };
 

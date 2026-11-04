@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { sceneMetadataBackground } from 'App/createAppTheme';
 import AppState from 'App/State/AppState';
 import { REFRESH_SERIES, SERIES_SEARCH } from 'Commands/commandNames';
 import IconButton from 'Components/Link/IconButton';
@@ -192,6 +193,7 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
   }, [setIsDeleteSeriesModalOpen]);
 
   const link = `/site/${titleSlug}`;
+  const showLogoFallback = !logoUrl || hasPosterError;
 
   const elementStyle = {
     width: `${posterWidth}px`,
@@ -225,7 +227,8 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
           border: 1,
           borderColor: 'divider',
           borderRadius: 1,
-          bgcolor: 'background.paper',
+          bgcolor: 'transparent',
+          backgroundImage: 'none',
         }}
       >
       <Box sx={{ position: 'relative', overflow: 'hidden' }} title={title}>
@@ -286,13 +289,15 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
         <Link
           style={elementStyle}
           to={link}
-          sx={{
+          sx={(theme) => ({
             position: 'relative',
             display: 'block',
             height: 70,
             overflow: 'hidden',
-            bgcolor: 'grey.800',
-          }}
+            ...(showLogoFallback
+              ? sceneMetadataBackground(theme)
+              : { bgcolor: 'grey.800' }),
+          })}
         >
           {logoGradient && logoGradient.url === logoUrl && !hasPosterError ? (
             <Box
@@ -316,6 +321,7 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
               ...elementStyle,
               position: 'relative',
               zIndex: 1,
+              visibility: showLogoFallback ? 'hidden' : 'visible',
             }}
             images={images}
             size={250}
@@ -325,7 +331,7 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
             onLoad={onPosterLoad}
           />
 
-          {hasPosterError ? (
+          {showLogoFallback ? (
             <Box
               sx={{
                 position: 'absolute',
@@ -340,8 +346,8 @@ function SeriesIndexPoster(props: SeriesIndexPosterProps) {
                 height: '100%',
                 px: '8px',
                 overflow: 'hidden',
-                bgcolor: 'grey.800',
-                color: 'common.white',
+                bgcolor: 'transparent',
+                color: 'text.primary',
                 textAlign: 'center',
                 fontSize: 16,
                 lineHeight: 1.25,

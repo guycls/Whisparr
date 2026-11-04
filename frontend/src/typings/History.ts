@@ -81,5 +81,6 @@ export default interface History {
   downloadId: string;
   eventType: HistoryEventType;
   data: HistoryData;
+  hardLinks?: string[];
   id: number;
 }

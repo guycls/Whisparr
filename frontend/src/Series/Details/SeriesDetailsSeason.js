@@ -12,7 +12,6 @@ import MenuContent from 'Components/Menu/MenuContent';
 import MenuItem from 'Components/Menu/MenuItem';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
 import SpinnerIcon from 'Components/SpinnerIcon';
-import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
 import Popover from 'Components/Tooltip/Popover';
 import { align, icons, sortDirections, tooltipPositions } from 'Helpers/Props';
@@ -29,6 +28,7 @@ import EpisodeRowConnector from './EpisodeRowConnector';
 import SeasonInfo from './SeasonInfo';
 import SeasonProgressLabel from './SeasonProgressLabel';
 import SeriesDetailsEpisodeGrid from './SeriesDetailsEpisodeGrid';
+import SeriesDetailsEpisodeTable from './SeriesDetailsEpisodeTable';
 
 function getSeasonStatistics(episodes) {
   let episodeCount = 0;
@@ -235,6 +235,7 @@ class SeriesDetailsSeason extends Component {
       sortDirection,
       isSmallScreen,
       view,
+      isSelectMode,
       onSortPress,
       onTableOptionChange
     } = this.props;
@@ -252,16 +253,19 @@ class SeriesDetailsSeason extends Component {
         <SeriesDetailsEpisodeGrid
           items={items}
           isSmallScreen={isSmallScreen}
+          isSelectMode={isSelectMode}
           onMonitorEpisodePress={this.onMonitorEpisodePress}
         />
       );
     }
 
     return (
-      <Table
+      <SeriesDetailsEpisodeTable
+        items={items}
         columns={columns}
         sortKey={sortKey}
         sortDirection={sortDirection}
+        isSelectMode={isSelectMode}
         onSortPress={onSortPress}
         onTableOptionChange={onTableOptionChange}
       >
@@ -273,13 +277,14 @@ class SeriesDetailsSeason extends Component {
                   key={item.id}
                   columns={columns}
                   {...item}
+                  isSelectMode={isSelectMode}
                   onMonitorEpisodePress={this.onMonitorEpisodePress}
                 />
               );
             })
           }
         </TableBody>
-      </Table>
+      </SeriesDetailsEpisodeTable>
     );
   }
 
@@ -657,6 +662,7 @@ SeriesDetailsSeason.propTypes = {
   seriesMonitored: PropTypes.bool.isRequired,
   isSmallScreen: PropTypes.bool.isRequired,
   view: PropTypes.string.isRequired,
+  isSelectMode: PropTypes.bool,
   onTableOptionChange: PropTypes.func.isRequired,
   onSortPress: PropTypes.func.isRequired,
   onMonitorSeasonPress: PropTypes.func.isRequired,

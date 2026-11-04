@@ -79,6 +79,7 @@ class SeriesHistoryRow extends Component {
       date,
       data,
       downloadId,
+      hardLinks,
       series,
       episode,
       customFormatScore
@@ -153,6 +154,7 @@ class SeriesHistoryRow extends Component {
                 sourceTitle={sourceTitle}
                 data={data}
                 downloadId={downloadId}
+                hardLinks={hardLinks}
               />
             }
             position={tooltipPositions.LEFT}
@@ -205,6 +207,7 @@ SeriesHistoryRow.propTypes = {
   date: PropTypes.string.isRequired,
   data: PropTypes.object.isRequired,
   downloadId: PropTypes.string,
+  hardLinks: PropTypes.arrayOf(PropTypes.string),
   series: PropTypes.object.isRequired,
   episode: PropTypes.object.isRequired,
   customFormatScore: PropTypes.number.isRequired,

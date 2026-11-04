@@ -39,6 +39,7 @@ interface HistoryRowProps {
   date: string;
   data: HistoryData;
   downloadId?: string;
+  hardLinks?: string[];
   isMarkingAsFailed?: boolean;
   markAsFailedError?: object;
   columns: Column[];
@@ -59,6 +60,7 @@ function HistoryRow(props: HistoryRowProps) {
     date,
     data,
     downloadId,
+    hardLinks,
     isMarkingAsFailed,
     markAsFailedError,
     columns,
@@ -266,6 +268,7 @@ function HistoryRow(props: HistoryRowProps) {
         sourceTitle={sourceTitle}
         data={data}
         downloadId={downloadId}
+        hardLinks={hardLinks}
         isMarkingAsFailed={isMarkingAsFailed ?? false}
         onMarkAsFailedPress={handleMarkAsFailedPress}
         onModalClose={handleDetailsModalClose}

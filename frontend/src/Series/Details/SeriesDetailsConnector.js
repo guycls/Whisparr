@@ -19,10 +19,10 @@ import {
   gotoSeriesDetailsUnifiedGridFirstPage,
   section as seriesDetailsSection,
   setSeriesDetailsActiveSeries,
+  setSeriesDetailsCardSize,
   setSeriesDetailsMonitorStatusFilter,
   setSeriesDetailsQualityFilter,
   setSeriesDetailsRuntimeFilter,
-  setSeriesDetailsCardSize,
   setSeriesDetailsSort,
   setSeriesDetailsView,
   syncSeriesDetailsUnifiedGridSort,
@@ -30,11 +30,13 @@ import {
 } from 'Store/Actions/seriesDetailsActions';
 import { fetchDownloadClients } from 'Store/Actions/settingsActions';
 import createAllSeriesSelector from 'Store/Selectors/createAllSeriesSelector';
+import createClientSideCollectionSelector from 'Store/Selectors/createClientSideCollectionSelector';
 import createCommandsSelector from 'Store/Selectors/createCommandsSelector';
 import { findCommand, isCommandExecuting } from 'Utilities/Command';
 import { resolveRuntimeFilter } from 'Utilities/Number/runtimeFilterUtils';
 import { registerPagePopulator, unregisterPagePopulator } from 'Utilities/pagePopulator';
 import filterAlternateTitles from 'Utilities/Series/filterAlternateTitles';
+import getSeriesDetailsSelectableEpisodes from './getSeriesDetailsSelectableEpisodes';
 import { getSeriesDetailsToolbarState } from './getSeriesDetailsToolbarState';
 import SeriesDetails from './SeriesDetails';
 
@@ -103,7 +105,9 @@ function createMapStateToProps() {
     (state) => state.episodes.sortKey,
     (state) => state.episodes.sortDirection,
     (state) => state.settings.downloadClients,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, cardSize, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients) => {
+    createClientSideCollectionSelector('episodes'),
+    (state) => state.seriesDetails.unifiedGrid.items,
+    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, cardSize, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients, sortedEpisodes, unifiedGridItems) => {
       const resolvedQualityFilter = qualityFilter ?? { minIndex: 0, maxIndex: 6 };
       const resolvedRuntimeFilter = resolveRuntimeFilter(
         runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
@@ -114,7 +118,9 @@ function createMapStateToProps() {
       const series = sortedSeries[seriesIndex];
 
       if (!series) {
-        return {};
+        return {
+          selectableItems: []
+        };
       }
 
       const {
@@ -191,7 +197,18 @@ function createMapStateToProps() {
         rawRuntimeFilter: runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
         maxEpisodeRuntime,
         sortKey: view === 'unifiedGrid' ? toSeriesDetailsSortKey(unifiedGridSortKey) : episodeSortKey,
-        sortDirection: view === 'unifiedGrid' ? unifiedGridSortDirection : episodeSortDirection
+        sortDirection: view === 'unifiedGrid' ? unifiedGridSortDirection : episodeSortDirection,
+        selectableItems: getSeriesDetailsSelectableEpisodes({
+          view,
+          unifiedGridItems,
+          episodes: sortedEpisodes.items,
+          episodeFiles: episodeFileItems,
+          seasons: series.seasons,
+          monitorStatusFilter,
+          qualityFilter: resolvedQualityFilter,
+          runtimeFilter: resolvedRuntimeFilter,
+          maxEpisodeRuntime
+        })
       };
     }
   );

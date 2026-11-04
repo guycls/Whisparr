@@ -79,6 +79,21 @@ const downloadPropersAndRepacksOptions = [
   }
 ];
 
+const deleteBehaviorOptions = [
+  {
+    key: 'whisparrEntry',
+    get value() {
+      return translate('WhisparrEntry');
+    }
+  },
+  {
+    key: 'underlyingFile',
+    get value() {
+      return translate('UnderlyingFile');
+    }
+  }
+];
+
 const fileDateOptions = [
   {
     key: 'none',
@@ -333,6 +348,19 @@ class MediaManagement extends Component {
                 <FieldSet
                   legend={translate('FileManagement')}
                 >
+                  <FormGroup size={sizes.MEDIUM}>
+                    <FormLabel>{translate('DeleteBehavior')}</FormLabel>
+
+                    <FormInputGroup
+                      type={inputTypes.SELECT}
+                      name="deleteBehavior"
+                      helpText={translate('DeleteBehaviorHelpText')}
+                      values={deleteBehaviorOptions}
+                      onChange={onInputChange}
+                      {...settings.deleteBehavior}
+                    />
+                  </FormGroup>
+
                   <FormGroup size={sizes.MEDIUM}>
                     <FormLabel>{translate('UnmonitorDeletedEpisodes')}</FormLabel>
 
