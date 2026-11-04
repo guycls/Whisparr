@@ -1,13 +1,11 @@
 import Box from '@mui/material/Box';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useSelect } from 'App/SelectContext';
-import AppState from 'App/State/AppState';
 import SpinnerButton from 'Components/Link/SpinnerButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
 import PageContentFooter from 'Components/Page/PageContentFooter';
 import { EpisodeEntities } from 'Episode/useEpisode';
-import usePrevious from 'Helpers/Hooks/usePrevious';
 import { kinds } from 'Helpers/Props';
 import { toggleEpisodesMonitored } from 'Store/Actions/episodeActions';
 import { deleteEpisodeFiles } from 'Store/Actions/episodeFileActions';
@@ -25,18 +23,12 @@ interface SeriesDetailsSelectFooterProps {
   items: SelectableEpisode[];
   seriesMonitored: boolean;
   episodeEntity: EpisodeEntities;
+  onDeleteStarted: () => void;
 }
 
 function SeriesDetailsSelectFooter(props: SeriesDetailsSelectFooterProps) {
-  const { items, seriesMonitored, episodeEntity } = props;
+  const { items, seriesMonitored, episodeEntity, onDeleteStarted } = props;
   const dispatch = useDispatch();
-  const isDeleting = useSelector(
-    (state: AppState) => state.episodeFiles.isDeleting
-  );
-  const deleteError = useSelector(
-    (state: AppState) => state.episodeFiles.deleteError
-  );
-  const previousIsDeleting = usePrevious(isDeleting);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectState, selectDispatch] = useSelect();
   const { selectedState } = selectState;
@@ -56,12 +48,6 @@ function SeriesDetailsSelectFooter(props: SeriesDetailsSelectFooterProps) {
   const episodeFileIds = selectedItems
     .map((item) => item.episodeFileId)
     .filter((episodeFileId): episodeFileId is number => !!episodeFileId);
-
-  useEffect(() => {
-    if (previousIsDeleting && !isDeleting && !deleteError) {
-      selectDispatch({ type: 'unselectAll' });
-    }
-  }, [previousIsDeleting, isDeleting, deleteError, selectDispatch]);
 
   const onMonitorPress = useCallback(() => {
     dispatch(
@@ -88,7 +74,9 @@ function SeriesDetailsSelectFooter(props: SeriesDetailsSelectFooterProps) {
       })
     );
     setIsDeleteModalOpen(false);
-  }, [dispatch, episodeFileIds]);
+    selectDispatch({ type: 'unselectAll' });
+    onDeleteStarted();
+  }, [dispatch, episodeFileIds, onDeleteStarted, selectDispatch]);
 
   return (
     <PageContentFooter>
@@ -122,8 +110,7 @@ function SeriesDetailsSelectFooter(props: SeriesDetailsSelectFooterProps) {
 
           <SpinnerButton
             kind={kinds.DANGER}
-            isSpinning={isDeleting}
-            isDisabled={episodeFileIds.length === 0 || isDeleting}
+            isDisabled={episodeFileIds.length === 0}
             onPress={onDeletePress}
           >
             {translate('Delete')}

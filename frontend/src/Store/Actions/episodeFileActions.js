@@ -1,10 +1,12 @@
 import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
+import { DELETE_EPISODE_FILES as DELETE_EPISODE_FILES_COMMAND } from 'Commands/commandNames';
 import episodeEntities from 'Episode/episodeEntities';
 import { createThunk, handleThunks } from 'Store/thunks';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
-import { removeItem, set, updateItem } from './baseActions';
+import { set, updateItem } from './baseActions';
+import { addCommand } from './commandActions';
 import createFetchHandler from './Creators/createFetchHandler';
 import createHandleActions from './Creators/createHandleActions';
 import createRemoveItemHandler from './Creators/createRemoveItemHandler';
@@ -120,46 +122,22 @@ export const actionHandlers = handleThunks({
     dispatch(set({ section, isDeleting: true }));
 
     const promise = createAjaxRequest({
-      url: '/episodeFile/bulk',
-      method: 'DELETE',
+      url: '/command',
+      method: 'POST',
       dataType: 'json',
-      data: JSON.stringify({ episodeFileIds })
+      data: JSON.stringify({
+        name: DELETE_EPISODE_FILES_COMMAND,
+        episodeFileIds
+      })
     }).request;
 
-    promise.done(() => {
-      const episodes = getState().episodes.items || [];
-      const gridEpisodes = _.get(getState(), 'seriesDetails.unifiedGrid.items', []);
-
-      const clearFiles = (items, episodeSection) => {
-        return episodeFileIds.reduce((acc, episodeFileId) => {
-          _.filter(items, { episodeFileId }).forEach((episode) => {
-            acc.push(updateItem({
-              section: episodeSection,
-              id: episode.id,
-              updateOnly: true,
-              episodeFileId: 0,
-              hasFile: false
-            }));
-          });
-
-          return acc;
-        }, []);
-      };
-
-      dispatch(batchActions([
-        ...episodeFileIds.map((id) => {
-          return removeItem({ section, id });
-        }),
-
-        ...clearFiles(episodes, 'episodes'),
-        ...clearFiles(gridEpisodes, 'seriesDetails.unifiedGrid'),
-
-        set({
-          section,
-          isDeleting: false,
-          deleteError: null
-        })
-      ]));
+    promise.done((data) => {
+      dispatch(addCommand(data));
+      dispatch(set({
+        section,
+        isDeleting: false,
+        deleteError: null
+      }));
     });
 
     promise.fail((xhr) => {

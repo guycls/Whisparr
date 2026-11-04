@@ -26,11 +26,11 @@ namespace NzbDrone.Core.Messaging.Commands
 
         public int ProcessedScenes => _processedScenes;
 
-        public void ReportSceneProcessed()
+        public void ReportSceneProcessed(string studioName = null)
         {
             _processedScenes++;
             var processed = System.Math.Min(_processedScenes, TotalScenes);
-            _reporter?.ReportSceneProgress(StudioName, processed, TotalScenes);
+            _reporter?.ReportSceneProgress(studioName ?? StudioName, processed, TotalScenes);
         }
     }
 

@@ -185,6 +185,12 @@ class SignalRConnector extends Component {
         updateOnly: true,
         ...body.resource
       });
+
+      this.props.dispatchUpdateItem({
+        section: 'seriesDetails.unifiedGrid',
+        updateOnly: true,
+        ...body.resource
+      });
     }
   };
 

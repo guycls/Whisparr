@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
+import { DELETE_SERIES as DELETE_SERIES_COMMAND } from 'Commands/commandNames';
 import { filterBuilderTypes, filterBuilderValueTypes, filterTypePredicates, filterTypes, sortDirections } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
 import sortByProp from 'Utilities/Array/sortByProp';
@@ -8,9 +9,9 @@ import createAjaxRequest from 'Utilities/createAjaxRequest';
 import dateFilterPredicate from 'Utilities/Date/dateFilterPredicate';
 import translate from 'Utilities/String/translate';
 import { set, updateItem } from './baseActions';
+import { addCommand } from './commandActions';
 import createFetchHandler from './Creators/createFetchHandler';
 import createHandleActions from './Creators/createHandleActions';
-import createRemoveItemHandler from './Creators/createRemoveItemHandler';
 import createSaveProviderHandler from './Creators/createSaveProviderHandler';
 import createSetSettingValueReducer from './Creators/Reducers/createSetSettingValueReducer';
 import { fetchEpisodes } from './episodeActions';
@@ -514,7 +515,36 @@ export const actionHandlers = handleThunks({
 
   [FETCH_SERIES]: createFetchHandler(section, '/series'),
   [SAVE_SERIES]: createSaveProviderHandler(section, '/series', { getAjaxOptions: getSaveAjaxOptions }),
-  [DELETE_SERIES]: createRemoveItemHandler(section, '/series'),
+  [DELETE_SERIES]: function(getState, payload, dispatch) {
+    const {
+      id,
+      deleteFiles,
+      addImportListExclusion
+    } = payload;
+
+    const promise = createAjaxRequest({
+      url: '/command',
+      method: 'POST',
+      dataType: 'json',
+      data: JSON.stringify({
+        name: DELETE_SERIES_COMMAND,
+        seriesIds: [id],
+        deleteFiles,
+        addImportListExclusion
+      })
+    }).request;
+
+    promise.done((data) => {
+      dispatch(addCommand(data));
+    });
+
+    promise.fail((xhr) => {
+      dispatch(set({
+        section,
+        deleteError: xhr
+      }));
+    });
+  },
 
   [TOGGLE_SERIES_MONITORED]: (getState, payload, dispatch) => {
     const {
@@ -770,15 +800,19 @@ export const actionHandlers = handleThunks({
     }));
 
     const promise = createAjaxRequest({
-      url: '/series/editor',
-      method: 'DELETE',
-      data: JSON.stringify(payload),
+      url: '/command',
+      method: 'POST',
+      data: JSON.stringify({
+        name: DELETE_SERIES_COMMAND,
+        seriesIds: payload.seriesIds,
+        deleteFiles: payload.deleteFiles,
+        addImportListExclusion: payload.addImportListExclusion
+      }),
       dataType: 'json'
     }).request;
 
-    promise.done(() => {
-      // SignaR will take care of removing the series from the collection
-
+    promise.done((data) => {
+      dispatch(addCommand(data));
       dispatch(set({
         section,
         isDeleting: false,

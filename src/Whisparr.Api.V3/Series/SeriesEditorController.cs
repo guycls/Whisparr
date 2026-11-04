@@ -130,7 +130,12 @@ namespace Whisparr.Api.V3.Series
         [HttpDelete]
         public object DeleteSeries([FromBody] SeriesEditorResource resource)
         {
-            _seriesService.DeleteSeries(resource.SeriesIds, resource.DeleteFiles, resource.AddImportListExclusion);
+            _commandQueueManager.Push(new DeleteSeriesCommand
+            {
+                SeriesIds = resource.SeriesIds,
+                DeleteFiles = resource.DeleteFiles,
+                AddImportListExclusion = resource.AddImportListExclusion
+            });
 
             return new { };
         }

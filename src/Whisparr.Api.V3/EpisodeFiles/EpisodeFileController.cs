@@ -6,7 +6,9 @@ using NzbDrone.Core.Datastore.Events;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MediaFiles;
+using NzbDrone.Core.MediaFiles.Commands;
 using NzbDrone.Core.MediaFiles.Events;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Parser;
 using NzbDrone.Core.Parser.Model;
@@ -27,6 +29,7 @@ namespace Whisparr.Api.V3.EpisodeFiles
         private readonly IMediaFileService _mediaFileService;
         private readonly IDeleteMediaFiles _mediaFileDeletionService;
         private readonly ISeriesService _seriesService;
+        private readonly IManageCommandQueue _commandQueueManager;
         private readonly ICustomFormatCalculationService _formatCalculator;
         private readonly IUpgradableSpecification _upgradableSpecification;
 
@@ -34,6 +37,7 @@ namespace Whisparr.Api.V3.EpisodeFiles
                              IMediaFileService mediaFileService,
                              IDeleteMediaFiles mediaFileDeletionService,
                              ISeriesService seriesService,
+                             IManageCommandQueue commandQueueManager,
                              ICustomFormatCalculationService formatCalculator,
                              IUpgradableSpecification upgradableSpecification)
             : base(signalRBroadcaster)
@@ -41,6 +45,7 @@ namespace Whisparr.Api.V3.EpisodeFiles
             _mediaFileService = mediaFileService;
             _mediaFileDeletionService = mediaFileDeletionService;
             _seriesService = seriesService;
+            _commandQueueManager = commandQueueManager;
             _formatCalculator = formatCalculator;
             _upgradableSpecification = upgradableSpecification;
         }
@@ -171,7 +176,10 @@ namespace Whisparr.Api.V3.EpisodeFiles
                 throw new BadRequestException("No episode files to delete");
             }
 
-            _mediaFileDeletionService.DeleteEpisodeFiles(episodeFiles);
+            _commandQueueManager.Push(new DeleteEpisodeFilesCommand
+            {
+                EpisodeFileIds = episodeFiles.Select(f => f.Id).ToList()
+            });
 
             return new { };
         }

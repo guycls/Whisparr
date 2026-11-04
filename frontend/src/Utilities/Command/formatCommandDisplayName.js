@@ -1,10 +1,14 @@
 import {
+  DELETE_EPISODE_FILES,
+  DELETE_SERIES,
   REFRESH_SERIES,
   SERIES_SEARCH
 } from 'Commands/commandNames';
 import translate from 'Utilities/String/translate';
 
 const progressCommandNames = [
+  DELETE_EPISODE_FILES,
+  DELETE_SERIES,
   REFRESH_SERIES,
   SERIES_SEARCH
 ];

@@ -194,7 +194,12 @@ namespace Whisparr.Api.V3.Series
         [RestDeleteById]
         public void DeleteSeries(int id, bool deleteFiles = false, bool addImportListExclusion = false)
         {
-            _seriesService.DeleteSeries(new List<int> { id }, deleteFiles, addImportListExclusion);
+            _commandQueueManager.Push(new DeleteSeriesCommand
+            {
+                SeriesIds = new List<int> { id },
+                DeleteFiles = deleteFiles,
+                AddImportListExclusion = addImportListExclusion
+            });
         }
 
         private SeriesResource GetSeriesResource(NzbDrone.Core.Tv.Series series, bool includeSeasonImages)

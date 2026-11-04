@@ -273,6 +273,10 @@ class SeriesDetails extends Component {
     this.setState({ isSelectMode: !this.state.isSelectMode });
   };
 
+  onDeleteStarted = () => {
+    this.setState({ isSelectMode: false });
+  };
+
   //
   // Render
 
@@ -983,6 +987,7 @@ class SeriesDetails extends Component {
                 items={selectableItems || []}
                 seriesMonitored={monitored}
                 episodeEntity={isUnifiedGridView ? 'seriesDetails.unifiedGrid' : 'episodes'}
+                onDeleteStarted={this.onDeleteStarted}
               /> :
               null
           }
