@@ -51,7 +51,7 @@ class PageSidebarItem extends Component {
           selected={isActive || isActiveParent}
           onClick={this.onPress}
           sx={{
-            ...(isChildItem ? { pl: 4 } : null),
+            ...(isChildItem ? { pl: '52px' } : null),
             '& .MuiListItemText-primary': {
               whiteSpace: 'nowrap'
             }

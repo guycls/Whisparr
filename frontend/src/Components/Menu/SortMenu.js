@@ -16,6 +16,7 @@ function SortMenu(props) {
   return (
     <Menu
       className={className}
+      openOnHover={true}
       {...otherProps}
     >
       <ToolbarMenuButton

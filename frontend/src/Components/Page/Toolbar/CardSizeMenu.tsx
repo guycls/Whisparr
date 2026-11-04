@@ -20,7 +20,7 @@ function CardSizeMenu(props: CardSizeMenuProps) {
   const { cardSize, min, max, step, onCardSizeChange } = props;
 
   return (
-    <Menu alignMenu={align.RIGHT} enforceMaxHeight={false}>
+    <Menu alignMenu={align.RIGHT} enforceMaxHeight={false} openOnHover={true}>
       <ToolbarMenuButton
         iconName={icons.CARD_SIZE}
         text={translate('CardSize')}

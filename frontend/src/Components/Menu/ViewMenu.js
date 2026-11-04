@@ -14,6 +14,7 @@ function ViewMenu(props) {
 
   return (
     <Menu
+      openOnHover={true}
       {...otherProps}
     >
       <ToolbarMenuButton

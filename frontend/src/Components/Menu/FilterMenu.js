@@ -64,6 +64,7 @@ class FilterMenu extends Component {
       >
         <Menu
           className={className}
+          openOnHover={true}
           {...otherProps}
         >
           <ButtonComponent

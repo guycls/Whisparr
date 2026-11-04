@@ -72,9 +72,9 @@ function SeriesDetailsQualityFilterMenu(
     : formatQualityTierLabel(maxTier);
 
   return (
-    <Menu alignMenu={align.RIGHT} enforceMaxHeight={false}>
+    <Menu alignMenu={align.RIGHT} enforceMaxHeight={false} openOnHover={true}>
       <ToolbarMenuButton
-        iconName={icons.FILTER}
+        iconName={icons.HD}
         text={translate('Quality')}
         showIndicator={isFilterActive}
       />

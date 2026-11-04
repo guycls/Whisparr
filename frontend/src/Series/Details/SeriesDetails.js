@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component, useEffect, useState } from 'react';
@@ -29,13 +29,13 @@ import EditSeriesModalConnector from 'Series/Edit/EditSeriesModalConnector';
 import SeriesHistoryModal from 'Series/History/SeriesHistoryModal';
 import MonitoringOptionsModal from 'Series/MonitoringOptions/MonitoringOptionsModal';
 import { getSeriesStatusDetails } from 'Series/SeriesStatus';
+import SiteRipSearchModal from 'Series/SiteRip/SiteRipSearchModal';
+import QualityProfileNameConnector from 'Settings/Profiles/Quality/QualityProfileNameConnector';
 import {
   SERIES_DETAILS_CARD_SIZE_MAX,
   SERIES_DETAILS_CARD_SIZE_MIN,
   SERIES_DETAILS_CARD_SIZE_STEP
 } from 'Store/Actions/seriesDetailsActions';
-import SiteRipSearchModal from 'Series/SiteRip/SiteRipSearchModal';
-import QualityProfileNameConnector from 'Settings/Profiles/Quality/QualityProfileNameConnector';
 import formatBytes from 'Utilities/Number/formatBytes';
 import translate from 'Utilities/String/translate';
 import selectAll from 'Utilities/Table/selectAll';
@@ -373,7 +373,7 @@ class SeriesDetails extends Component {
 
             <PageToolbarButton
               label={translate('SearchMonitored')}
-              iconName={icons.SEARCH}
+              iconName={icons.PAGEVIEW}
               isDisabled={!monitored || !hasMonitoredEpisodes || !hasEpisodes}
               isSpinning={isSearching}
               title={hasMonitoredEpisodes ? undefined : translate('NoMonitoredEpisodes')}
@@ -402,7 +402,7 @@ class SeriesDetails extends Component {
 
             <PageToolbarButton
               label={translate('ManageEpisodes')}
-              iconName={icons.EPISODE_FILE}
+              iconName={icons.LIST}
               onPress={this.onManageEpisodesPress}
             />
 
@@ -423,7 +423,7 @@ class SeriesDetails extends Component {
 
             <PageToolbarButton
               label={translate('Edit')}
-              iconName={icons.EDIT}
+              iconName={icons.SERIES_EDIT}
               onPress={this.onEditSeriesPress}
             />
 
@@ -506,7 +506,9 @@ class SeriesDetails extends Component {
               <Box
                 sx={{
                   display: 'flex',
-                  alignItems: 'flex-start',
+                  flexDirection: { xs: 'column', md: 'row' },
+                  alignItems: { xs: 'stretch', md: 'flex-start' },
+                  gap: { xs: 2, md: 3 },
                   p: { xs: '15px', md: '30px' },
                   width: '100%',
                   color: 'text.primary'
@@ -515,77 +517,71 @@ class SeriesDetails extends Component {
                 <Box
                   sx={{
                     display: 'flex',
-                    flexDirection: 'column',
-                    flexGrow: 1,
-                    minWidth: 0
+                    alignItems: 'center',
+                    flex: '0 0 auto',
+                    alignSelf: { md: 'center' },
+                    minWidth: 0,
+                    maxWidth: { md: '46%' }
                   }}
                 >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      flex: '0 0 auto',
-                      minWidth: 0,
-                      mb: '5px'
-                    }}
-                  >
-                    <Box sx={{ alignSelf: 'center', mr: '10px', flexShrink: 0 }}>
-                      <MonitorToggleButton
-                        sx={{
-                          width: 40,
-                          '&:hover': { color: 'text.secondary' }
-                        }}
-                        monitored={monitored}
-                        isSaving={isSaving}
-                        size={40}
-                        onPress={onMonitorTogglePress}
-                      />
-                    </Box>
-
-                    <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center' }}>
-                      <BannerSiteTitle
-                        images={images}
-                        title={title}
-                        blur={safeForWorkMode}
-                      />
-
-                      {
-                        !!alternateTitles.length &&
-                          <Box sx={{ alignSelf: 'flex-end', ml: '20px', flexShrink: 0 }}>
-                            <Popover
-                              anchor={
-                                <Icon
-                                  name={icons.ALTERNATE_TITLES}
-                                  size={20}
-                                />
-                              }
-                              title={translate('AlternateTitles')}
-                              body={<SeriesAlternateTitles alternateTitles={alternateTitles} />}
-                              position={tooltipPositions.BOTTOM}
-                            />
-                          </Box>
-                      }
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, ml: 2 }}>
-                      <IconButton
-                        sx={bannerNavButtonSx}
-                        name={icons.ARROW_LEFT}
-                        size={30}
-                        title={translate('SiteDetailsGoTo', { title: previousSeries.title })}
-                        to={`/site/${previousSeries.titleSlug}`}
-                      />
-
-                      <IconButton
-                        sx={bannerNavButtonSx}
-                        name={icons.ARROW_RIGHT}
-                        size={30}
-                        title={translate('SiteDetailsGoTo', { title: nextSeries.title })}
-                        to={`/site/${nextSeries.titleSlug}`}
-                      />
-                    </Box>
+                  <Box sx={{ alignSelf: 'center', mr: '10px', flexShrink: 0 }}>
+                    <MonitorToggleButton
+                      sx={{
+                        width: 40,
+                        '&:hover': { color: 'text.secondary' }
+                      }}
+                      monitored={monitored}
+                      isSaving={isSaving}
+                      size={40}
+                      onPress={onMonitorTogglePress}
+                    />
                   </Box>
 
+                  <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center' }}>
+                    <BannerSiteTitle
+                      images={images}
+                      title={title}
+                      blur={safeForWorkMode}
+                    />
+
+                    {
+                      !!alternateTitles.length &&
+                        <Box sx={{ alignSelf: 'flex-end', ml: '20px', flexShrink: 0 }}>
+                          <Popover
+                            anchor={
+                              <Icon
+                                name={icons.ALTERNATE_TITLES}
+                                size={20}
+                              />
+                            }
+                            title={translate('AlternateTitles')}
+                            body={<SeriesAlternateTitles alternateTitles={alternateTitles} />}
+                            position={tooltipPositions.BOTTOM}
+                          />
+                        </Box>
+                    }
+                  </Box>
+
+                  <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, ml: 2 }}>
+                    <IconButton
+                      sx={bannerNavButtonSx}
+                      name={icons.ARROW_LEFT}
+                      size={30}
+                      title={translate('SiteDetailsGoTo', { title: previousSeries.title })}
+                      to={`/site/${previousSeries.titleSlug}`}
+                    />
+
+                    <IconButton
+                      sx={bannerNavButtonSx}
+                      name={icons.ARROW_RIGHT}
+                      size={30}
+                      title={translate('SiteDetailsGoTo', { title: nextSeries.title })}
+                      to={`/site/${nextSeries.titleSlug}`}
+                    />
+                  </Box>
+                </Box>
+
+                <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
                   <Box sx={{ mb: 1, color: 'text.primary', fontWeight: 300, fontSize: 20 }}>
                     <div>
                       {
@@ -629,8 +625,8 @@ class SeriesDetails extends Component {
                       '& .MuiChip-root.MuiChip-outlined': {
                         bgcolor: (theme) => alpha(theme.palette.text.primary, 0.08),
                         color: 'text.primary',
-                        borderColor: (theme) => alpha(theme.palette.text.primary, 0.16),
-                      },
+                        borderColor: (theme) => alpha(theme.palette.text.primary, 0.16)
+                      }
                     }}
                   >
                     <Label

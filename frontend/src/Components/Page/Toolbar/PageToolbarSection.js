@@ -160,7 +160,7 @@ class PageToolbarSection extends Component {
 
                 {
                   !!overflowItems.length &&
-                    <Menu>
+                    <Menu openOnHover={true}>
                       <ToolbarMenuButton
                         iconName={icons.OVERFLOW}
                         text={translate('More')}

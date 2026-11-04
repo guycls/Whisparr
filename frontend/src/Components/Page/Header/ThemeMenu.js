@@ -28,7 +28,7 @@ function ThemeMenu() {
   }, [dispatch, isPopulated]);
 
   return (
-    <Menu alignMenu={align.RIGHT}>
+    <Menu alignMenu={align.RIGHT} openOnHover={true}>
       <MenuButton
         aria-label={translate('Theme')}
         title={translate('Theme')}

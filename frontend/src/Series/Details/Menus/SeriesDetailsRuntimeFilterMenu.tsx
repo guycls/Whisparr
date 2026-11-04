@@ -80,9 +80,9 @@ function SeriesDetailsRuntimeFilterMenu(
   const maxLabel = formatRuntimeFilterLabel(resolvedMaxMinutes);
 
   return (
-    <Menu alignMenu={align.RIGHT} enforceMaxHeight={false}>
+    <Menu alignMenu={align.RIGHT} enforceMaxHeight={false} openOnHover={true}>
       <ToolbarMenuButton
-        iconName={icons.FILTER}
+        iconName={icons.TIMER}
         text={translate('Runtime')}
         showIndicator={isFilterActive}
       />

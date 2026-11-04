@@ -19,7 +19,7 @@ function PageHeaderActionsMenu(props) {
 
   return (
     <div>
-      <Menu alignMenu={align.RIGHT}>
+      <Menu alignMenu={align.RIGHT} openOnHover={true}>
         <MenuButton
           aria-label="Menu Button"
           title={translate('Menu')}

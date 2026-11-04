@@ -15,10 +15,11 @@ function StatusMenu(props) {
 
   return (
     <Menu
+      openOnHover={true}
       {...otherProps}
     >
       <ToolbarMenuButton
-        iconName={icons.MONITORED}
+        iconName={icons.STATUS}
         text={translate('Status')}
         showIndicator={showIndicator}
         isDisabled={isDisabled}

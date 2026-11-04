@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import React, { useCallback } from 'react';
 import { useSelector } from 'react-redux';
@@ -86,7 +87,8 @@ function EpisodeCard(props: EpisodeCardProps) {
         border: 1,
         borderColor: 'divider',
         borderRadius: 1,
-        bgcolor: 'background.paper',
+        bgcolor: 'transparent',
+        backgroundImage: 'none',
       }}
     >
       <Box
@@ -133,110 +135,129 @@ function EpisodeCard(props: EpisodeCardProps) {
       </Box>
 
       <Box
-        sx={{
+        sx={(theme) => ({
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
-          gap: '4px',
-          minWidth: 0,
-          p: { xs: '6px', md: 1 },
-        }}
+          minHeight: 0,
+          backgroundColor: alpha(
+            theme.palette.background.paper,
+            theme.palette.mode === 'dark' ? 0.35 : 0.3
+          ),
+          backgroundImage: 'none',
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+        })}
       >
-        <Typography
+        <Box
           sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            gap: '4px',
             minWidth: 0,
-            overflowWrap: 'break-word',
-            wordBreak: 'break-word',
-            fontSize: 14,
-            lineHeight: 1.35,
+            p: { xs: '6px', md: 1 },
           }}
         >
-          <EpisodeTitleLink
-            episodeId={id}
-            seriesId={seriesId}
-            episodeTitle={title}
-            episodeEntity={episodeEntity}
-            showOpenSeriesButton={false}
-            renderModal={false}
-            wrap={true}
-            onModalOpen={openDetailsModal}
-          />
-        </Typography>
+          <Typography
+            sx={{
+              minWidth: 0,
+              overflowWrap: 'break-word',
+              wordBreak: 'break-word',
+              fontSize: 14,
+              lineHeight: 1.35,
+            }}
+          >
+            <EpisodeTitleLink
+              episodeId={id}
+              seriesId={seriesId}
+              episodeTitle={title}
+              episodeEntity={episodeEntity}
+              showOpenSeriesButton={false}
+              renderModal={false}
+              wrap={true}
+              onModalOpen={openDetailsModal}
+            />
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 1,
+              pt: '4px',
+              borderTop: 1,
+              borderColor: 'divider',
+              color: 'text.secondary',
+              fontSize: 12,
+            }}
+          >
+            <Box sx={{ minWidth: 0, p: 0 }}>
+              <RelativeDateCell date={releaseDate} component="span" />
+            </Box>
+
+            {!!runtime && (
+              <Box
+                component="span"
+                sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+              >
+                {formatRuntime(runtime)}
+              </Box>
+            )}
+          </Box>
+
+          {!!joinedPerformers && (
+            <Tooltip
+              anchor={
+                <Box
+                  sx={{
+                    overflow: 'hidden',
+                    maxWidth: '100%',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    color: 'text.secondary',
+                    fontSize: 12,
+                  }}
+                >
+                  {joinedPerformers}
+                </Box>
+              }
+              tooltip={joinedPerformers}
+            />
+          )}
+        </Box>
 
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: 1,
-            pt: '4px',
+            flexShrink: 0,
+            mt: 'auto',
+            py: '4px',
+            px: 1,
             borderTop: 1,
             borderColor: 'divider',
-            color: 'text.secondary',
-            fontSize: 12,
           }}
         >
-          <Box sx={{ minWidth: 0, p: 0 }}>
-            <RelativeDateCell date={releaseDate} component="span" />
+          <MonitorToggleButton
+            monitored={monitored}
+            isDisabled={!seriesMonitored}
+            isSaving={isSaving}
+            size={20}
+            onPress={handleMonitorPress}
+          />
+
+          <Box sx={{ flexShrink: 0 }}>
+            <EpisodeSearchActions
+              episodeId={id}
+              episodeEntity={episodeEntity}
+              seriesId={seriesId}
+              episodeTitle={title}
+              isSmallScreen={isSmallScreen}
+            />
           </Box>
-
-          {!!runtime && (
-            <Box component="span" sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-              {formatRuntime(runtime)}
-            </Box>
-          )}
-        </Box>
-
-        {!!joinedPerformers && (
-          <Tooltip
-            anchor={
-              <Box
-                sx={{
-                  overflow: 'hidden',
-                  maxWidth: '100%',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  color: 'text.secondary',
-                  fontSize: 12,
-                }}
-              >
-                {joinedPerformers}
-              </Box>
-            }
-            tooltip={joinedPerformers}
-          />
-        )}
-      </Box>
-
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-          mt: 'auto',
-          py: '4px',
-          px: 1,
-          borderTop: 1,
-          borderColor: 'divider',
-        }}
-      >
-        <MonitorToggleButton
-          monitored={monitored}
-          isDisabled={!seriesMonitored}
-          isSaving={isSaving}
-          size={20}
-          onPress={handleMonitorPress}
-        />
-
-        <Box sx={{ flexShrink: 0 }}>
-          <EpisodeSearchActions
-            episodeId={id}
-            episodeEntity={episodeEntity}
-            seriesId={seriesId}
-            episodeTitle={title}
-            isSmallScreen={isSmallScreen}
-          />
         </Box>
       </Box>
 

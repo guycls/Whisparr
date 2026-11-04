@@ -20,18 +20,34 @@ function LoadingPage() {
       }}
     >
       <Box
-        component="img"
-        src={whisparrLogo}
         sx={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           mt: '50px',
           mx: 'auto',
-          width: 48,
-          height: 48,
-          opacity: 0.65
+          width: 72,
+          height: 72
         }}
-      />
+      >
+        <LoadingIndicator size={72} />
+        <Box
+          component="img"
+          src={whisparrLogo}
+          alt=""
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: 44,
+            height: 44,
+            transform: 'translate(-50%, -50%)',
+            opacity: 0.9
+          }}
+        />
+      </Box>
       <LoadingMessage />
-      <LoadingIndicator />
     </Box>
   );
 }

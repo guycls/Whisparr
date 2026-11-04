@@ -21,9 +21,9 @@ const MAX_SIDEBAR_WIDTH = 480;
 const BADGE_WIDTH = 44;
 const HANDLE_WIDTH = 6;
 const PARENT_PADDING_LEFT = 16;
-const CHILD_PADDING_LEFT = 32;
+const ICON_SLOT = 36;
+const CHILD_PADDING_LEFT = PARENT_PADDING_LEFT + ICON_SLOT;
 const PADDING_RIGHT = 16;
-const ICON_SLOT = 56;
 
 let measureContext;
 

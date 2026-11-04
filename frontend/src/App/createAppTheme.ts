@@ -1,5 +1,26 @@
 import { alpha, createTheme, PaletteMode, Theme } from '@mui/material/styles';
 
+export function frostedBackground(theme: Theme) {
+  const veil = theme.palette.mode === 'dark' ? 0.4 : 0.28;
+
+  return {
+    backgroundColor: alpha(theme.palette.background.paper, veil),
+    backgroundImage: 'none',
+    backdropFilter: 'blur(18px) saturate(1.45)',
+    WebkitBackdropFilter: 'blur(18px) saturate(1.45)',
+  };
+}
+
+function dropdownPaper(theme: Theme) {
+  return {
+    ...frostedBackground(theme),
+    border: `1px solid ${alpha(
+      theme.palette.common.white,
+      theme.palette.mode === 'dark' ? 0.14 : 0.38
+    )}`,
+  };
+}
+
 export default function createAppTheme(
   mode: PaletteMode,
   colorImpaired: boolean
@@ -109,10 +130,7 @@ export default function createAppTheme(
       },
       MuiMenu: {
         styleOverrides: {
-          paper: ({ theme }) => ({
-            backgroundColor: theme.palette.background.paper,
-            backgroundImage: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.22)} 0%, ${theme.palette.background.paper} 72%)`,
-          }),
+          paper: ({ theme }) => dropdownPaper(theme),
         },
       },
       MuiMenuItem: {
@@ -133,10 +151,7 @@ export default function createAppTheme(
       },
       MuiAutocomplete: {
         styleOverrides: {
-          paper: ({ theme }) => ({
-            backgroundColor: theme.palette.background.paper,
-            backgroundImage: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.22)} 0%, ${theme.palette.background.paper} 72%)`,
-          }),
+          paper: ({ theme }) => dropdownPaper(theme),
         },
       },
       MuiFormHelperText: {
