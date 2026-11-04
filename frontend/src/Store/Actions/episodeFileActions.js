@@ -33,6 +33,7 @@ export const defaultState = {
 
 export const FETCH_EPISODE_FILE = 'episodeFiles/fetchEpisodeFile';
 export const FETCH_EPISODE_FILES = 'episodeFiles/fetchEpisodeFiles';
+export const REFRESH_SERIES_EPISODE_FILES = 'episodeFiles/refreshSeriesEpisodeFiles';
 export const DELETE_EPISODE_FILE = 'episodeFiles/deleteEpisodeFile';
 export const DELETE_EPISODE_FILES = 'episodeFiles/deleteEpisodeFiles';
 export const UPDATE_EPISODE_FILES = 'episodeFiles/updateEpisodeFiles';
@@ -43,6 +44,7 @@ export const CLEAR_EPISODE_FILES = 'episodeFiles/clearEpisodeFiles';
 
 export const fetchEpisodeFile = createThunk(FETCH_EPISODE_FILE);
 export const fetchEpisodeFiles = createThunk(FETCH_EPISODE_FILES);
+export const refreshSeriesEpisodeFiles = createThunk(REFRESH_SERIES_EPISODE_FILES);
 export const deleteEpisodeFile = createThunk(DELETE_EPISODE_FILE);
 export const deleteEpisodeFiles = createThunk(DELETE_EPISODE_FILES);
 export const updateEpisodeFiles = createThunk(UPDATE_EPISODE_FILES);
@@ -56,9 +58,33 @@ const deleteEpisodeFileHelper = createRemoveItemHandler(section, '/episodeFile')
 //
 // Action Handlers
 
+const fetchEpisodeFilesHandler = createFetchHandler(section, '/episodeFile');
+let episodeFileRefreshId = 0;
+
 export const actionHandlers = handleThunks({
   [FETCH_EPISODE_FILE]: createFetchHandler(section, '/episodeFile'),
-  [FETCH_EPISODE_FILES]: createFetchHandler(section, '/episodeFile'),
+  [FETCH_EPISODE_FILES]: function(getState, payload, dispatch) {
+    episodeFileRefreshId += 1;
+    const refreshId = episodeFileRefreshId;
+
+    fetchEpisodeFilesHandler(getState, {
+      ...payload,
+      refreshId,
+      isCurrent: (id) => id === episodeFileRefreshId
+    }, dispatch);
+  },
+
+  [REFRESH_SERIES_EPISODE_FILES]: function(getState, payload, dispatch) {
+    episodeFileRefreshId += 1;
+    const refreshId = episodeFileRefreshId;
+
+    fetchEpisodeFilesHandler(getState, {
+      seriesId: payload.seriesId,
+      reconcile: true,
+      refreshId,
+      isCurrent: (id) => id === episodeFileRefreshId
+    }, dispatch);
+  },
 
   [DELETE_EPISODE_FILE]: function(getState, payload, dispatch) {
     const {

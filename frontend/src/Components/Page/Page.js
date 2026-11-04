@@ -9,6 +9,7 @@ import SignalRConnector from 'Components/SignalRConnector';
 import AuthenticationRequiredModal from 'FirstRun/AuthenticationRequiredModal';
 import locationShape from 'Helpers/Props/Shapes/locationShape';
 import PageHeader from './Header/PageHeader';
+import MessagesConnector from './Sidebar/Messages/MessagesConnector';
 import PageSidebar from './Sidebar/PageSidebar';
 
 class Page extends Component {
@@ -95,6 +96,7 @@ class Page extends Component {
           }}
         >
           <SignalRConnector />
+          <MessagesConnector />
 
           <PageHeader
             isSmallScreen={isSmallScreen}

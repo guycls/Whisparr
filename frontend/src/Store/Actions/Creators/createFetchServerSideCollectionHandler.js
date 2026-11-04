@@ -26,6 +26,10 @@ function createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter
         'sortKey'
       ]));
 
+    if (payload.pageSize) {
+      data.pageSize = payload.pageSize;
+    }
+
     if (fetchDataAugmenter) {
       fetchDataAugmenter(getState, payload, data);
     }
@@ -56,7 +60,12 @@ function createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter
       let extraSetState = {};
 
       if (processFetchResponse) {
-        const processed = processFetchResponse(getState, payload, response, sectionState);
+        const processed = processFetchResponse(getState, payload, response, sectionState) || {};
+
+        if (processed.stale) {
+          return;
+        }
+
         responseData = processed.data;
         extraSetState = processed.extraSetState || {};
       }
@@ -79,6 +88,14 @@ function createFetchServerSideCollectionHandler(section, url, fetchDataAugmenter
     });
 
     promise.fail((xhr) => {
+      if (processFetchResponse) {
+        const processed = processFetchResponse(getState, payload, null, sectionState);
+
+        if (processed && processed.stale) {
+          return;
+        }
+      }
+
       dispatch(set({
         section,
         isFetching: false,

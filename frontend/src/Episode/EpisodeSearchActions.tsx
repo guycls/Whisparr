@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import AppState from 'App/State/AppState';
 import { EPISODE_SEARCH } from 'Commands/commandNames';
 import Icon from 'Components/Icon';
 import IconButton from 'Components/Link/IconButton';
@@ -14,7 +15,6 @@ import { EpisodeEntities } from 'Episode/useEpisode';
 import useModalOpenState from 'Helpers/Hooks/useModalOpenState';
 import { align, icons } from 'Helpers/Props';
 import { executeCommand } from 'Store/Actions/commandActions';
-import createExecutingCommandsSelector from 'Store/Selectors/createExecutingCommandsSelector';
 import translate from 'Utilities/String/translate';
 import EpisodeDetailsModal from './EpisodeDetailsModal';
 
@@ -37,10 +37,12 @@ function EpisodeSearchActions(props: EpisodeSearchActionsProps) {
     isSmallScreen = false,
   } = props;
 
-  const executingCommands = useSelector(createExecutingCommandsSelector());
-  const isSearching = executingCommands.some(({ name, body }) => {
-    const { episodeIds = [] } = body;
-    return name === EPISODE_SEARCH && episodeIds.indexOf(episodeId) > -1;
+  const isSearching = useSelector((state: AppState) => {
+    return state.commands.items.some(({ name, body }) => {
+      const { episodeIds = [] } = body;
+
+      return name === EPISODE_SEARCH && episodeIds.indexOf(episodeId) > -1;
+    });
   });
 
   const dispatch = useDispatch();

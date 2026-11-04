@@ -162,6 +162,7 @@ export const persistState = [
 // Actions Types
 
 export const FETCH_EPISODES = 'episodes/fetchEpisodes';
+export const REFRESH_SERIES_EPISODES = 'episodes/refreshSeriesEpisodes';
 export const SET_EPISODES_SORT = 'episodes/setEpisodesSort';
 export const SET_EPISODES_TABLE_OPTION = 'episodes/setEpisodesTableOption';
 export const CLEAR_EPISODES = 'episodes/clearEpisodes';
@@ -172,6 +173,7 @@ export const TOGGLE_EPISODES_MONITORED = 'episodes/toggleEpisodesMonitored';
 // Action Creators
 
 export const fetchEpisodes = createThunk(FETCH_EPISODES);
+export const refreshSeriesEpisodes = createThunk(REFRESH_SERIES_EPISODES);
 export const setEpisodesSort = createAction(SET_EPISODES_SORT);
 export const setEpisodesTableOption = createAction(SET_EPISODES_TABLE_OPTION);
 export const clearEpisodes = createAction(CLEAR_EPISODES);
@@ -181,8 +183,33 @@ export const toggleEpisodesMonitored = createThunk(TOGGLE_EPISODES_MONITORED);
 //
 // Action Handlers
 
+const fetchEpisodesHandler = createFetchHandler(section, '/episode');
+let episodeRefreshId = 0;
+
 export const actionHandlers = handleThunks({
-  [FETCH_EPISODES]: createFetchHandler(section, '/episode'),
+  [FETCH_EPISODES]: function(getState, payload, dispatch) {
+    episodeRefreshId += 1;
+    const refreshId = episodeRefreshId;
+
+    fetchEpisodesHandler(getState, {
+      ...payload,
+      refreshId,
+      isCurrent: (id) => id === episodeRefreshId
+    }, dispatch);
+  },
+
+  [REFRESH_SERIES_EPISODES]: function(getState, payload, dispatch) {
+    episodeRefreshId += 1;
+    const refreshId = episodeRefreshId;
+
+    fetchEpisodesHandler(getState, {
+      seriesId: payload.seriesId,
+      includeImages: true,
+      reconcile: true,
+      refreshId,
+      isCurrent: (id) => id === episodeRefreshId
+    }, dispatch);
+  },
 
   [TOGGLE_EPISODE_MONITORED]: function(getState, payload, dispatch) {
     const {

@@ -1,4 +1,4 @@
-type Populator = () => void;
+type Populator = (body?: { resource?: { id?: number } }) => void;
 
 let currentPopulator: Populator | null = null;
 let currentReasons: string[] = [];
@@ -18,16 +18,15 @@ export function unregisterPagePopulator(populator: Populator) {
   }
 }
 
-export function repopulatePage(reason: string) {
+export function repopulatePage(
+  reason?: string,
+  body?: { resource?: { id?: number } }
+) {
   if (!currentPopulator) {
     return;
   }
 
-  if (!reason) {
-    currentPopulator();
-  }
-
-  if (reason && currentReasons.includes(reason)) {
-    currentPopulator();
+  if (!reason || currentReasons.includes(reason)) {
+    currentPopulator(body);
   }
 }

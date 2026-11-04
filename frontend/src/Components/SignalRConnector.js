@@ -213,7 +213,7 @@ class SignalRConnector extends Component {
     if (action === 'updated') {
       this.props.dispatchUpdateItem({ section, ...body.resource });
 
-      repopulatePage('seriesUpdated');
+      repopulatePage('seriesUpdated', body);
     } else if (action === 'deleted') {
       this.props.dispatchRemoveItem({ section, id: body.resource.id });
     }

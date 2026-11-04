@@ -11,33 +11,9 @@ const mapDispatchToProps = {
 class MessageConnector extends Component {
 
   //
-  // Lifecycle
+  // Listeners
 
-  constructor(props, context) {
-    super(props, context);
-
-    this._hideTimeoutId = null;
-    this.scheduleHideMessage(props.hideAfter);
-  }
-
-  componentDidUpdate() {
-    this.scheduleHideMessage(this.props.hideAfter);
-  }
-
-  //
-  // Control
-
-  scheduleHideMessage = (hideAfter) => {
-    if (this._hideTimeoutId) {
-      clearTimeout(this._hideTimeoutId);
-    }
-
-    if (hideAfter) {
-      this._hideTimeoutId = setTimeout(this.hideMessage, hideAfter * 1000);
-    }
-  };
-
-  hideMessage = () => {
+  onClose = () => {
     this.props.hideMessage({ id: this.props.id });
   };
 
@@ -45,9 +21,22 @@ class MessageConnector extends Component {
   // Render
 
   render() {
+    const {
+      name,
+      message,
+      type,
+      hideAfter,
+      index
+    } = this.props;
+
     return (
       <Message
-        {...this.props}
+        name={name}
+        message={message}
+        type={type}
+        hideAfter={hideAfter}
+        index={index}
+        onClose={this.onClose}
       />
     );
   }
@@ -55,13 +44,12 @@ class MessageConnector extends Component {
 
 MessageConnector.propTypes = {
   id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  name: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
   hideAfter: PropTypes.number.isRequired,
+  index: PropTypes.number.isRequired,
   hideMessage: PropTypes.func.isRequired
-};
-
-MessageConnector.defaultProps = {
-  // Hide messages after 60 seconds if there is no activity
-  // hideAfter: 60
 };
 
 export default connect(undefined, mapDispatchToProps)(MessageConnector);

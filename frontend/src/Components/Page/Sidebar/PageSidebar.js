@@ -13,7 +13,6 @@ import locationShape from 'Helpers/Props/Shapes/locationShape';
 import { set } from 'Store/Actions/baseActions';
 import HealthStatus from 'System/Status/Health/HealthStatus';
 import translate from 'Utilities/String/translate';
-import MessagesConnector from './Messages/MessagesConnector';
 import PageSidebarItem from './PageSidebarItem';
 
 const DEFAULT_SIDEBAR_WIDTH = 196;
@@ -452,8 +451,6 @@ function PageSidebar(props) {
             })
           }
         </List>
-
-        <MessagesConnector />
       </Box>
 
       {

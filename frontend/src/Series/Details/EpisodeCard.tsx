@@ -160,11 +160,6 @@ function EpisodeCard(props: EpisodeCardProps) {
               height: 22,
               maxWidth: '100%',
             },
-            '& .MuiChip-outlined': {
-              bgcolor: 'rgba(0, 0, 0, 0.72)',
-              color: 'common.white',
-              borderColor: 'transparent',
-            },
             '& .MuiChip-label': {
               overflow: 'hidden',
               textOverflow: 'ellipsis',

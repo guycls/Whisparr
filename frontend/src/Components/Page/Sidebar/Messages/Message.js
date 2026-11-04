@@ -1,8 +1,11 @@
-import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useCallback } from 'react';
 import Icon from 'Components/Icon';
 import { icons } from 'Helpers/Props';
+
+const SNACKBAR_STEP_PX = 68;
 
 function getIconName(name) {
   switch (name) {
@@ -31,65 +34,75 @@ function getIconName(name) {
   }
 }
 
-const typeBorderColor = {
-  error: 'var(--dangerColor)',
-  info: 'var(--infoColor)',
-  success: 'var(--successColor)',
-  warning: 'var(--warningColor)'
-};
+function getSeverity(type) {
+  switch (type) {
+    case 'error':
+    case 'info':
+    case 'success':
+    case 'warning':
+      return type;
+    default:
+      return 'info';
+  }
+}
 
 function Message(props) {
   const {
     name,
     message,
-    type
+    type,
+    hideAfter,
+    index,
+    onClose
   } = props;
 
+  const handleSnackbarClose = useCallback((event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    onClose();
+  }, [onClose]);
+
+  const bottomOffset = 24 + index * SNACKBAR_STEP_PX;
+
   return (
-    <Box
+    <Snackbar
+      open={true}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      autoHideDuration={hideAfter > 0 ? hideAfter * 1000 : null}
+      onClose={handleSnackbarClose}
       sx={{
-        display: 'flex',
-        borderLeft: `3px solid ${typeBorderColor[type] || 'var(--infoColor)'}`
+        '&&': {
+          bottom: `${bottomOffset}px`
+        }
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          flex: '0 0 25px',
-          ml: '24px',
-          py: '10px',
-          color: 'var(--sidebarColor)'
-        }}
-      >
-        <Icon
-          name={getIconName(name)}
-          title={name}
-        />
-      </Box>
-
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          py: '2px',
-          mr: '24px',
-          color: 'var(--sidebarColor)',
-          fontSize: 13
-        }}
+      <Alert
+        severity={getSeverity(type)}
+        variant="filled"
+        icon={(
+          <Icon
+            name={getIconName(name)}
+            title={name}
+            size={22}
+          />
+        )}
+        onClose={onClose}
       >
         {message}
-      </Box>
-    </Box>
+      </Alert>
+    </Snackbar>
   );
 }
 
 Message.propTypes = {
   name: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
-  type: PropTypes.string.isRequired
+  type: PropTypes.string.isRequired,
+  hideAfter: PropTypes.number.isRequired,
+  index: PropTypes.number.isRequired,
+  onClose: PropTypes.func.isRequired
 };
 
 export default Message;

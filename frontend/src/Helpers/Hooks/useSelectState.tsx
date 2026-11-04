@@ -54,6 +54,21 @@ function getSelectedState(items: ModelBase[], existingState: SelectedState) {
   }, {});
 }
 
+function isSameSelectedState(current: SelectedState, next: SelectedState) {
+  const currentKeys = Object.keys(current);
+  const nextKeys = Object.keys(next);
+
+  if (currentKeys.length !== nextKeys.length) {
+    return false;
+  }
+
+  return nextKeys.every((key) => {
+    const id = Number(key);
+
+    return current[id] === next[id];
+  });
+}
+
 function selectReducer(state: SelectState, action: SelectAction): SelectState {
   const { selectedState } = state;
 
@@ -86,6 +101,10 @@ function selectReducer(state: SelectState, action: SelectAction): SelectState {
     }
     case 'updateItems': {
       const nextSelectedState = getSelectedState(action.items, selectedState);
+
+      if (isSameSelectedState(selectedState, nextSelectedState)) {
+        return state;
+      }
 
       return {
         ...state,

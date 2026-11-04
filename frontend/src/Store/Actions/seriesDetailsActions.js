@@ -7,6 +7,7 @@ import {
   isFullRuntimeRange,
   resolveRuntimeFilter
 } from 'Utilities/Number/runtimeFilterUtils';
+import reconcileItems from 'Utilities/Object/reconcileItems';
 import {
   QUALITY_FILTER_MAX_INDEX
 } from 'Utilities/Quality/qualityFilterTiers';
@@ -84,6 +85,7 @@ export const SET_SERIES_DETAILS_CARD_SIZE = 'seriesDetails/setSeriesDetailsCardS
 export const SET_SERIES_DETAILS_ACTIVE_SERIES = 'seriesDetails/setSeriesDetailsActiveSeries';
 export const FETCH_SERIES_DETAILS_FILTER_BOUNDS = 'seriesDetails/fetchSeriesDetailsFilterBounds';
 export const FETCH_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/fetchSeriesDetailsUnifiedGrid';
+export const REFRESH_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/refreshSeriesDetailsUnifiedGrid';
 export const FETCH_MORE_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/fetchMoreSeriesDetailsUnifiedGrid';
 export const GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE = 'seriesDetails/gotoFirstSeriesDetailsUnifiedGridPage';
 export const CLEAR_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/clearSeriesDetailsUnifiedGrid';
@@ -101,6 +103,7 @@ export const setSeriesDetailsCardSize = createAction(SET_SERIES_DETAILS_CARD_SIZ
 export const setSeriesDetailsActiveSeries = createAction(SET_SERIES_DETAILS_ACTIVE_SERIES);
 export const fetchSeriesDetailsFilterBounds = createThunk(FETCH_SERIES_DETAILS_FILTER_BOUNDS);
 export const fetchSeriesDetailsUnifiedGrid = createThunk(FETCH_SERIES_DETAILS_UNIFIED_GRID);
+export const refreshSeriesDetailsUnifiedGrid = createThunk(REFRESH_SERIES_DETAILS_UNIFIED_GRID);
 export const fetchMoreSeriesDetailsUnifiedGrid = createThunk(FETCH_MORE_SERIES_DETAILS_UNIFIED_GRID);
 export const gotoSeriesDetailsUnifiedGridFirstPage = createThunk(GOTO_FIRST_SERIES_DETAILS_UNIFIED_GRID_PAGE);
 export const clearSeriesDetailsUnifiedGrid = createAction(CLEAR_SERIES_DETAILS_UNIFIED_GRID);
@@ -184,7 +187,22 @@ function unifiedGridFetchDataAugmenter(getState, payload, data) {
   }
 }
 
+let unifiedGridRefreshId = 0;
+
+function nextUnifiedGridRefreshId() {
+  unifiedGridRefreshId += 1;
+  return unifiedGridRefreshId;
+}
+
 function processUnifiedGridFetchResponse(getState, payload, response, sectionState) {
+  if (payload.refreshId != null && payload.refreshId !== unifiedGridRefreshId) {
+    return { stale: true };
+  }
+
+  if (!response) {
+    return { stale: false };
+  }
+
   const append = payload.append === true;
   const lastPageSize = response.records?.length ?? 0;
   let data = response;
@@ -200,6 +218,16 @@ function processUnifiedGridFetchResponse(getState, payload, response, sectionSta
       totalRecords,
       totalPages: Math.max(Math.ceil(totalRecords / pageSize), 1)
     };
+  }
+
+  if (payload.reconcile) {
+    const existingItems = getState().seriesDetails.unifiedGrid.items || [];
+
+    data = {
+      ...data,
+      records: reconcileItems(existingItems, data.records || [])
+    };
+    extraSetState.pageSize = sectionState.pageSize;
   }
 
   return { data, extraSetState };
@@ -261,10 +289,33 @@ export const actionHandlers = handleThunks({
       unifiedGridFetchDataAugmenter
     );
 
-    serverSideHandlers[FETCH_SERIES_DETAILS_UNIFIED_GRID] = unifiedGridFetchHandler;
+    serverSideHandlers[FETCH_SERIES_DETAILS_UNIFIED_GRID] = function(getState, payload, dispatch) {
+      unifiedGridFetchHandler(getState, {
+        ...payload,
+        refreshId: nextUnifiedGridRefreshId()
+      }, dispatch);
+    };
 
     return serverSideHandlers;
   })(),
+
+  [REFRESH_SERIES_DETAILS_UNIFIED_GRID]: function(getState, payload, dispatch) {
+    const unifiedGrid = getState().seriesDetails.unifiedGrid;
+    const loadedCount = unifiedGrid.items?.length || 0;
+    const pageSize = Math.max(
+      loadedCount,
+      unifiedGrid.totalRecords || 0,
+      unifiedGrid.pageSize || 25
+    );
+
+    unifiedGridFetchHandler(getState, {
+      seriesId: payload.seriesId,
+      page: 1,
+      pageSize,
+      reconcile: true,
+      refreshId: nextUnifiedGridRefreshId()
+    }, dispatch);
+  },
 
   [FETCH_MORE_SERIES_DETAILS_UNIFIED_GRID]: function(getState, payload, dispatch) {
     const { activeSeriesId } = getState().seriesDetails;
@@ -285,7 +336,8 @@ export const actionHandlers = handleThunks({
     unifiedGridFetchHandler(getState, {
       page: unifiedGrid.page + 1,
       append: true,
-      seriesId
+      seriesId,
+      refreshId: unifiedGridRefreshId
     }, dispatch);
   },
 

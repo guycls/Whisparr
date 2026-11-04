@@ -7,8 +7,8 @@ import { createSelector } from 'reselect';
 import * as commandNames from 'Commands/commandNames';
 import { set } from 'Store/Actions/baseActions';
 import { executeCommand } from 'Store/Actions/commandActions';
-import { clearEpisodes, fetchEpisodes } from 'Store/Actions/episodeActions';
-import { clearEpisodeFiles, fetchEpisodeFiles } from 'Store/Actions/episodeFileActions';
+import { clearEpisodes, fetchEpisodes, refreshSeriesEpisodes } from 'Store/Actions/episodeActions';
+import { clearEpisodeFiles, fetchEpisodeFiles, refreshSeriesEpisodeFiles } from 'Store/Actions/episodeFileActions';
 import { clearQueueDetails, fetchQueueDetails } from 'Store/Actions/queueActions';
 import { toggleSeriesMonitored } from 'Store/Actions/seriesActions';
 import {
@@ -17,6 +17,7 @@ import {
   fetchSeriesDetailsFilterBounds,
   fetchSeriesDetailsUnifiedGrid,
   gotoSeriesDetailsUnifiedGridFirstPage,
+  refreshSeriesDetailsUnifiedGrid,
   section as seriesDetailsSection,
   setSeriesDetailsActiveSeries,
   setSeriesDetailsCardSize,
@@ -86,13 +87,78 @@ const selectEpisodeFiles = createSelector(
   }
 );
 
-function createMapStateToProps() {
+function isSameCommandStatus(previous, next) {
+  return !!previous &&
+    previous.isSeriesRefreshing === next.isSeriesRefreshing &&
+    previous.allSeriesRefreshing === next.allSeriesRefreshing &&
+    previous.isRefreshing === next.isRefreshing &&
+    previous.isSearching === next.isSearching &&
+    previous.isRenamingFiles === next.isRenamingFiles &&
+    previous.isRenamingSeries === next.isRenamingSeries;
+}
+
+function getCommandStatus(series, commands) {
+  if (!series) {
+    return null;
+  }
+
+  const isSeriesRefreshing = isCommandExecuting(findCommand(commands, { name: commandNames.REFRESH_SERIES, seriesId: series.id }));
+  const seriesRefreshingCommand = findCommand(commands, { name: commandNames.REFRESH_SERIES });
+  const allSeriesRefreshing = (
+    isCommandExecuting(seriesRefreshingCommand) &&
+    !seriesRefreshingCommand.body.seriesId
+  );
+  const isRefreshing = isSeriesRefreshing || allSeriesRefreshing;
+  const isSearching = isCommandExecuting(findCommand(commands, { name: commandNames.SERIES_SEARCH, seriesId: series.id }));
+  const isRenamingFiles = isCommandExecuting(findCommand(commands, { name: commandNames.RENAME_FILES, seriesId: series.id }));
+  const isRenamingSeriesCommand = findCommand(commands, { name: commandNames.RENAME_SERIES });
+  const isRenamingSeries = (
+    isCommandExecuting(isRenamingSeriesCommand) &&
+    isRenamingSeriesCommand.body.seriesIds.indexOf(series.id) > -1
+  );
+
+  return {
+    isSeriesRefreshing,
+    allSeriesRefreshing,
+    isRefreshing,
+    isSearching,
+    isRenamingFiles,
+    isRenamingSeries
+  };
+}
+
+function createCommandStatusSelector() {
+  let lastStatus = null;
+
+  return createSelector(
+    (state, { titleSlug }) => titleSlug,
+    createAllSeriesSelector(),
+    createCommandsSelector(),
+    (titleSlug, allSeries, commands) => {
+      const series = _.find(allSeries, { titleSlug });
+      const nextStatus = getCommandStatus(series, commands);
+
+      if (!nextStatus) {
+        lastStatus = null;
+        return null;
+      }
+
+      if (isSameCommandStatus(lastStatus, nextStatus)) {
+        return lastStatus;
+      }
+
+      lastStatus = nextStatus;
+      return nextStatus;
+    }
+  );
+}
+
+function createSeriesDetailsSelector() {
   return createSelector(
     (state, { titleSlug }) => titleSlug,
     selectEpisodes,
     selectEpisodeFiles,
     createAllSeriesSelector(),
-    createCommandsSelector(),
     (state) => state.settings.safeForWorkMode,
     (state) => state.seriesDetails.view,
     (state) => state.seriesDetails.monitorStatusFilter,
@@ -107,7 +173,7 @@ function createMapStateToProps() {
     (state) => state.settings.downloadClients,
     createClientSideCollectionSelector('episodes'),
     (state) => state.seriesDetails.unifiedGrid.items,
-    (titleSlug, episodes, episodeFiles, allSeries, commands, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, cardSize, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients, sortedEpisodes, unifiedGridItems) => {
+    (titleSlug, episodes, episodeFiles, allSeries, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, cardSize, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients, sortedEpisodes, unifiedGridItems) => {
       const resolvedQualityFilter = qualityFilter ?? { minIndex: 0, maxIndex: 6 };
       const resolvedRuntimeFilter = resolveRuntimeFilter(
         runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
@@ -145,21 +211,6 @@ function createMapStateToProps() {
 
       const previousSeries = sortedSeries[seriesIndex - 1] || _.last(sortedSeries);
       const nextSeries = sortedSeries[seriesIndex + 1] || _.first(sortedSeries);
-      const isSeriesRefreshing = isCommandExecuting(findCommand(commands, { name: commandNames.REFRESH_SERIES, seriesId: series.id }));
-      const seriesRefreshingCommand = findCommand(commands, { name: commandNames.REFRESH_SERIES });
-      const allSeriesRefreshing = (
-        isCommandExecuting(seriesRefreshingCommand) &&
-        !seriesRefreshingCommand.body.seriesId
-      );
-      const isRefreshing = isSeriesRefreshing || allSeriesRefreshing;
-      const isSearching = isCommandExecuting(findCommand(commands, { name: commandNames.SERIES_SEARCH, seriesId: series.id }));
-      const isRenamingFiles = isCommandExecuting(findCommand(commands, { name: commandNames.RENAME_FILES, seriesId: series.id }));
-      const isRenamingSeriesCommand = findCommand(commands, { name: commandNames.RENAME_SERIES });
-      const isRenamingSeries = (
-        isCommandExecuting(isRenamingSeriesCommand) &&
-        isRenamingSeriesCommand.body.seriesIds.indexOf(series.id) > -1
-      );
-
       const isFetching = isEpisodesFetching || isEpisodeFilesFetching;
       const isPopulated = isEpisodesPopulated && isEpisodeFilesPopulated;
       const alternateTitles = filterAlternateTitles(series.alternateTitles, series.title, series.useSceneNumbering);
@@ -169,12 +220,6 @@ function createMapStateToProps() {
       return {
         ...series,
         alternateTitles,
-        isSeriesRefreshing,
-        allSeriesRefreshing,
-        isRefreshing,
-        isSearching,
-        isRenamingFiles,
-        isRenamingSeries,
         isFetching,
         isPopulated,
         episodesError,
@@ -214,12 +259,31 @@ function createMapStateToProps() {
   );
 }
 
+function createMapStateToProps() {
+  return createSelector(
+    createSeriesDetailsSelector(),
+    createCommandStatusSelector(),
+    (details, commandStatus) => {
+      if (!commandStatus) {
+        return details;
+      }
+
+      return {
+        ...details,
+        ...commandStatus
+      };
+    }
+  );
+}
+
 const mapDispatchToProps = (dispatch) => {
   return {
     ...bindActionCreators({
       fetchEpisodes,
+      refreshSeriesEpisodes,
       clearEpisodes,
       fetchEpisodeFiles,
+      refreshSeriesEpisodeFiles,
       clearEpisodeFiles,
       toggleSeriesMonitored,
       fetchQueueDetails,
@@ -235,6 +299,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchSeriesDetailsFilterBounds,
       fetchSeriesDetailsUnifiedGrid,
       gotoSeriesDetailsUnifiedGridFirstPage,
+      refreshSeriesDetailsUnifiedGrid,
       clearSeriesDetailsUnifiedGrid,
       syncSeriesDetailsUnifiedGridSort,
       fetchDownloadClients
@@ -259,7 +324,7 @@ class SeriesDetailsConnector extends Component {
   // Lifecycle
 
   componentDidMount() {
-    registerPagePopulator(this.populate, ['seriesUpdated']);
+    registerPagePopulator(this.onSeriesUpdated, ['seriesUpdated']);
     this.props.resetRuntimeFilterForSeriesLoad();
     this.populate();
 
@@ -292,7 +357,7 @@ class SeriesDetailsConnector extends Component {
       (prevProps.isRenamingFiles && !isRenamingFiles) ||
       (prevProps.isRenamingSeries && !isRenamingSeries)
     ) {
-      this.populate();
+      this.refreshInPlace();
     }
 
     if (prevProps.id !== id) {
@@ -320,12 +385,50 @@ class SeriesDetailsConnector extends Component {
   }
 
   componentWillUnmount() {
-    unregisterPagePopulator(this.populate);
+    unregisterPagePopulator(this.onSeriesUpdated);
     this.unpopulate();
   }
 
   //
   // Control
+
+  onSeriesUpdated = (body) => {
+    if (body) {
+      const updatedSeriesId = body.resource && body.resource.id;
+
+      if (updatedSeriesId !== this.props.id) {
+        return;
+      }
+
+      if (this.props.isSeriesRefreshing || this.props.allSeriesRefreshing) {
+        return;
+      }
+    }
+
+    this.refreshInPlace();
+  };
+
+  refreshInPlace = () => {
+    const seriesId = this.props.id;
+
+    this.props.fetchSeriesDetailsFilterBounds({ seriesId });
+    this.props.fetchQueueDetails({ seriesId });
+    this.refreshForView(this.props.view);
+  };
+
+  refreshForView = (view) => {
+    const seriesId = this.props.id;
+
+    this.props.setSeriesDetailsActiveSeries({ seriesId });
+
+    if (view === 'unifiedGrid') {
+      this.props.refreshSeriesDetailsUnifiedGrid({ seriesId });
+      return;
+    }
+
+    this.props.refreshSeriesEpisodes({ seriesId });
+    this.props.refreshSeriesEpisodeFiles({ seriesId });
+  };
 
   populate = () => {
     const seriesId = this.props.id;
@@ -458,8 +561,10 @@ SeriesDetailsConnector.propTypes = {
   isRenamingFiles: PropTypes.bool.isRequired,
   isRenamingSeries: PropTypes.bool.isRequired,
   fetchEpisodes: PropTypes.func.isRequired,
+  refreshSeriesEpisodes: PropTypes.func.isRequired,
   clearEpisodes: PropTypes.func.isRequired,
   fetchEpisodeFiles: PropTypes.func.isRequired,
+  refreshSeriesEpisodeFiles: PropTypes.func.isRequired,
   clearEpisodeFiles: PropTypes.func.isRequired,
   toggleSeriesMonitored: PropTypes.func.isRequired,
   fetchQueueDetails: PropTypes.func.isRequired,
@@ -473,6 +578,7 @@ SeriesDetailsConnector.propTypes = {
   setSeriesDetailsActiveSeries: PropTypes.func.isRequired,
   fetchSeriesDetailsFilterBounds: PropTypes.func.isRequired,
   fetchSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
+  refreshSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
   gotoSeriesDetailsUnifiedGridFirstPage: PropTypes.func.isRequired,
   clearSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
   resetRuntimeFilterForSeriesLoad: PropTypes.func.isRequired,

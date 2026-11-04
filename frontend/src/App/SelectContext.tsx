@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import useSelectState, { SelectState } from 'Helpers/Hooks/useSelectState';
 import ModelBase from './ModelBase';
 
@@ -38,10 +38,15 @@ export function SelectProvider<T extends ModelBase>(
   props: SelectProviderOptions<T>
 ) {
   const { items } = props;
+  const itemsRef = useRef(items);
   const [state, dispatch] = useSelectState();
+
+  itemsRef.current = items;
 
   const dispatchWrapper = useCallback(
     (action: SelectContextAction) => {
+      const currentItems = itemsRef.current;
+
       switch (action.type) {
         case 'reset':
         case 'removeItem':
@@ -51,15 +56,18 @@ export function SelectProvider<T extends ModelBase>(
         default:
           dispatch({
             ...action,
-            items,
+            items: currentItems,
           });
           break;
       }
     },
-    [items, dispatch]
+    [dispatch]
   );
 
-  const value: [SelectState, SelectDispatch] = [state, dispatchWrapper];
+  const value = useMemo<[SelectState, SelectDispatch]>(
+    () => [state, dispatchWrapper],
+    [state, dispatchWrapper]
+  );
 
   useEffect(() => {
     dispatch({ type: 'updateItems', items });

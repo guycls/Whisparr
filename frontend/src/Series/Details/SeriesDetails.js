@@ -650,8 +650,17 @@ class SeriesDetails extends Component {
                           maxWidth: '100%',
                           height: 'auto',
                           '& .MuiChip-label': {
+                            display: 'inline-flex',
+                            alignItems: 'center',
                             whiteSpace: 'normal',
-                            overflowWrap: 'anywhere'
+                            overflowWrap: 'anywhere',
+                            '& > div': {
+                              display: 'inline-flex',
+                              alignItems: 'center'
+                            },
+                            '& .MuiSvgIcon-root': {
+                              display: 'block'
+                            }
                           }
                         },
                         '& .MuiChip-root.MuiChip-outlined': {

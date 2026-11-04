@@ -103,7 +103,13 @@ function EpisodeQuality(props: EpisodeQualityProps) {
     <span>
       <Label
         className={className}
-        kind={isCutoffNotMet ? kinds.INVERSE : kinds.DEFAULT}
+        kind={
+          resolutionOnly
+            ? kinds.PRIMARY
+            : isCutoffNotMet
+              ? kinds.INVERSE
+              : kinds.DEFAULT
+        }
         title={getTooltip(title, quality, size)}
       >
         {label}
