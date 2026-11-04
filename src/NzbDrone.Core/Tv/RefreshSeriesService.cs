@@ -28,6 +28,7 @@ namespace NzbDrone.Core.Tv
         private readonly IEventAggregator _eventAggregator;
         private readonly IDiskScanService _diskScanService;
         private readonly IHardLinkScanService _hardLinkScanService;
+        private readonly IEpisodeFileOsHashService _episodeFileOsHashService;
         private readonly ICheckIfSeriesShouldBeRefreshed _checkIfSeriesShouldBeRefreshed;
         private readonly IConfigService _configService;
         private readonly IAutoTaggingService _autoTaggingService;
@@ -42,6 +43,7 @@ namespace NzbDrone.Core.Tv
                                     IEventAggregator eventAggregator,
                                     IDiskScanService diskScanService,
                                     IHardLinkScanService hardLinkScanService,
+                                    IEpisodeFileOsHashService episodeFileOsHashService,
                                     ICheckIfSeriesShouldBeRefreshed checkIfSeriesShouldBeRefreshed,
                                     IConfigService configService,
                                     IAutoTaggingService autoTaggingService,
@@ -56,6 +58,7 @@ namespace NzbDrone.Core.Tv
             _eventAggregator = eventAggregator;
             _diskScanService = diskScanService;
             _hardLinkScanService = hardLinkScanService;
+            _episodeFileOsHashService = episodeFileOsHashService;
             _checkIfSeriesShouldBeRefreshed = checkIfSeriesShouldBeRefreshed;
             _configService = configService;
             _autoTaggingService = autoTaggingService;
@@ -213,6 +216,22 @@ namespace NzbDrone.Core.Tv
             }
         }
 
+        private void UpdateOsHashes(Series series)
+        {
+            try
+            {
+                _episodeFileOsHashService.UpdateMissingHashes(series);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e, "Couldn't update OpenSubtitles hashes for {0}", series);
+            }
+        }
+
         private void UpdateTags(Series series)
         {
             var tagsUpdated = _seriesService.UpdateTags(series);
@@ -243,11 +262,13 @@ namespace NzbDrone.Core.Tv
                         series = RefreshSeriesInfo(seriesId);
                         UpdateTags(series);
                         RescanSeries(series, isNew, trigger);
+                        UpdateOsHashes(series);
                         processedSeries.Add(series);
                     }
                     catch (SeriesNotFoundException)
                     {
                         _logger.Error("Series '{0}' (tvdbid {1}) was not found, it may have been removed from TheTVDB.", series.Title, series.TvdbId);
+                        UpdateOsHashes(series);
                         processedSeries.Add(series);
                     }
                     catch (Exception e)
@@ -255,6 +276,7 @@ namespace NzbDrone.Core.Tv
                         _logger.Error(e, "Couldn't refresh info for {0}", series);
                         UpdateTags(series);
                         RescanSeries(series, isNew, trigger);
+                        UpdateOsHashes(series);
                         processedSeries.Add(series);
                         throw;
                     }
@@ -280,6 +302,7 @@ namespace NzbDrone.Core.Tv
                         catch (SeriesNotFoundException)
                         {
                             _logger.Error("Series '{0}' (tvdbid {1}) was not found, it may have been removed from TheTVDB.", seriesLocal.Title, seriesLocal.TvdbId);
+                            UpdateOsHashes(seriesLocal);
                             processedSeries.Add(seriesLocal);
                             continue;
                         }
@@ -290,12 +313,14 @@ namespace NzbDrone.Core.Tv
 
                         UpdateTags(series);
                         RescanSeries(seriesLocal, false, trigger);
+                        UpdateOsHashes(seriesLocal);
                     }
                     else
                     {
                         _logger.Info("Skipping refresh of series: {0}", seriesLocal.Title);
                         UpdateTags(series);
                         RescanSeries(seriesLocal, false, trigger);
+                        UpdateOsHashes(seriesLocal);
                     }
 
                     processedSeries.Add(seriesLocal);

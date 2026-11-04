@@ -79,6 +79,9 @@ namespace NzbDrone.Core.Notifications.Stash
         [FieldDefinition(15, Label = "Full Import Quality Profile", Type = FieldType.QualityProfile, HelpText = "Quality profile used when Import from Stash adds a studio that is not already in Whisparr")]
         public int FullImportQualityProfileId { get; set; }
 
+        [FieldDefinition(16, Label = "Generated Folder", Type = FieldType.Path, HelpText = "Stash generated folder as seen by Whisparr. Stash may see this as /generated inside its own container. Scene previews are read from {folder}/screenshots/{oshash}.mp4")]
+        public string GeneratedFolder { get; set; }
+
         [JsonIgnore]
         public string Address => $"{Host.ToUrlHost()}:{Port}";
 

@@ -7,6 +7,7 @@ import Link from 'Components/Link/Link';
 import Scroller from 'Components/Scroller/Scroller';
 import Episode from 'Episode/Episode';
 import EpisodeScreenshot, {
+  getStashPreviewUrl,
   hasEpisodeScreenshot,
 } from 'Episode/EpisodeScreenshot';
 import formatPerformers from 'Episode/formatPerformers';
@@ -159,6 +160,7 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
   }
 
   const {
+    id,
     title,
     overview,
     seasonNumber,
@@ -254,6 +256,7 @@ function EpisodeSceneDetails(props: EpisodeSceneDetailsProps) {
                   <EpisodeScreenshot
                     images={images}
                     blur={safeForWorkMode}
+                    previewUrl={getStashPreviewUrl(id, episodeFileId)}
                     style={{
                       display: 'block',
                       width: '100%',

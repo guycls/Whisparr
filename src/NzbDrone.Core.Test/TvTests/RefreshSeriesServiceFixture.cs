@@ -65,6 +65,17 @@ namespace NzbDrone.Core.Test.TvTests
         }
 
         [Test]
+        public void should_fill_missing_os_hashes_during_refresh()
+        {
+            GivenNewSeriesInfo(_series);
+
+            Subject.Execute(new RefreshSeriesCommand(new List<int> { _series.Id }));
+
+            Mocker.GetMock<IEpisodeFileOsHashService>()
+                .Verify(s => s.UpdateMissingHashes(It.Is<Series>(series => series.Id == _series.Id)), Times.Once());
+        }
+
+        [Test]
         public void should_enrich_episode_images_during_refresh()
         {
             GivenNewSeriesInfo(_series);

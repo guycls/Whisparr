@@ -28,6 +28,7 @@ namespace NzbDrone.Core.MediaFiles
         List<EpisodeFile> GetFilesByHardLinkIdentity(string volumeId, string fileId);
         EpisodeFile Find(int id);
         void SetHardLinkIdentity(EpisodeFile episodeFile);
+        void SetOsHash(EpisodeFile episodeFile);
     }
 
     public class MediaFileService : IMediaFileService, IHandleAsync<SeriesDeletedEvent>
@@ -142,6 +143,11 @@ namespace NzbDrone.Core.MediaFiles
         public void SetHardLinkIdentity(EpisodeFile episodeFile)
         {
             _mediaFileRepository.SetFields(episodeFile, file => file.HardLinkVolumeId, file => file.HardLinkFileId);
+        }
+
+        public void SetOsHash(EpisodeFile episodeFile)
+        {
+            _mediaFileRepository.SetFields(episodeFile, file => file.OsHash);
         }
 
         public void HandleAsync(SeriesDeletedEvent message)

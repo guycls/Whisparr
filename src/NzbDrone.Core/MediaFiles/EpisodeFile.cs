@@ -21,6 +21,7 @@ namespace NzbDrone.Core.MediaFiles
         public string OriginalFilePath { get; set; }
         public string HardLinkVolumeId { get; set; }
         public string HardLinkFileId { get; set; }
+        public string OsHash { get; set; }
         public string SceneName { get; set; }
         public string ReleaseGroup { get; set; }
         public QualityModel Quality { get; set; }

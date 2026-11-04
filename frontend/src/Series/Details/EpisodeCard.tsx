@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import React, { SyntheticEvent, useCallback } from 'react';
+import React, { SyntheticEvent, useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { sceneMetadataBackground } from 'App/createAppTheme';
 import { useSelect } from 'App/SelectContext';
@@ -11,7 +11,9 @@ import RelativeDateCell from 'Components/Table/Cells/RelativeDateCell';
 import Tooltip from 'Components/Tooltip/Tooltip';
 import { Actor } from 'Episode/Episode';
 import EpisodeDetailsModal from 'Episode/EpisodeDetailsModal';
-import EpisodeScreenshot from 'Episode/EpisodeScreenshot';
+import EpisodeScreenshot, {
+  getStashPreviewUrl,
+} from 'Episode/EpisodeScreenshot';
 import EpisodeSearchActions from 'Episode/EpisodeSearchActions';
 import EpisodeStatus from 'Episode/EpisodeStatus';
 import EpisodeTitleLink from 'Episode/EpisodeTitleLink';
@@ -68,6 +70,7 @@ function EpisodeCard(props: EpisodeCardProps) {
 
   const [isDetailsModalOpen, openDetailsModal, closeDetailsModal] =
     useModalOpenState(false);
+  const [isPreviewActive, setIsPreviewActive] = useState(false);
   const [selectState, selectDispatch] = useSelect();
   const isSelected = !!selectState.selectedState[id];
 
@@ -119,6 +122,7 @@ function EpisodeCard(props: EpisodeCardProps) {
           position: 'relative',
           flexShrink: 0,
           aspectRatio: '16 / 9',
+          overflow: 'hidden',
           bgcolor: 'action.hover',
         }}
       >
@@ -134,9 +138,9 @@ function EpisodeCard(props: EpisodeCardProps) {
               p: 0,
               border: 'none',
               minWidth: 0,
-              '&:hover': { opacity: 0.9 },
+              '&:hover': { opacity: isPreviewActive ? 1 : 0.9 },
             },
-            '& img': {
+            '& img, & video': {
               display: 'block',
               width: '100%',
               height: '100%',
@@ -145,34 +149,41 @@ function EpisodeCard(props: EpisodeCardProps) {
           }}
         >
           <Link onPress={isSelectMode ? onSelectPress : openDetailsModal}>
-            <EpisodeScreenshot images={images} blur={safeForWorkMode} />
+            <EpisodeScreenshot
+              images={images}
+              blur={safeForWorkMode}
+              previewUrl={getStashPreviewUrl(id, episodeFileId)}
+              onPreviewActiveChange={setIsPreviewActive}
+            />
           </Link>
         </Box>
 
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 6,
-            left: isSelectMode ? 42 : 6,
-            zIndex: 2,
-            maxWidth: 'calc(100% - 12px)',
-            '& .MuiChip-root': {
-              height: 22,
-              maxWidth: '100%',
-            },
-            '& .MuiChip-label': {
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            },
-          }}
-        >
-          <EpisodeStatus
-            episodeId={id}
-            episodeEntity={episodeEntity}
-            episodeFileId={episodeFileId || 0}
-            resolutionOnly={true}
-          />
-        </Box>
+        {isPreviewActive ? null : (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 6,
+              left: isSelectMode ? 42 : 6,
+              zIndex: 2,
+              maxWidth: 'calc(100% - 12px)',
+              '& .MuiChip-root': {
+                height: 22,
+                maxWidth: '100%',
+              },
+              '& .MuiChip-label': {
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              },
+            }}
+          >
+            <EpisodeStatus
+              episodeId={id}
+              episodeEntity={episodeEntity}
+              episodeFileId={episodeFileId || 0}
+              resolutionOnly={true}
+            />
+          </Box>
+        )}
       </Box>
 
       <Box

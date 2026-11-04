@@ -21,6 +21,7 @@ import EpisodeDetailsTab from 'Episode/EpisodeDetailsTab';
 import episodeEntities from 'Episode/episodeEntities';
 import EpisodeSceneDetails from 'Episode/EpisodeSceneDetails';
 import EpisodeScreenshot, {
+  getStashPreviewUrl,
   hasEpisodeScreenshot,
 } from 'Episode/EpisodeScreenshot';
 import useEpisode, { EpisodeEntities } from 'Episode/useEpisode';
@@ -114,6 +115,7 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
   } = useSeries(seriesId) as Series;
 
   const {
+    episodeFileId,
     title: sceneTitle,
     monitored,
     images,
@@ -291,6 +293,7 @@ function EpisodeDetailsModalContent(props: EpisodeDetailsModalContentProps) {
                 <EpisodeScreenshot
                   images={images}
                   blur={safeForWorkMode}
+                  previewUrl={getStashPreviewUrl(episodeId, episodeFileId)}
                   style={{
                     display: 'block',
                     width: '100%',
