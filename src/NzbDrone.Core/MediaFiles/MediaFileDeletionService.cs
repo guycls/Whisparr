@@ -23,7 +23,7 @@ namespace NzbDrone.Core.MediaFiles
     }
 
     public class MediaFileDeletionService : IDeleteMediaFiles,
-                                            IHandleAsync<SeriesDeletedEvent>,
+                                            IHandle<SeriesDeletedEvent>,
                                             IHandle<EpisodeFileDeletedEvent>
     {
         private readonly IDiskProvider _diskProvider;
@@ -240,11 +240,13 @@ namespace NzbDrone.Core.MediaFiles
             }
         }
 
-        public void HandleAsync(SeriesDeletedEvent message)
+        [EventHandleOrder(EventHandleOrder.First)]
+        public void Handle(SeriesDeletedEvent message)
         {
             if (message.DeleteFiles)
             {
                 var allSeries = _seriesService.GetAllSeriesPaths();
+                var deleteUnderlyingFile = _configService.DeleteBehavior == DeleteBehavior.UnderlyingFile;
 
                 foreach (var series in message.Series)
                 {
@@ -268,12 +270,34 @@ namespace NzbDrone.Core.MediaFiles
                         }
                     }
 
+                    if (deleteUnderlyingFile)
+                    {
+                        DeleteSeriesHardLinks(series);
+                    }
+
                     if (_diskProvider.FolderExists(series.Path))
                     {
                         _recycleBinProvider.DeleteFolder(series.Path);
                     }
 
                     _eventAggregator.PublishEvent(new DeleteCompletedEvent());
+                }
+            }
+        }
+
+        private void DeleteSeriesHardLinks(Series series)
+        {
+            var episodeFiles = _mediaFileService.GetFilesBySeries(series.Id);
+
+            foreach (var episodeFile in episodeFiles)
+            {
+                try
+                {
+                    DeleteEpisodeFile(series, episodeFile, publishCompleted: false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Unable to delete hard links for {0} while deleting series {1}", episodeFile.RelativePath, series.Title);
                 }
             }
         }

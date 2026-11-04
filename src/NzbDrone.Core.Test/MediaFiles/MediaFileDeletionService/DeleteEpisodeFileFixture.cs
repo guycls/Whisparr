@@ -9,6 +9,7 @@ using NzbDrone.Core.Exceptions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Test.Framework;
 using NzbDrone.Core.Tv;
+using NzbDrone.Core.Tv.Events;
 using NzbDrone.Test.Common;
 
 namespace NzbDrone.Core.Test.MediaFiles.MediaFileDeletionService
@@ -293,6 +294,89 @@ namespace NzbDrone.Core.Test.MediaFiles.MediaFileDeletionService
             Mocker.GetMock<IMediaFileService>().Verify(v => v.Delete(_episodeFile, DeleteMediaFileReason.Manual), Times.Once());
             Mocker.GetMock<IDiskProvider>().Verify(v => v.GetFiles(It.IsAny<string>(), true), Times.Never());
             ExceptionVerification.ExpectedWarns(1);
+        }
+
+        [Test]
+        public void should_delete_hard_links_when_deleting_series_with_underlying_file()
+        {
+            GivenRootFolderExists();
+            GivenRootFolderHasFolders();
+            GivenSeriesFolderExists();
+
+            var extraPath = @"C:\downloads\file.mkv".AsOsAgnostic();
+
+            _episodeFile.HardLinkVolumeId = "vol";
+            _episodeFile.HardLinkFileId = "99";
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.DeleteBehavior)
+                  .Returns(DeleteBehavior.UnderlyingFile);
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetAllSeriesPaths())
+                  .Returns(new Dictionary<int, string>());
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetFilesBySeries(_series.Id))
+                  .Returns(new List<EpisodeFile> { _episodeFile });
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.Find(_episodeFile.Id))
+                  .Returns(_episodeFile);
+
+            Mocker.GetMock<IMediaFileService>()
+                  .Setup(s => s.GetFilesByHardLinkIdentity("vol", "99"))
+                  .Returns(new List<EpisodeFile> { _episodeFile });
+
+            Mocker.GetMock<IEpisodeFileHardLinkRepository>()
+                  .Setup(s => s.GetByEpisodeFileIds(It.IsAny<List<int>>()))
+                  .Returns(new List<EpisodeFileHardLink>
+                  {
+                      new EpisodeFileHardLink { EpisodeFileId = _episodeFile.Id, Path = _episodeFile.Path },
+                      new EpisodeFileHardLink { EpisodeFileId = _episodeFile.Id, Path = extraPath }
+                  });
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.FileExists(It.IsAny<string>()))
+                  .Returns(true);
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.GetFileLinkIdentity(It.IsAny<string>()))
+                  .Returns(new FileLinkIdentity { VolumeId = "vol", FileId = "99", LinkCount = 2 });
+
+            Subject.Handle(new SeriesDeletedEvent(new List<Series> { _series }, true, false));
+
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.DeleteFile(extraPath), Times.Once());
+            Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFolder(_series.Path), Times.Once());
+        }
+
+        [Test]
+        public void should_not_delete_hard_links_when_deleting_series_with_whisparr_entry()
+        {
+            GivenSeriesFolderExists();
+
+            var extraPath = @"C:\downloads\file.mkv".AsOsAgnostic();
+
+            _episodeFile.HardLinkVolumeId = "vol";
+            _episodeFile.HardLinkFileId = "99";
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.DeleteBehavior)
+                  .Returns(DeleteBehavior.WhisparrEntry);
+
+            Mocker.GetMock<ISeriesService>()
+                  .Setup(s => s.GetAllSeriesPaths())
+                  .Returns(new Dictionary<int, string>());
+
+            Mocker.GetMock<IDiskProvider>()
+                  .Setup(s => s.FileExists(extraPath))
+                  .Returns(true);
+
+            Subject.Handle(new SeriesDeletedEvent(new List<Series> { _series }, true, false));
+
+            Mocker.GetMock<IDiskProvider>().Verify(v => v.DeleteFile(extraPath), Times.Never());
+            Mocker.GetMock<IMediaFileService>().Verify(v => v.GetFilesBySeries(It.IsAny<int>()), Times.Never());
+            Mocker.GetMock<IRecycleBinProvider>().Verify(v => v.DeleteFolder(_series.Path), Times.Once());
         }
     }
 }
