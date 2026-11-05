@@ -48,8 +48,21 @@ function createWantedMissingEpisodeSelector(episodeId?: number) {
 
 function createUnifiedGridEpisodeSelector(episodeId?: number) {
   return createSelector(
+    (state: AppState) => state.seriesDetails.unifiedGrid.windowPages,
     (state: AppState) => state.seriesDetails.unifiedGrid.items,
-    (episodes) => {
+    (windowPages, episodes) => {
+      const pages = windowPages || {};
+
+      for (const page of Object.keys(pages)) {
+        const match = pages[Number(page)]?.find(
+          (episode) => episode.id === episodeId
+        );
+
+        if (match) {
+          return match;
+        }
+      }
+
       return episodes.find(({ id }) => id === episodeId);
     }
   );
@@ -71,14 +84,16 @@ function useEpisode(
     case 'wanted.missing':
       selector = createWantedMissingEpisodeSelector;
       break;
-    case 'seriesDetails.unifiedGrid':
-      selector = createUnifiedGridEpisodeSelector;
-      break;
     default:
       break;
   }
 
-  return useSelector(selector(episodeId));
+  const episodeSelector =
+    episodeEntity === 'seriesDetails.unifiedGrid'
+      ? createUnifiedGridEpisodeSelector(episodeId)
+      : selector(episodeId);
+
+  return useSelector(episodeSelector);
 }
 
 export default useEpisode;

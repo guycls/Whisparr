@@ -17,28 +17,50 @@ function LogoLink() {
   return (
     <Link
       to="/"
+      aria-label="Whisparr"
+      underline="none"
       sx={{
         display: 'flex',
         alignItems: 'center',
-        flexShrink: 0
+        flexShrink: 0,
+        gap: 1,
+        color: 'primary.main',
+        textDecoration: 'none'
       }}
     >
       <Box
         sx={{
           width: 32,
           height: 32,
+          flexShrink: 0,
           borderRadius: '50%',
-          boxShadow: (theme) =>
-            theme.palette.mode === 'light'
-              ? '0 0 4px 1px rgba(0, 0, 0, 0.55), 0 0 14px 4px rgba(0, 0, 0, 0.28)'
-              : '0 0 4px 1px rgba(255, 255, 255, 0.75), 0 0 14px 4px rgba(255, 255, 255, 0.32)'
+          boxShadow: (theme) => {
+            if (theme.palette.mode === 'light') {
+              return '0 0 4px 1px rgba(0, 0, 0, 0.55), 0 0 14px 4px rgba(0, 0, 0, 0.28)';
+            }
+
+            return '0 0 4px 1px rgba(255, 255, 255, 0.75), 0 0 14px 4px rgba(255, 255, 255, 0.32)';
+          }
         }}
       >
         <img
           src={`${window.Whisparr.urlBase}/Content/Images/logo.svg`}
-          alt="Whisparr Logo"
+          alt=""
           style={{ display: 'block', width: 32, height: 32, borderRadius: '50%' }}
         />
+      </Box>
+      <Box
+        component="span"
+        sx={{
+          color: 'primary.main',
+          fontFamily: 'Allison, cursive',
+          fontSize: 35,
+          fontWeight: 600,
+          lineHeight: 1,
+          whiteSpace: 'nowrap'
+        }}
+      >
+        Whisparr
       </Box>
     </Link>
   );
@@ -52,9 +74,12 @@ function DesktopLogoSlot() {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         flexShrink: 0,
-        width: sidebarWidth
+        boxSizing: 'border-box',
+        width: 'max-content',
+        minWidth: sidebarWidth,
+        pl: '16px'
       }}
     >
       <LogoLink />

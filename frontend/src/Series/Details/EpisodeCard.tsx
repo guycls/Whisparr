@@ -40,6 +40,9 @@ interface EpisodeCardProps {
   seriesMonitored: boolean;
   isSmallScreen: boolean;
   isSelectMode?: boolean;
+  clampTitle?: boolean;
+  fixedHeight?: number;
+  imageHeight?: number;
   episodeEntity?: EpisodeEntities;
   isBookmarked?: boolean;
   onBookmarkPress?(id: number): void;
@@ -65,6 +68,9 @@ function EpisodeCard(props: EpisodeCardProps) {
     seriesMonitored,
     isSmallScreen,
     isSelectMode = false,
+    clampTitle = false,
+    fixedHeight,
+    imageHeight,
     episodeEntity = 'episodes',
     isBookmarked = false,
     onBookmarkPress,
@@ -126,7 +132,7 @@ function EpisodeCard(props: EpisodeCardProps) {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
+        height: fixedHeight ? `${fixedHeight}px` : '100%',
         overflow: 'hidden',
         border: 1,
         borderColor: 'divider',
@@ -139,7 +145,8 @@ function EpisodeCard(props: EpisodeCardProps) {
         sx={{
           position: 'relative',
           flexShrink: 0,
-          aspectRatio: '16 / 9',
+          aspectRatio: imageHeight ? undefined : '16 / 9',
+          height: imageHeight ? `${imageHeight}px` : undefined,
           overflow: 'hidden',
           bgcolor: 'action.hover',
         }}
@@ -230,6 +237,14 @@ function EpisodeCard(props: EpisodeCardProps) {
               wordBreak: 'break-word',
               fontSize: 14,
               lineHeight: 1.35,
+              ...(clampTitle
+                ? {
+                    display: '-webkit-box',
+                    overflow: 'hidden',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: 2,
+                  }
+                : null),
             }}
           >
             <EpisodeTitleLink

@@ -14,10 +14,10 @@ import { toggleSeriesMonitored } from 'Store/Actions/seriesActions';
 import {
   clearSeriesDetailsUnifiedGrid,
   defaultRuntimeFilter,
+  fetchSeriesDetailsEpisodeOrder,
   fetchSeriesDetailsFilterBounds,
   fetchSeriesDetailsUnifiedGrid,
   gotoSeriesDetailsUnifiedGridFirstPage,
-  refreshSeriesDetailsUnifiedGrid,
   section as seriesDetailsSection,
   setSeriesDetailsActiveSeries,
   setSeriesDetailsCardSize,
@@ -173,7 +173,8 @@ function createSeriesDetailsSelector() {
     (state) => state.settings.downloadClients,
     createClientSideCollectionSelector('episodes'),
     (state) => state.seriesDetails.unifiedGrid.items,
-    (titleSlug, episodes, episodeFiles, allSeries, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, cardSize, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients, sortedEpisodes, unifiedGridItems) => {
+    (state) => state.seriesDetails.unifiedGrid.sceneOrder,
+    (titleSlug, episodes, episodeFiles, allSeries, safeForWorkMode, view, monitorStatusFilter, qualityFilter, runtimeFilter, cardSize, maxEpisodeRuntime, unifiedGridSortKey, unifiedGridSortDirection, episodeSortKey, episodeSortDirection, downloadClients, sortedEpisodes, unifiedGridItems, sceneOrder) => {
       const resolvedQualityFilter = qualityFilter ?? { minIndex: 0, maxIndex: 6 };
       const resolvedRuntimeFilter = resolveRuntimeFilter(
         runtimeFilter ?? { minMinutes: 0, maxMinutes: null },
@@ -246,6 +247,7 @@ function createSeriesDetailsSelector() {
         selectableItems: getSeriesDetailsSelectableEpisodes({
           view,
           unifiedGridItems,
+          sceneOrder,
           episodes: sortedEpisodes.items,
           episodeFiles: episodeFileItems,
           seasons: series.seasons,
@@ -297,9 +299,9 @@ const mapDispatchToProps = (dispatch) => {
       setSeriesDetailsSort,
       setSeriesDetailsActiveSeries,
       fetchSeriesDetailsFilterBounds,
+      fetchSeriesDetailsEpisodeOrder,
       fetchSeriesDetailsUnifiedGrid,
       gotoSeriesDetailsUnifiedGridFirstPage,
-      refreshSeriesDetailsUnifiedGrid,
       clearSeriesDetailsUnifiedGrid,
       syncSeriesDetailsUnifiedGridSort,
       fetchDownloadClients
@@ -422,7 +424,7 @@ class SeriesDetailsConnector extends Component {
     this.props.setSeriesDetailsActiveSeries({ seriesId });
 
     if (view === 'unifiedGrid') {
-      this.props.refreshSeriesDetailsUnifiedGrid({ seriesId });
+      this.props.fetchSeriesDetailsEpisodeOrder({ seriesId });
       return;
     }
 
@@ -577,8 +579,8 @@ SeriesDetailsConnector.propTypes = {
   setSeriesDetailsCardSize: PropTypes.func.isRequired,
   setSeriesDetailsActiveSeries: PropTypes.func.isRequired,
   fetchSeriesDetailsFilterBounds: PropTypes.func.isRequired,
+  fetchSeriesDetailsEpisodeOrder: PropTypes.func.isRequired,
   fetchSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
-  refreshSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
   gotoSeriesDetailsUnifiedGridFirstPage: PropTypes.func.isRequired,
   clearSeriesDetailsUnifiedGrid: PropTypes.func.isRequired,
   resetRuntimeFilterForSeriesLoad: PropTypes.func.isRequired,

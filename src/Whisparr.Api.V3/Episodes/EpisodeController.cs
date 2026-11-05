@@ -94,6 +94,46 @@ namespace Whisparr.Api.V3.Episodes
                 episode => MapToResource(episode, false, true, request.IncludeImages));
         }
 
+        [HttpGet("order")]
+        [Produces("application/json")]
+        public List<EpisodeOrderResource> GetEpisodeOrder([FromQuery] EpisodeOrderRequestResource request)
+        {
+            if (request.SeriesId <= 0)
+            {
+                throw new BadRequestException("seriesId must be provided");
+            }
+
+            var pagingResource = new PagingResource<EpisodeResource>
+            {
+                Page = 1,
+                PageSize = 1,
+                SortKey = NormalizeSortKey(request.SortKey),
+                SortDirection = request.SortDirection ?? SortDirection.Descending
+            };
+            var pagingSpec = pagingResource.MapToPagingSpec<EpisodeResource, Episode>(
+                AllowedSortKeys,
+                "episodes.airDateUtc",
+                SortDirection.Descending);
+            var filter = new EpisodePagedFilter
+            {
+                MonitorStatus = request.MonitorStatus ?? "all",
+                QualityMinIndex = request.QualityMinIndex,
+                QualityMaxIndex = request.QualityMaxIndex,
+                RuntimeMinMinutes = request.RuntimeMinMinutes,
+                RuntimeMaxMinutes = request.RuntimeMaxMinutes
+            };
+
+            return _episodeService.GetEpisodeOrder(request.SeriesId, filter, pagingSpec.SortKey, pagingSpec.SortDirection)
+                .Select(episode => new EpisodeOrderResource
+                {
+                    Id = episode.Id,
+                    Title = episode.Title,
+                    Monitored = episode.Monitored,
+                    EpisodeFileId = episode.EpisodeFileId
+                })
+                .ToList();
+        }
+
         [HttpGet("filterBounds")]
         [Produces("application/json")]
         public EpisodeFilterBoundsResource GetFilterBounds(int seriesId)

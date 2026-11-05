@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import translate from 'Utilities/String/translate';
+import { getScrollParent } from './unifiedGridLayout';
 
 interface BookmarkMarker {
   id: number;
@@ -20,65 +21,42 @@ interface RailRect {
   right: number;
 }
 
+interface SceneOrderEntry {
+  id: number;
+  title?: string;
+}
+
 interface SeriesDetailsBookmarkRailProps {
   anchorRef: RefObject<HTMLElement | null>;
   episodeIds: number[];
-  itemCount: number;
-}
-
-function getScrollParent(node: HTMLElement | null): HTMLElement | null {
-  let current = node?.parentElement ?? null;
-
-  while (current) {
-    const { overflowY } = window.getComputedStyle(current);
-
-    if (
-      overflowY === 'auto' ||
-      overflowY === 'scroll' ||
-      overflowY === 'overlay'
-    ) {
-      return current;
-    }
-
-    current = current.parentElement;
-  }
-
-  return null;
-}
-
-function findCard(scroller: HTMLElement, episodeId: number) {
-  const card = scroller.querySelector(`[data-episode-id="${episodeId}"]`);
-
-  return card instanceof HTMLElement ? card : null;
-}
-
-function scrollCardToTop(scroller: HTMLElement, card: HTMLElement) {
-  const scrollerRect = scroller.getBoundingClientRect();
-  const cardRect = card.getBoundingClientRect();
-  const top = cardRect.top - scrollerRect.top + scroller.scrollTop;
-
-  scroller.scrollTo({
-    top: Math.max(0, top),
-    behavior: 'smooth',
-  });
+  sceneOrder: SceneOrderEntry[];
+  columns: number;
+  rowStride: number;
 }
 
 function SeriesDetailsBookmarkRail(props: SeriesDetailsBookmarkRailProps) {
-  const { anchorRef, episodeIds, itemCount } = props;
+  const { anchorRef, episodeIds, sceneOrder, columns, rowStride } = props;
   const [rail, setRail] = useState<RailRect | null>(null);
   const [markers, setMarkers] = useState<BookmarkMarker[]>([]);
-  const pendingEpisodeIdRef = useRef<number | null>(null);
   const railRef = useRef<RailRect | null>(null);
   const markersRef = useRef<BookmarkMarker[]>([]);
   const episodeIdsRef = useRef(episodeIds);
+  const sceneOrderRef = useRef(sceneOrder);
+  const columnsRef = useRef(columns);
+  const rowStrideRef = useRef(rowStride);
 
   episodeIdsRef.current = episodeIds;
+  sceneOrderRef.current = sceneOrder;
+  columnsRef.current = columns;
+  rowStrideRef.current = rowStride;
 
   const measure = useCallback(() => {
     const anchor = anchorRef.current;
     const scroller = getScrollParent(anchor);
+    const columnCount = columnsRef.current;
+    const stride = rowStrideRef.current;
 
-    if (!anchor || !scroller) {
+    if (!anchor || !scroller || columnCount < 1 || stride <= 0) {
       return;
     }
 
@@ -101,24 +79,32 @@ function SeriesDetailsBookmarkRail(props: SeriesDetailsBookmarkRailProps) {
     }
 
     const scrollHeight = scroller.scrollHeight;
+    const gridOffset =
+      anchor.getBoundingClientRect().top -
+      scrollerRect.top +
+      scroller.scrollTop;
+    const orderIndex = new Map(
+      sceneOrderRef.current.map((entry, index) => [entry.id, index])
+    );
     const nextMarkers: BookmarkMarker[] = [];
 
     if (scrollHeight > 0) {
       episodeIdsRef.current.forEach((id) => {
-        const card = findCard(scroller, id);
+        const index = orderIndex.get(id);
 
-        if (!card) {
+        if (index == null) {
           return;
         }
 
-        const cardRect = card.getBoundingClientRect();
-        const contentY = cardRect.top - scrollerRect.top + scroller.scrollTop;
+        const row = Math.floor(index / columnCount);
+        const contentY = gridOffset + row * stride;
         const top = Math.min(100, Math.max(0, (contentY / scrollHeight) * 100));
+        const entry = sceneOrderRef.current[index];
 
         nextMarkers.push({
           id,
           top,
-          title: card.dataset.episodeTitle || translate('Scene'),
+          title: entry?.title || translate('Scene'),
         });
       });
     }
@@ -140,17 +126,6 @@ function SeriesDetailsBookmarkRail(props: SeriesDetailsBookmarkRailProps) {
     if (markersChanged) {
       markersRef.current = nextMarkers;
       setMarkers(nextMarkers);
-    }
-
-    const pendingId = pendingEpisodeIdRef.current;
-
-    if (pendingId != null) {
-      const card = findCard(scroller, pendingId);
-
-      if (card) {
-        pendingEpisodeIdRef.current = null;
-        scrollCardToTop(scroller, card);
-      }
     }
   }, [anchorRef]);
 
@@ -183,19 +158,30 @@ function SeriesDetailsBookmarkRail(props: SeriesDetailsBookmarkRailProps) {
       scroller.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
     };
-  }, [anchorRef, episodeIds, itemCount, measure]);
+  }, [anchorRef, columns, episodeIds, measure, rowStride, sceneOrder]);
 
   const onMarkerClick = (episodeId: number) => {
-    const scroller = getScrollParent(anchorRef.current);
-    const card = scroller ? findCard(scroller, episodeId) : null;
+    const anchor = anchorRef.current;
+    const scroller = getScrollParent(anchor);
+    const index = sceneOrder.findIndex((entry) => entry.id === episodeId);
 
-    if (!scroller || !card) {
-      pendingEpisodeIdRef.current = episodeId;
+    if (!anchor || !scroller || index < 0 || columns < 1 || rowStride <= 0) {
       return;
     }
 
-    pendingEpisodeIdRef.current = null;
-    scrollCardToTop(scroller, card);
+    const scrollerRect = scroller.getBoundingClientRect();
+    const gridOffset =
+      anchor.getBoundingClientRect().top -
+      scrollerRect.top +
+      scroller.scrollTop;
+    const row = Math.floor(index / columns);
+    const top = Math.max(0, gridOffset + row * rowStride);
+    const distance = Math.abs(top - scroller.scrollTop);
+
+    scroller.scrollTo({
+      top,
+      behavior: distance > scroller.clientHeight ? 'auto' : 'smooth',
+    });
   };
 
   if (!rail || !markers.length) {

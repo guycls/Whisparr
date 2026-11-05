@@ -263,6 +263,34 @@ namespace NzbDrone.Core.Test.TvTests.EpisodeRepositoryTests
         }
 
         [Test]
+        public void should_return_episode_order_matching_paged_ids()
+        {
+            var filter = new EpisodePagedFilter();
+            var pageOneSpec = new PagingSpec<Episode>
+            {
+                Page = 1,
+                PageSize = 2,
+                SortKey = "AirDateUtc",
+                SortDirection = SortDirection.Ascending
+            };
+            var pageTwoSpec = new PagingSpec<Episode>
+            {
+                Page = 2,
+                PageSize = 2,
+                SortKey = "AirDateUtc",
+                SortDirection = SortDirection.Ascending
+            };
+
+            var pageOne = Subject.GetEpisodesPaged(pageOneSpec, _series.Id, filter);
+            var pageTwo = Subject.GetEpisodesPaged(pageTwoSpec, _series.Id, filter);
+            var order = Subject.GetEpisodeOrder(_series.Id, filter, "AirDateUtc", SortDirection.Ascending);
+
+            order.Select(episode => episode.Id).Should().Equal(
+                pageOne.Records.Select(episode => episode.Id).Concat(pageTwo.Records.Select(episode => episode.Id)));
+            order.Should().OnlyContain(episode => episode.Title != null);
+        }
+
+        [Test]
         public void should_return_rounded_max_runtime()
         {
             Subject.GetMaxEpisodeRuntime(_series.Id).Should().Be(90);

@@ -92,7 +92,7 @@ class Page extends Component {
             height: '100%',
             bgcolor: 'background.default',
             backgroundImage: (theme) =>
-              `linear-gradient(to bottom right, ${alpha(theme.palette.primary.main, 0.55)} 0%, ${alpha(theme.palette.primary.main, 0)} 100%)`
+              `linear-gradient(to bottom right, ${alpha(theme.palette.primary.main, 0)} 0%, ${alpha(theme.palette.primary.main, 0.55)} 100%)`
           }}
         >
           <SignalRConnector />

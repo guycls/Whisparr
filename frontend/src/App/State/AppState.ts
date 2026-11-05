@@ -121,6 +121,18 @@ interface AppState {
       lastPageSize: number;
       error: unknown;
       items: Episode[];
+      windowPageSize: number;
+      windowPages: Record<number, Episode[]>;
+      windowFetchingPages: number[];
+      sceneOrder: {
+        id: number;
+        title: string;
+        monitored: boolean;
+        episodeFileId: number;
+      }[];
+      isSceneOrderFetching: boolean;
+      isSceneOrderPopulated: boolean;
+      sceneOrderError: unknown;
     };
   };
   seriesIndex: SeriesIndexAppState;

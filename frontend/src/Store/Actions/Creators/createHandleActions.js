@@ -22,6 +22,71 @@ function createItemMap(data) {
   }, {});
 }
 
+function patchUnifiedGridWindow(newState, id, otherProps) {
+  let changed = false;
+
+  if (newState.windowPages) {
+    const nextPages = {};
+
+    Object.keys(newState.windowPages).forEach((page) => {
+      const records = newState.windowPages[page] || [];
+      const recordIndex = records.findIndex((record) => record.id === id);
+
+      if (recordIndex === -1) {
+        nextPages[page] = records;
+        return;
+      }
+
+      const record = records[recordIndex];
+      const nextRecord = { ...record, ...otherProps };
+
+      if (_.isEqual(record, nextRecord)) {
+        nextPages[page] = records;
+        return;
+      }
+
+      changed = true;
+      const nextRecords = records.slice();
+      nextRecords[recordIndex] = nextRecord;
+      nextPages[page] = nextRecords;
+    });
+
+    if (changed) {
+      newState.windowPages = nextPages;
+    }
+  }
+
+  if (Array.isArray(newState.sceneOrder)) {
+    const orderIndex = newState.sceneOrder.findIndex((record) => record.id === id);
+
+    if (orderIndex >= 0) {
+      const record = newState.sceneOrder[orderIndex];
+      const nextRecord = { ...record };
+
+      if (otherProps.monitored != null) {
+        nextRecord.monitored = otherProps.monitored;
+      }
+
+      if (otherProps.episodeFileId != null) {
+        nextRecord.episodeFileId = otherProps.episodeFileId;
+      }
+
+      if (otherProps.title != null) {
+        nextRecord.title = otherProps.title;
+      }
+
+      if (!_.isEqual(record, nextRecord)) {
+        const sceneOrder = newState.sceneOrder.slice();
+        sceneOrder[orderIndex] = nextRecord;
+        newState.sceneOrder = sceneOrder;
+        changed = true;
+      }
+    }
+  }
+
+  return changed;
+}
+
 export default function createHandleActions(handlers, defaultState, section) {
   return handleActions({
 
@@ -76,10 +141,9 @@ export default function createHandleActions(handlers, defaultState, section) {
         // existing array may not have an itemMap, the array is probably empty,
         // but on the offchance it's not create a new item map based on the
         // items in the array.
-        const itemMap = newState.itemMap ?? createItemMap(items);
+        const itemMap = newState.itemMap ?? createItemMap(items || []);
         const index = payload.id in itemMap ? itemMap[payload.id] : -1;
-
-        newState.items = [...items];
+        let itemsChanged = false;
 
         // TODO: Move adding to it's own reducer
         if (index >= 0) {
@@ -88,16 +152,22 @@ export default function createHandleActions(handlers, defaultState, section) {
 
           // if the item to update is equal to existing, then don't actually update
           // to prevent costly reselections
-          if (_.isEqual(item, newItem)) {
-            return state;
+          if (!_.isEqual(item, newItem)) {
+            newState.items = [...items];
+            newState.items.splice(index, 1, newItem);
+            itemsChanged = true;
           }
-
-          newState.items.splice(index, 1, newItem);
         } else if (!updateOnly) {
-          const newIndex = newState.items.push({ ...otherProps }) - 1;
-
+          newState.items = [...(items || []), { ...otherProps }];
           newState.itemMap = { ...itemMap };
-          newState.itemMap[payload.id] = newIndex;
+          newState.itemMap[payload.id] = newState.items.length - 1;
+          itemsChanged = true;
+        }
+
+        const windowChanged = patchUnifiedGridWindow(newState, payload.id, otherProps);
+
+        if (!itemsChanged && !windowChanged) {
+          return state;
         }
 
         return updateSectionState(state, payloadSection, newState);

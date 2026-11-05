@@ -27,6 +27,7 @@ export function filterEpisodesByMonitorStatus(episodes, monitorStatusFilter) {
 function getSeriesDetailsSelectableEpisodes({
   view,
   unifiedGridItems,
+  sceneOrder,
   episodes,
   episodeFiles,
   seasons,
@@ -36,6 +37,10 @@ function getSeriesDetailsSelectableEpisodes({
   maxEpisodeRuntime
 }) {
   if (view === 'unifiedGrid') {
+    if (sceneOrder && sceneOrder.length) {
+      return sceneOrder;
+    }
+
     return unifiedGridItems || [];
   }
 

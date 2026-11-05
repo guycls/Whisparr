@@ -1,5 +1,9 @@
 import { createAction } from 'redux-actions';
 import { sortDirections } from 'Helpers/Props';
+import {
+  pruneUnifiedGridWindowPages,
+  UNIFIED_GRID_WINDOW_PAGE_SIZE
+} from 'Series/Details/unifiedGridLayout';
 import { createThunk, handleThunks } from 'Store/thunks';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
 import {
@@ -55,7 +59,14 @@ export const defaultState = {
     totalPages: 0,
     lastPageSize: 0,
     error: null,
-    items: []
+    items: [],
+    windowPageSize: UNIFIED_GRID_WINDOW_PAGE_SIZE,
+    windowPages: {},
+    windowFetchingPages: [],
+    sceneOrder: [],
+    isSceneOrderFetching: false,
+    isSceneOrderPopulated: false,
+    sceneOrderError: null
   },
   sceneBookmarks: {
     seriesId: 0,
@@ -94,6 +105,8 @@ export const SET_SERIES_DETAILS_RUNTIME_FILTER = 'seriesDetails/setSeriesDetails
 export const SET_SERIES_DETAILS_CARD_SIZE = 'seriesDetails/setSeriesDetailsCardSize';
 export const SET_SERIES_DETAILS_ACTIVE_SERIES = 'seriesDetails/setSeriesDetailsActiveSeries';
 export const FETCH_SERIES_DETAILS_FILTER_BOUNDS = 'seriesDetails/fetchSeriesDetailsFilterBounds';
+export const FETCH_SERIES_DETAILS_EPISODE_ORDER = 'seriesDetails/fetchSeriesDetailsEpisodeOrder';
+export const FETCH_SERIES_DETAILS_UNIFIED_GRID_WINDOW = 'seriesDetails/fetchSeriesDetailsUnifiedGridWindow';
 export const FETCH_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/fetchSeriesDetailsUnifiedGrid';
 export const REFRESH_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/refreshSeriesDetailsUnifiedGrid';
 export const FETCH_MORE_SERIES_DETAILS_UNIFIED_GRID = 'seriesDetails/fetchMoreSeriesDetailsUnifiedGrid';
@@ -114,6 +127,8 @@ export const setSeriesDetailsRuntimeFilter = createAction(SET_SERIES_DETAILS_RUN
 export const setSeriesDetailsCardSize = createAction(SET_SERIES_DETAILS_CARD_SIZE);
 export const setSeriesDetailsActiveSeries = createAction(SET_SERIES_DETAILS_ACTIVE_SERIES);
 export const fetchSeriesDetailsFilterBounds = createThunk(FETCH_SERIES_DETAILS_FILTER_BOUNDS);
+export const fetchSeriesDetailsEpisodeOrder = createThunk(FETCH_SERIES_DETAILS_EPISODE_ORDER);
+export const fetchSeriesDetailsUnifiedGridWindow = createThunk(FETCH_SERIES_DETAILS_UNIFIED_GRID_WINDOW);
 export const fetchSeriesDetailsUnifiedGrid = createThunk(FETCH_SERIES_DETAILS_UNIFIED_GRID);
 export const refreshSeriesDetailsUnifiedGrid = createThunk(REFRESH_SERIES_DETAILS_UNIFIED_GRID);
 export const fetchMoreSeriesDetailsUnifiedGrid = createThunk(FETCH_MORE_SERIES_DETAILS_UNIFIED_GRID);
@@ -239,6 +254,60 @@ function unifiedGridFetchDataAugmenter(getState, payload, data) {
 }
 
 let unifiedGridRefreshId = 0;
+let sceneOrderGeneration = 0;
+let windowRange = {
+  generation: 0,
+  startPage: 1,
+  endPage: 1
+};
+const windowRequestAborts = new Map();
+
+function isUnifiedGridWindowPageNear(page, startPage, endPage) {
+  return page >= startPage - 1 && page <= endPage + 1;
+}
+
+function abortAllUnifiedGridWindowRequests() {
+  windowRequestAborts.forEach((abortRequest) => {
+    abortRequest();
+  });
+  windowRequestAborts.clear();
+}
+
+function abortUnifiedGridWindowRequestsOutside(startPage, endPage, getState, dispatch) {
+  const abortedPages = [];
+
+  Array.from(windowRequestAborts.entries()).forEach(([page, abortRequest]) => {
+    if (isUnifiedGridWindowPageNear(page, startPage, endPage)) {
+      return;
+    }
+
+    abortRequest();
+    windowRequestAborts.delete(page);
+    abortedPages.push(page);
+  });
+
+  if (!abortedPages.length) {
+    return;
+  }
+
+  const current = getState().seriesDetails.unifiedGrid;
+
+  dispatch(set({
+    section: 'seriesDetails.unifiedGrid',
+    windowFetchingPages: (current.windowFetchingPages || []).filter((item) => !abortedPages.includes(item))
+  }));
+}
+
+function emptyUnifiedGridWindow() {
+  return {
+    windowPages: {},
+    windowFetchingPages: [],
+    sceneOrder: [],
+    isSceneOrderFetching: false,
+    isSceneOrderPopulated: false,
+    sceneOrderError: null
+  };
+}
 
 function nextUnifiedGridRefreshId() {
   unifiedGridRefreshId += 1;
@@ -434,6 +503,177 @@ export const actionHandlers = handleThunks({
     applyEpisodeSortToUnifiedGrid(getState, dispatch);
   },
 
+  [FETCH_SERIES_DETAILS_EPISODE_ORDER]: function(getState, payload, dispatch) {
+    sceneOrderGeneration += 1;
+    const generation = sceneOrderGeneration;
+    abortAllUnifiedGridWindowRequests();
+    const seriesId = payload.seriesId || getState().seriesDetails.activeSeriesId;
+
+    dispatch(set({
+      section: 'seriesDetails.unifiedGrid',
+      ...emptyUnifiedGridWindow(),
+      isSceneOrderFetching: true
+    }));
+
+    if (!seriesId) {
+      dispatch(set({
+        section: 'seriesDetails.unifiedGrid',
+        isSceneOrderFetching: false,
+        isSceneOrderPopulated: true,
+        sceneOrder: []
+      }));
+
+      return;
+    }
+
+    const data = {};
+    unifiedGridFetchDataAugmenter(getState, { seriesId }, data);
+    data.sortKey = getState().seriesDetails.unifiedGrid.sortKey;
+    data.sortDirection = getState().seriesDetails.unifiedGrid.sortDirection;
+    delete data.includeImages;
+
+    const promise = createAjaxRequest({
+      url: '/episode/order',
+      data
+    }).request;
+
+    promise.done((response) => {
+      if (generation !== sceneOrderGeneration) {
+        return;
+      }
+
+      dispatch(set({
+        section: 'seriesDetails.unifiedGrid',
+        sceneOrder: response || [],
+        isSceneOrderFetching: false,
+        isSceneOrderPopulated: true,
+        sceneOrderError: null
+      }));
+    });
+
+    promise.fail((xhr) => {
+      if (generation !== sceneOrderGeneration) {
+        return;
+      }
+
+      dispatch(set({
+        section: 'seriesDetails.unifiedGrid',
+        isSceneOrderFetching: false,
+        isSceneOrderPopulated: false,
+        sceneOrderError: xhr
+      }));
+    });
+  },
+
+  [FETCH_SERIES_DETAILS_UNIFIED_GRID_WINDOW]: function(getState, payload, dispatch) {
+    const generation = sceneOrderGeneration;
+    const page = payload.page;
+    const startPage = payload.startPage || page;
+    const endPage = payload.endPage || page;
+    const seriesId = payload.seriesId || getState().seriesDetails.activeSeriesId;
+
+    windowRange = {
+      generation,
+      startPage,
+      endPage
+    };
+    abortUnifiedGridWindowRequestsOutside(startPage, endPage, getState, dispatch);
+
+    if (!seriesId || !page) {
+      return;
+    }
+
+    const unifiedGrid = getState().seriesDetails.unifiedGrid;
+    const pageSize = unifiedGrid.windowPageSize || UNIFIED_GRID_WINDOW_PAGE_SIZE;
+    const windowPages = unifiedGrid.windowPages || {};
+    const windowFetchingPages = unifiedGrid.windowFetchingPages || [];
+
+    if (windowPages[page] || windowFetchingPages.includes(page)) {
+      dispatch(set({
+        section: 'seriesDetails.unifiedGrid',
+        windowPages: pruneUnifiedGridWindowPages(windowPages, startPage, endPage)
+      }));
+
+      return;
+    }
+
+    dispatch(set({
+      section: 'seriesDetails.unifiedGrid',
+      windowFetchingPages: windowFetchingPages.concat(page),
+      windowPages: pruneUnifiedGridWindowPages(windowPages, startPage, endPage)
+    }));
+
+    const data = {
+      page,
+      pageSize
+    };
+    unifiedGridFetchDataAugmenter(getState, { seriesId }, data);
+    data.sortKey = getState().seriesDetails.unifiedGrid.sortKey;
+    data.sortDirection = getState().seriesDetails.unifiedGrid.sortDirection;
+
+    const { request, abortRequest } = createAjaxRequest({
+      url: '/episode/paged',
+      data
+    });
+
+    windowRequestAborts.set(page, abortRequest);
+
+    const releaseWindowRequest = () => {
+      if (windowRequestAborts.get(page) === abortRequest) {
+        windowRequestAborts.delete(page);
+      }
+    };
+
+    request.done((response) => {
+      releaseWindowRequest();
+
+      if (generation !== sceneOrderGeneration || generation !== windowRange.generation) {
+        return;
+      }
+
+      if (!isUnifiedGridWindowPageNear(page, windowRange.startPage, windowRange.endPage)) {
+        const current = getState().seriesDetails.unifiedGrid;
+        dispatch(set({
+          section: 'seriesDetails.unifiedGrid',
+          windowFetchingPages: (current.windowFetchingPages || []).filter((item) => item !== page)
+        }));
+
+        return;
+      }
+
+      const current = getState().seriesDetails.unifiedGrid;
+      const nextPages = {
+        ...(current.windowPages || {}),
+        [page]: response.records || []
+      };
+
+      dispatch(set({
+        section: 'seriesDetails.unifiedGrid',
+        windowPages: pruneUnifiedGridWindowPages(nextPages, windowRange.startPage, windowRange.endPage),
+        windowFetchingPages: (current.windowFetchingPages || []).filter((item) => item !== page)
+      }));
+    });
+
+    request.fail((xhr) => {
+      releaseWindowRequest();
+
+      if (xhr && xhr.aborted) {
+        return;
+      }
+
+      if (generation !== sceneOrderGeneration) {
+        return;
+      }
+
+      const current = getState().seriesDetails.unifiedGrid;
+
+      dispatch(set({
+        section: 'seriesDetails.unifiedGrid',
+        windowFetchingPages: (current.windowFetchingPages || []).filter((item) => item !== page)
+      }));
+    });
+  },
+
   [FETCH_SERIES_SCENE_BOOKMARKS]: function(getState, payload, dispatch) {
     const seriesId = payload.seriesId;
     sceneBookmarkFetchId += 1;
@@ -607,7 +847,8 @@ export const reducers = createHandleActions({
       totalPages: 0,
       totalRecords: 0,
       lastPageSize: 0,
-      page: 1
+      page: 1,
+      ...emptyUnifiedGridWindow()
     }
   )
 

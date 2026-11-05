@@ -23,6 +23,7 @@ namespace NzbDrone.Core.Tv
         List<Episode> GetEpisodeByFileId(int fileId);
         List<Episode> EpisodesWithFiles(int seriesId);
         PagingSpec<Episode> GetEpisodesPaged(PagingSpec<Episode> pagingSpec, int seriesId, EpisodePagedFilter filter);
+        List<EpisodeOrder> GetEpisodeOrder(int seriesId, EpisodePagedFilter filter, string sortKey, SortDirection sortDirection);
         int GetMaxEpisodeRuntime(int seriesId);
         PagingSpec<Episode> EpisodesWithoutFiles(PagingSpec<Episode> pagingSpec, bool includeSpecials);
         PagingSpec<Episode> EpisodesWhereCutoffUnmet(PagingSpec<Episode> pagingSpec, List<QualitiesBelowCutoff> qualitiesBelowCutoff, List<LanguagesBelowCutoff> languagesBelowCutoff, bool includeSpecials);
@@ -137,9 +138,56 @@ namespace NzbDrone.Core.Tv
                 recordsBuilder = recordsBuilder.LeftJoin<Episode, EpisodeFile>((e, ef) => e.EpisodeFileId == ef.Id);
             }
 
-            pagingSpec.Records = GetPagedRecords(recordsBuilder, pagingSpec, QueryWithEpisodeFile);
+            pagingSpec.Records = GetStablePagedEpisodeRecords(recordsBuilder, pagingSpec);
 
             return pagingSpec;
+        }
+
+        public List<EpisodeOrder> GetEpisodeOrder(int seriesId, EpisodePagedFilter filter, string sortKey, SortDirection sortDirection)
+        {
+            var builder = BuildOrderedEpisodeBuilder(seriesId, filter, sortKey, sortDirection);
+            builder.Select("\"Episodes\".\"Id\" AS \"Id\", \"Episodes\".\"Title\" AS \"Title\", \"Episodes\".\"Monitored\" AS \"Monitored\", \"Episodes\".\"EpisodeFileId\" AS \"EpisodeFileId\"");
+
+            var sql = builder.AddTemplate("SELECT /**select**/ FROM \"Episodes\" /**join**/ /**innerjoin**/ /**leftjoin**/ /**where**/ /**groupby**/ /**having**/ /**orderby**/");
+
+            return _database.Query<EpisodeOrder>(sql.RawSql, sql.Parameters).ToList();
+        }
+
+        private List<Episode> GetStablePagedEpisodeRecords(SqlBuilder builder, PagingSpec<Episode> pagingSpec)
+        {
+            AddFilters(builder, pagingSpec);
+            builder.OrderBy(BuildEpisodeOrderBy(pagingSpec.SortKey, pagingSpec.SortDirection, pagingSpec.Page, pagingSpec.PageSize));
+
+            return QueryWithEpisodeFile(builder).ToList();
+        }
+
+        private SqlBuilder BuildOrderedEpisodeBuilder(int seriesId, EpisodePagedFilter filter, string sortKey, SortDirection sortDirection)
+        {
+            var builder = BuildEpisodesPagedBuilder(seriesId, filter);
+
+            if (!filter.RequiresEpisodeFileJoin)
+            {
+                builder = builder.LeftJoin<Episode, EpisodeFile>((e, ef) => e.EpisodeFileId == ef.Id);
+            }
+
+            return builder.OrderBy(BuildEpisodeOrderBy(sortKey, sortDirection, 0, 0));
+        }
+
+        private static string BuildEpisodeOrderBy(string sortKey, SortDirection sortDirection, int page, int pageSize)
+        {
+            var resolvedSortKey = TableMapping.Mapper.GetSortKey(string.IsNullOrWhiteSpace(sortKey) ? "Id" : sortKey);
+            var direction = sortDirection == SortDirection.Descending ? "DESC" : "ASC";
+            var table = string.IsNullOrWhiteSpace(resolvedSortKey.Table) ? "Episodes" : resolvedSortKey.Table;
+            var orderBy = $"\"{table}\".\"{resolvedSortKey.Column}\" {direction}, \"Episodes\".\"Id\" ASC";
+
+            if (pageSize <= 0)
+            {
+                return orderBy;
+            }
+
+            var pagingOffset = Math.Max(page - 1, 0) * pageSize;
+
+            return $"{orderBy} LIMIT {pageSize} OFFSET {pagingOffset}";
         }
 
         private SqlBuilder BuildEpisodesPagedBuilder(int seriesId, EpisodePagedFilter filter)

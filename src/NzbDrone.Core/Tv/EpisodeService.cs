@@ -28,6 +28,7 @@ namespace NzbDrone.Core.Tv
         List<Episode> GetEpisodesBySeason(int seriesId, int seasonNumber);
         List<Episode> EpisodesWithFiles(int seriesId);
         PagingSpec<Episode> GetEpisodesPaged(PagingSpec<Episode> pagingSpec, int seriesId, EpisodePagedFilter filter);
+        List<EpisodeOrder> GetEpisodeOrder(int seriesId, EpisodePagedFilter filter, string sortKey, SortDirection sortDirection);
         int GetMaxEpisodeRuntime(int seriesId);
         PagingSpec<Episode> EpisodesWithoutFiles(PagingSpec<Episode> pagingSpec);
         List<Episode> GetEpisodesByFileId(int episodeFileId);
@@ -214,6 +215,11 @@ namespace NzbDrone.Core.Tv
         public PagingSpec<Episode> GetEpisodesPaged(PagingSpec<Episode> pagingSpec, int seriesId, EpisodePagedFilter filter)
         {
             return _episodeRepository.GetEpisodesPaged(pagingSpec, seriesId, filter);
+        }
+
+        public List<EpisodeOrder> GetEpisodeOrder(int seriesId, EpisodePagedFilter filter, string sortKey, SortDirection sortDirection)
+        {
+            return _episodeRepository.GetEpisodeOrder(seriesId, filter, sortKey, sortDirection);
         }
 
         public int GetMaxEpisodeRuntime(int seriesId)
