@@ -41,6 +41,8 @@ function EpisodeDetailsModal(props: EpisodeDetailsModalProps) {
         height: 'min(90vh, 900px)',
         overflow: 'hidden',
         padding: 0,
+        backgroundColor: 'transparent',
+        backgroundImage: 'none',
       }}
       onModalClose={onModalClose}
     >

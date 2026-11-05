@@ -54,8 +54,8 @@ function LogoLink() {
         sx={{
           color: 'primary.main',
           fontFamily: 'Allison, cursive',
-          fontSize: 35,
-          fontWeight: 600,
+          fontSize: 50,
+          fontWeight: 400,
           lineHeight: 1,
           whiteSpace: 'nowrap'
         }}

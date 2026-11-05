@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import MuiIconButton from '@mui/material/IconButton';
 import React, { useCallback, useState } from 'react';
 import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
 import Icon from 'Components/Icon';
@@ -131,6 +132,7 @@ interface InteractiveSearchRowProps {
   onForceDownloadPress?(...args: unknown[]): void;
   stackedTitleLayout?: boolean;
   stackedColumnCount?: number;
+  cardLayout?: boolean;
 }
 
 function InteractiveSearchRow(props: InteractiveSearchRowProps) {
@@ -176,6 +178,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     onForceDownloadPress,
     stackedTitleLayout = false,
     stackedColumnCount = 0,
+    cardLayout = false,
   } = props;
 
   const [isConfirmGrabModalOpen, setIsConfirmGrabModalOpen] = useState(false);
@@ -300,24 +303,30 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'space-between',
-        wordBreak: stackedTitleLayout ? 'normal' : 'break-all',
-        overflowWrap: stackedTitleLayout ? 'anywhere' : undefined,
+        gap: 1,
+        minWidth: 0,
+        wordBreak: stackedTitleLayout || cardLayout ? 'normal' : 'break-all',
+        overflowWrap: stackedTitleLayout || cardLayout ? 'anywhere' : undefined,
       }}
     >
-      <Link to={infoUrl}>{title}</Link>
-      <ReleaseSceneIndicator
-        seasonNumber={mappedSeasonNumber}
-        episodeNumbers={mappedEpisodeNumbers}
-        absoluteEpisodeNumbers={mappedAbsoluteEpisodeNumbers}
-        sceneSeasonNumber={seasonNumber}
-        sceneEpisodeNumbers={episodeNumbers}
-        sceneAbsoluteEpisodeNumbers={absoluteEpisodeNumbers}
-        sceneMapping={sceneMapping}
-        episodeRequested={episodeRequested}
-        isDaily={isDaily}
-      />
+      <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
+        <Link to={infoUrl}>{title}</Link>
+      </Box>
+      <Box sx={{ flex: '0 0 auto' }}>
+        <ReleaseSceneIndicator
+          seasonNumber={mappedSeasonNumber}
+          episodeNumbers={mappedEpisodeNumbers}
+          absoluteEpisodeNumbers={mappedAbsoluteEpisodeNumbers}
+          sceneSeasonNumber={seasonNumber}
+          sceneEpisodeNumbers={episodeNumbers}
+          sceneAbsoluteEpisodeNumbers={absoluteEpisodeNumbers}
+          sceneMapping={sceneMapping}
+          episodeRequested={episodeRequested}
+          isDaily={isDaily}
+        />
+      </Box>
     </Box>
   );
 
@@ -338,11 +347,67 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
     </>
   );
 
+  const actionButtons = (
+    <>
+      <SpinnerIconButton
+        name={getDownloadIcon(isGrabbing, isGrabbed, grabError)}
+        kind={getDownloadKind(isGrabbed, grabError)}
+        title={getDownloadTooltip(isGrabbing, isGrabbed, grabError)}
+        isSpinning={isGrabbing}
+        onPress={onGrabPressWrapper}
+      />
+
+      {onForceDownloadPress && (
+        <Link
+          sx={actionContentSx}
+          title={translate('ForceDownload')}
+          onPress={onForceDownloadPressWrapper}
+        >
+          <Box
+            component="span"
+            sx={{ position: 'absolute', top: 4, left: 0, textAlign: 'center' }}
+          >
+            <Icon name={icons.ACTIONS} size={12} />
+          </Box>
+
+          <Box
+            component="span"
+            sx={{ position: 'absolute', top: 7, left: 8, textAlign: 'center' }}
+          >
+            <Icon name={icons.CIRCLE_DOWN} size={10} />
+          </Box>
+        </Link>
+      )}
+
+      <Link
+        sx={actionContentSx}
+        title={translate('OverrideAndAddToDownloadQueue')}
+        onPress={onOverridePress}
+      >
+        <Box
+          component="span"
+          sx={{ position: 'absolute', top: 4, left: 0, textAlign: 'center' }}
+        >
+          <Icon name={icons.INTERACTIVE} size={12} />
+        </Box>
+
+        <Box
+          component="span"
+          sx={{ position: 'absolute', top: 7, left: 8, textAlign: 'center' }}
+        >
+          <Icon name={icons.CIRCLE_DOWN} size={10} />
+        </Box>
+      </Link>
+    </>
+  );
+
   const trailingCells = (
     <>
       <TableRowCell sx={{ width: 85 }}>{indexer}</TableRowCell>
 
-      <TableRowCell sx={{ whiteSpace: 'nowrap' }}>{formatBytes(size)}</TableRowCell>
+      <TableRowCell sx={{ whiteSpace: 'nowrap' }}>
+        {formatBytes(size)}
+      </TableRowCell>
 
       <TableRowCell sx={{ width: 75 }}>
         {protocol === 'torrent' ? (
@@ -397,57 +462,7 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
         ) : null}
       </TableRowCell>
 
-      <TableRowCell sx={{ width: 110 }}>
-        <SpinnerIconButton
-          name={getDownloadIcon(isGrabbing, isGrabbed, grabError)}
-          kind={getDownloadKind(isGrabbed, grabError)}
-          title={getDownloadTooltip(isGrabbing, isGrabbed, grabError)}
-          isSpinning={isGrabbing}
-          onPress={onGrabPressWrapper}
-        />
-
-        {onForceDownloadPress && (
-          <Link
-            sx={actionContentSx}
-            title={translate('ForceDownload')}
-            onPress={onForceDownloadPressWrapper}
-          >
-            <Box component="span" sx={{ position: 'absolute', top: 4, left: 0, textAlign: 'center' }}>
-              <Icon
-                name={icons.ACTIONS}
-                size={12}
-              />
-            </Box>
-
-            <Box component="span" sx={{ position: 'absolute', top: 7, left: 8, textAlign: 'center' }}>
-              <Icon
-                name={icons.CIRCLE_DOWN}
-                size={10}
-              />
-            </Box>
-          </Link>
-        )}
-
-        <Link
-          sx={actionContentSx}
-          title={translate('OverrideAndAddToDownloadQueue')}
-          onPress={onOverridePress}
-        >
-          <Box component="span" sx={{ position: 'absolute', top: 4, left: 0, textAlign: 'center' }}>
-            <Icon
-              name={icons.INTERACTIVE}
-              size={12}
-            />
-          </Box>
-
-          <Box component="span" sx={{ position: 'absolute', top: 7, left: 8, textAlign: 'center' }}>
-            <Icon
-              name={icons.CIRCLE_DOWN}
-              size={10}
-            />
-          </Box>
-        </Link>
-      </TableRowCell>
+      <TableRowCell sx={{ width: 110 }}>{actionButtons}</TableRowCell>
     </>
   );
 
@@ -480,6 +495,225 @@ function InteractiveSearchRow(props: InteractiveSearchRowProps) {
       />
     </>
   );
+
+  if (cardLayout) {
+    const customFormatScoreText = formatCustomFormatScore(
+      customFormatScore,
+      customFormats.length
+    );
+
+    return (
+      <>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            gap: 0.5,
+            minWidth: 0,
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 1,
+            px: 1.5,
+            py: 1.25,
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0.75,
+              flex: '1 1 auto',
+              minWidth: 0,
+            }}
+          >
+            <Box sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+              <Link to={infoUrl}>{title}</Link>
+            </Box>
+
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 0.75,
+                minWidth: 0,
+                color: 'text.secondary',
+                fontSize: 13,
+              }}
+            >
+              <ProtocolLabel protocol={protocol} />
+
+              <Box
+                component="span"
+                title={formatDateTime(publishDate, longDateFormat, timeFormat, {
+                  includeSeconds: true,
+                })}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                {formatAge(age, ageHours, ageMinutes)}
+              </Box>
+
+              <Box component="span" sx={{ overflowWrap: 'anywhere' }}>
+                {indexer}
+              </Box>
+
+              <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+                {formatBytes(size)}
+              </Box>
+
+              {protocol === 'torrent' ? (
+                <Peers seeders={seeders} leechers={leechers} />
+              ) : null}
+
+              <EpisodeLanguages languages={languages} />
+              <EpisodeQuality quality={quality} showRevision={true} />
+
+              {customFormatScoreText ? (
+                <Tooltip
+                  anchor={customFormatScoreText}
+                  tooltip={<EpisodeFormats formats={customFormats} />}
+                  position={tooltipPositions.BOTTOM}
+                />
+              ) : null}
+
+              {indexerFlags ? (
+                <Popover
+                  anchor={<Icon name={icons.FLAG} kind={kinds.PRIMARY} />}
+                  title={translate('IndexerFlags')}
+                  body={<IndexerFlags indexerFlags={indexerFlags} />}
+                  position={tooltipPositions.BOTTOM}
+                />
+              ) : null}
+
+              {rejections.length ? (
+                <Popover
+                  anchor={<Icon name={icons.DANGER} kind={kinds.DANGER} />}
+                  title={translate('ReleaseRejected')}
+                  body={
+                    <ul>
+                      {rejections.map((rejection, index) => {
+                        return <li key={index}>{rejection}</li>;
+                      })}
+                    </ul>
+                  }
+                  position={tooltipPositions.BOTTOM}
+                />
+              ) : null}
+
+              <ReleaseSceneIndicator
+                seasonNumber={mappedSeasonNumber}
+                episodeNumbers={mappedEpisodeNumbers}
+                absoluteEpisodeNumbers={mappedAbsoluteEpisodeNumbers}
+                sceneSeasonNumber={seasonNumber}
+                sceneEpisodeNumbers={episodeNumbers}
+                sceneAbsoluteEpisodeNumbers={absoluteEpisodeNumbers}
+                sceneMapping={sceneMapping}
+                episodeRequested={episodeRequested}
+                isDaily={isDaily}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <MuiIconButton
+              size="small"
+              aria-label={getDownloadTooltip(isGrabbing, isGrabbed, grabError)}
+              title={getDownloadTooltip(isGrabbing, isGrabbed, grabError)}
+              disabled={isGrabbing}
+              onClick={onGrabPressWrapper}
+              sx={{ p: 0.75 }}
+            >
+              <Icon
+                name={getDownloadIcon(isGrabbing, isGrabbed, grabError)}
+                kind={getDownloadKind(isGrabbed, grabError)}
+                size={22}
+                isSpinning={isGrabbing}
+              />
+            </MuiIconButton>
+
+            {onForceDownloadPress ? (
+              <MuiIconButton
+                size="small"
+                aria-label={translate('ForceDownload')}
+                title={translate('ForceDownload')}
+                onClick={onForceDownloadPressWrapper}
+                sx={{ p: 0.75 }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 22,
+                    height: 22,
+                    lineHeight: 0,
+                  }}
+                >
+                  <Icon name={icons.ACTIONS} size={22} />
+                  <Box
+                    component="span"
+                    sx={{
+                      position: 'absolute',
+                      right: -4,
+                      bottom: -4,
+                      display: 'flex',
+                    }}
+                  >
+                    <Icon name={icons.CIRCLE_DOWN} size={13} />
+                  </Box>
+                </Box>
+              </MuiIconButton>
+            ) : null}
+
+            <MuiIconButton
+              size="small"
+              aria-label={translate('OverrideAndAddToDownloadQueue')}
+              title={translate('OverrideAndAddToDownloadQueue')}
+              onClick={onOverridePress}
+              sx={{ p: 0.75 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 22,
+                  height: 22,
+                  lineHeight: 0,
+                }}
+              >
+                <Icon name={icons.INTERACTIVE} size={22} />
+                <Box
+                  component="span"
+                  sx={{
+                    position: 'absolute',
+                    right: -4,
+                    bottom: -4,
+                    display: 'flex',
+                  }}
+                >
+                  <Icon name={icons.CIRCLE_DOWN} size={13} />
+                </Box>
+              </Box>
+            </MuiIconButton>
+          </Box>
+        </Box>
+
+        {modals}
+      </>
+    );
+  }
 
   if (stackedTitleLayout) {
     return (

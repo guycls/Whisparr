@@ -28,6 +28,7 @@ function getTableHeaderCellProps(props) {
 function Table(props) {
   const {
     horizontalScroll,
+    minWidth,
     selectAll,
     columns,
     optionsComponent,
@@ -40,8 +41,11 @@ function Table(props) {
   } = props;
 
   return (
-    <TableContainer sx={{ overflowX: horizontalScroll ? 'auto' : 'hidden' }}>
-      <MuiTable size="small">
+    <TableContainer sx={{ overflowX: horizontalScroll ? 'auto' : 'hidden', maxWidth: '100%' }}>
+      <MuiTable
+        size="small"
+        sx={minWidth == null ? undefined : { minWidth }}
+      >
         <TableHeader>
           {
             selectAll ?
@@ -110,6 +114,7 @@ Table.propTypes = {
   ...TableHeaderCell.props,
   className: PropTypes.string,
   horizontalScroll: PropTypes.bool.isRequired,
+  minWidth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   selectAll: PropTypes.bool.isRequired,
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   optionsComponent: PropTypes.elementType,

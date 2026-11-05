@@ -11,6 +11,7 @@ namespace NzbDrone.Core.IndexerSearch
         void Start(string searchId);
         void ReportPreparing(string searchId, SearchCriteriaBase criteria, int indexerCount);
         void ReportQuerying(string searchId, string indexerName, int completedIndexers, int totalIndexers);
+        void ReportQueryingMany(string searchId, int inFlightCount, int completedIndexers, int totalIndexers);
         void ReportAggregating(string searchId, int releaseCount);
         void ReportRanking(string searchId);
         void Complete(string searchId);
@@ -72,6 +73,25 @@ namespace NzbDrone.Core.IndexerSearch
 
             var template = _localizationService.GetLocalizedString("InteractiveSearchStatusQueryingIndexer");
             var message = string.Format(template, indexerName, completedIndexers, totalIndexers);
+
+            Update(searchId, new SearchProgress
+            {
+                Phase = "querying",
+                Message = message,
+                IndexerCount = totalIndexers,
+                CompletedIndexers = completedIndexers
+            });
+        }
+
+        public void ReportQueryingMany(string searchId, int inFlightCount, int completedIndexers, int totalIndexers)
+        {
+            if (searchId.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            var template = _localizationService.GetLocalizedString("InteractiveSearchStatusQueryingIndexers");
+            var message = string.Format(template, inFlightCount, completedIndexers, totalIndexers);
 
             Update(searchId, new SearchProgress
             {

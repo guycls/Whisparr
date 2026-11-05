@@ -798,6 +798,7 @@
   "InteractiveSearchStatusSearchingEpisode": "Searching {0} indexers for {1}...",
   "InteractiveSearchStatusSearchingSeason": "Searching {0} indexers for season {1}...",
   "InteractiveSearchStatusQueryingIndexer": "Querying {0} ({1} of {2})...",
+  "InteractiveSearchStatusQueryingIndexers": "Querying {0} indexers ({1} of {2} finished)...",
   "InteractiveSearchStatusEvaluatingReleases": "Found {0} releases, evaluating candidates...",
   "InteractiveSearchStatusRankingResults": "Ranking and filtering results...",
   "Interval": "Interval",

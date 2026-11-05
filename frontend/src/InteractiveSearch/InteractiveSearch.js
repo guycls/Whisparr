@@ -7,9 +7,13 @@ import Icon from 'Components/Icon';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FilterMenu from 'Components/Menu/FilterMenu';
+import MenuContent from 'Components/Menu/MenuContent';
 import PageMenuButton from 'Components/Menu/PageMenuButton';
+import SortMenu from 'Components/Menu/SortMenu';
+import SortMenuItem from 'Components/Menu/SortMenuItem';
 import Table from 'Components/Table/Table';
 import TableBody from 'Components/Table/TableBody';
+import useMeasure from 'Helpers/Hooks/useMeasure';
 import { align, icons, kinds, sortDirections } from 'Helpers/Props';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
 import translate from 'Utilities/String/translate';
@@ -102,6 +106,23 @@ const columns = [
   }
 ];
 
+const CARD_LAYOUT_MAX_WIDTH = 1200;
+
+const sortColumnLabels = {
+  customFormatScore: () => translate('CustomFormatScore'),
+  indexerFlags: () => translate('IndexerFlags'),
+  rejections: () => translate('Rejections'),
+  releaseWeight: () => translate('Download')
+};
+
+function getColumnSortLabel(column) {
+  if (sortColumnLabels[column.name]) {
+    return sortColumnLabels[column.name]();
+  }
+
+  return typeof column.label === 'function' ? column.label() : column.label;
+}
+
 function InteractiveSearch(props) {
   const {
     searchPayload,
@@ -130,6 +151,16 @@ function InteractiveSearch(props) {
 
   const [filter, setFilter] = useState('');
   const [indexerSearchInput, setIndexerSearchInput] = useState(indexerSearchTerm);
+  const [measureRef, bounds] = useMeasure();
+  const useCardLayout = bounds.width > 0 ?
+    bounds.width < CARD_LAYOUT_MAX_WIDTH :
+    !!stackedTitleLayout;
+
+  const onCardSortSelect = useCallback((selectedSortKey) => {
+    const column = columns.find((item) => item.name === selectedSortKey);
+
+    onSortPress(selectedSortKey, column && column.fixedSortDirection);
+  }, [onSortPress]);
 
   useEffect(() => {
     setIndexerSearchInput(indexerSearchTerm);
@@ -171,21 +202,61 @@ function InteractiveSearch(props) {
   const stackedColumnCount = tableColumns.length;
   const hasTextFilter = !!filter;
   const hasHiddenByTextFilter = hasTextFilter && items.length > 0 && !textFilteredItems.length;
+  const resultRows = textFilteredItems.map((item) => {
+    return (
+      <InteractiveSearchRow
+        key={`${item.indexerId}-${item.guid}`}
+        {...item}
+        searchPayload={searchPayload}
+        longDateFormat={longDateFormat}
+        timeFormat={timeFormat}
+        stackedTitleLayout={stackedTitleLayout}
+        stackedColumnCount={stackedColumnCount}
+        cardLayout={useCardLayout}
+        onGrabPress={onGrabPress}
+        onForceDownloadPress={onForceDownloadPress}
+      />
+    );
+  });
+
+  const sortMenu = useCardLayout ?
+    (
+      <SortMenu alignMenu={align.RIGHT}>
+        <MenuContent>
+          {
+            columns.filter((column) => column.isSortable).map((column) => {
+              return (
+                <SortMenuItem
+                  key={column.name}
+                  name={column.name}
+                  sortKey={sortKey}
+                  sortDirection={sortDirection}
+                  onPress={onCardSortSelect}
+                >
+                  {getColumnSortLabel(column)}
+                </SortMenuItem>
+              );
+            })
+          }
+        </MenuContent>
+      </SortMenu>
+    ) :
+    null;
 
   return (
-    <div>
+    <Box ref={measureRef} sx={{ minWidth: 0, maxWidth: '100%' }}>
       {
         stackedTitleLayout ?
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: '40% 40% 5% 15%',
+              display: 'flex',
+              flexWrap: 'wrap',
               alignItems: 'center',
-              gap: '10px',
+              gap: 1,
               mb: '10px'
             }}
           >
-            <Box sx={{ width: '100%', minWidth: 0, maxWidth: 400 }}>
+            <Box sx={{ flex: '1 1 180px', minWidth: 0, maxWidth: 400 }}>
               <TextInput
                 placeholder={translate('FilterReleasesPlaceholder')}
                 name="filter"
@@ -194,7 +265,7 @@ function InteractiveSearch(props) {
               />
             </Box>
 
-            <Box sx={{ width: '100%', minWidth: 0 }} onKeyDown={onIndexerSearchKeyDown}>
+            <Box sx={{ flex: '1 1 180px', minWidth: 0 }} onKeyDown={onIndexerSearchKeyDown}>
               <TextInput
                 placeholder={translate('IndexerSearch')}
                 name="indexerSearch"
@@ -203,15 +274,15 @@ function InteractiveSearch(props) {
               />
             </Box>
 
-            <Box sx={{ justifySelf: 'center' }}>
-              <SpinnerIconButton
-                name={icons.SEARCH}
-                isSpinning={isFetching}
-                onPress={onIndexerSearchPress}
-              />
-            </Box>
+            <SpinnerIconButton
+              name={icons.SEARCH}
+              isSpinning={isFetching}
+              onPress={onIndexerSearchPress}
+            />
 
-            <Box sx={{ width: '100%', minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+              {sortMenu}
+
               <FilterMenu
                 alignMenu={align.RIGHT}
                 selectedFilterKey={selectedFilterKey}
@@ -227,13 +298,14 @@ function InteractiveSearch(props) {
           <Box
             sx={{
               display: 'flex',
+              flexWrap: 'wrap',
               justifyContent: 'space-between',
               alignItems: 'center',
               gap: '10px',
               mb: '10px'
             }}
           >
-            <Box sx={{ width: '100%', minWidth: 0, flex: '1 1 auto', maxWidth: 400 }}>
+            <Box sx={{ width: '100%', minWidth: 0, flex: '1 1 180px', maxWidth: 400 }}>
               <TextInput
                 placeholder={translate('FilterReleasesPlaceholder')}
                 name="filter"
@@ -242,16 +314,20 @@ function InteractiveSearch(props) {
               />
             </Box>
 
-            <FilterMenu
-              alignMenu={align.RIGHT}
-              selectedFilterKey={selectedFilterKey}
-              filters={filters}
-              customFilters={customFilters}
-              buttonComponent={PageMenuButton}
-              filterModalConnectorComponent={InteractiveSearchFilterModalConnector}
-              filterModalConnectorComponentProps={{ type }}
-              onFilterSelect={onFilterSelect}
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {sortMenu}
+
+              <FilterMenu
+                alignMenu={align.RIGHT}
+                selectedFilterKey={selectedFilterKey}
+                filters={filters}
+                customFilters={customFilters}
+                buttonComponent={PageMenuButton}
+                filterModalConnectorComponent={InteractiveSearchFilterModalConnector}
+                filterModalConnectorComponentProps={{ type }}
+                onFilterSelect={onFilterSelect}
+              />
+            </Box>
           </Box>
       }
 
@@ -314,31 +390,24 @@ function InteractiveSearch(props) {
       }
 
       {
-        isPopulated && !!textFilteredItems.length ?
+        isPopulated && !!textFilteredItems.length && useCardLayout ?
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {resultRows}
+          </Box> :
+          null
+      }
+
+      {
+        isPopulated && !!textFilteredItems.length && !useCardLayout ?
           <Table
             columns={tableColumns}
+            minWidth={CARD_LAYOUT_MAX_WIDTH}
             sortKey={sortKey}
             sortDirection={sortDirection}
             onSortPress={onSortPress}
           >
             <TableBody>
-              {
-                textFilteredItems.map((item) => {
-                  return (
-                    <InteractiveSearchRow
-                      key={`${item.indexerId}-${item.guid}`}
-                      {...item}
-                      searchPayload={searchPayload}
-                      longDateFormat={longDateFormat}
-                      timeFormat={timeFormat}
-                      stackedTitleLayout={stackedTitleLayout}
-                      stackedColumnCount={stackedColumnCount}
-                      onGrabPress={onGrabPress}
-                      onForceDownloadPress={onForceDownloadPress}
-                    />
-                  );
-                })
-              }
+              {resultRows}
             </TableBody>
           </Table> :
           null
@@ -359,7 +428,7 @@ function InteractiveSearch(props) {
           </Box> :
           null
       }
-    </div>
+    </Box>
   );
 }
 

@@ -200,8 +200,10 @@ namespace NzbDrone.Core.IndexerSearch
 
                 var completedIndexers = 0;
                 var totalIndexers = indexers.Count;
+                var inFlightIndexers = new List<string>();
+                var progressGate = new object();
 
-                var tasks = indexers.Select(indexer => DispatchIndexer(searchAction, indexer, criteriaBase, searchId, totalIndexers, () => Interlocked.Increment(ref completedIndexers)));
+                var tasks = indexers.Select(indexer => DispatchIndexer(searchAction, indexer, criteriaBase, searchId, totalIndexers, () => Interlocked.Increment(ref completedIndexers), () => Volatile.Read(ref completedIndexers), inFlightIndexers, progressGate));
 
                 var batch = await Task.WhenAll(tasks);
 
@@ -258,9 +260,18 @@ namespace NzbDrone.Core.IndexerSearch
                                                                SearchCriteriaBase criteriaBase,
                                                                string searchId,
                                                                int totalIndexers,
-                                                               Func<int> incrementCompleted)
+                                                               Func<int> incrementCompleted,
+                                                               Func<int> readCompleted,
+                                                               List<string> inFlightIndexers,
+                                                               object progressGate)
         {
             var trackProgress = criteriaBase.InteractiveSearch && searchId.IsNotNullOrWhiteSpace();
+            var indexerName = indexer.Definition.Name;
+
+            if (trackProgress)
+            {
+                ReportInFlight(searchId, totalIndexers, inFlightIndexers, progressGate, indexerName, starting: true, readCompleted, null);
+            }
 
             try
             {
@@ -275,12 +286,46 @@ namespace NzbDrone.Core.IndexerSearch
             {
                 if (trackProgress)
                 {
-                    var completed = incrementCompleted();
-                    _searchProgressService.ReportQuerying(searchId, indexer.Definition.Name, completed, totalIndexers);
+                    ReportInFlight(searchId, totalIndexers, inFlightIndexers, progressGate, indexerName, starting: false, readCompleted, incrementCompleted);
                 }
             }
 
             return Array.Empty<ReleaseInfo>();
+        }
+
+        private void ReportInFlight(string searchId, int totalIndexers, List<string> inFlightIndexers, object progressGate, string indexerName, bool starting, Func<int> readCompleted, Func<int> incrementCompleted)
+        {
+            int completedCount;
+            List<string> waiting;
+
+            lock (progressGate)
+            {
+                if (starting)
+                {
+                    inFlightIndexers.Add(indexerName);
+                }
+                else
+                {
+                    inFlightIndexers.Remove(indexerName);
+                    incrementCompleted();
+                }
+
+                completedCount = readCompleted();
+                waiting = inFlightIndexers.ToList();
+            }
+
+            if (waiting.Count == 0)
+            {
+                return;
+            }
+
+            if (waiting.Count == 1)
+            {
+                _searchProgressService.ReportQuerying(searchId, waiting[0], completedCount + 1, totalIndexers);
+                return;
+            }
+
+            _searchProgressService.ReportQueryingMany(searchId, waiting.Count, completedCount, totalIndexers);
         }
 
         private List<DownloadDecision> DeDupeDecisions(List<DownloadDecision> decisions)
